@@ -1,0 +1,35 @@
+<resources>
+    <string name="app_name">IFSP Notification</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_login">IFSP Notification</string>
+
+    <!-- Strings related to login -->
+    <string name="prompt_prontuario">Records</string>
+    <string name="prompt_password">Password</string>
+    <string name="action_sign_in_short">Sign in</string>
+    <string name="error_invalid_email">This record is invalid</string>
+    <string name="error_invalid_password">This password is too short</string>
+    <string name="error_incorrect_password">This password is incorrect</string>
+    <string name="error_field_required">This field is required</string>
+    <string name="permission_rationale">"Contacts permissions are needed for providing email
+        completions."
+    </string>
+
+    <!-- Strings related to service -->
+    <!--<string name="url_base">http://127.0.0.1:8000/</string>-->
+    <!--<string name="url_base">http://192.168.0.32:8000/</string>-->
+    <string name="url_base">https://notificacaoifsp.herokuapp.com/</string><!--site-->
+    <string name="url_login">api-token-auth/</string>
+    <string name="url_tipo_notificacao">tipo_notificacao_json/</string>
+    <string name="url_login_username">username</string>
+    <string name="url_login_password">password</string>
+    <string name="header_authorization">Authorization: Token </string>
+    <string name="json_token">token</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+</resources>
