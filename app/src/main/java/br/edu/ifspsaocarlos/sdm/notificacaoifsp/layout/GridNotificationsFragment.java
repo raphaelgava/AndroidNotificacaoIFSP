@@ -80,10 +80,12 @@ public class GridNotificationsFragment extends Fragment {
     private View thisView;
     private void configurarAdapter() {
         ArrayList<Oferecimento> mListaOferecimentos = new ArrayList<Oferecimento>();
-        //SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+        Date currentDate = Calendar.getInstance().getTime();
+//        java.text.SimpleDateFormat simpleDateFormat = new java.text.SimpleDateFormat("dd/MM/yyyy");
+//        String output = simpleDateFormat.format(currentDate);
+//        Log.d("TCC", output);
         Calendar c = Calendar.getInstance();
-        c.setTime(new Date()); // Now use today date.
-        //String output = sdf.format(c.getTime());
+        c.setTime(currentDate); // Now use today date.
         for (char i = 0; i < 102; i++) {
             Oferecimento offer = new Oferecimento();
 

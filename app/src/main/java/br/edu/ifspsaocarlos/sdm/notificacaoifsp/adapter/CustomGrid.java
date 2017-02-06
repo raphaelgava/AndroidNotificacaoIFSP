@@ -5,6 +5,7 @@ import android.app.Dialog;
 import android.content.Context;
 import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -47,18 +48,19 @@ public class CustomGrid extends RecyclerView.Adapter<CustomGrid.ItemViewHolder> 
 
         //Setar os valores conforme a grid faz scroll
         holder.txtSigla.setText(offer.getSigla());
-        holder.txtDate.setText(offer.getData().toString());
+        holder.txtDate.setText(offer.getDataString());
         holder.mLayoutPrincipal.setTag(position);
 
-        ESTA PINTANDO COLUNAS ERRADAS
-
-                VERIFICAR COMO COLOCAR LINHAS NA GRID PARA SEPARAR
-
-                FORMATAR DATA PARA APRESENTACAO DA GRID
+        Log.d("TCC", "index" + position);
         if ((position % GridNotificationsFragment.NUMBER_COLUMN == 0) ||
                 (position % GridNotificationsFragment.NUMBER_COLUMN == 2) ||
                 (position % GridNotificationsFragment.NUMBER_COLUMN == 4)){
-            holder.mLayoutPrincipal.setBackgroundColor(Color.GREEN);
+            holder.mLayoutPrincipal.setBackgroundColor(0xAA32CD32);
+            Log.d("TCC", "Green" + position);
+        }
+        else{
+            holder.mLayoutPrincipal.setBackgroundColor(Color.WHITE);
+            Log.d("TCC", "Blue" + position);
         }
     }
 
@@ -79,12 +81,12 @@ public class CustomGrid extends RecyclerView.Adapter<CustomGrid.ItemViewHolder> 
 
             txtSigla = (TextView) itemView.findViewById(R.id.tv_sigla);
             txtDate = (TextView) itemView.findViewById(R.id.tv_data);
-            mLayoutPrincipal = (LinearLayout) itemView.findViewById(R.id.cell_layout);
+            mLayoutPrincipal = (LinearLayout) itemView.findViewById(R.id.cell_layout2);
             mLayoutPrincipal.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     Oferecimento offer = mListaOferecimentos.get((Integer) v.getTag());
-                    //Coloquei uma layout customizado na Dialog
+                    //Layout customizado na Dialog
                     final View view = LayoutInflater.from(v.getContext()).inflate(R.layout.layout_dialog, null, false);
                     TextView texto = (TextView) view.findViewById(R.id.edtParametro);
                     texto.setText(offer.getSigla());

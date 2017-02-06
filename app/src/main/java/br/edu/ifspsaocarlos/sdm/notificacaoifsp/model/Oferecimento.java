@@ -24,4 +24,9 @@ public class Oferecimento {
     public void setSigla(String sigla) {
         this.sigla = sigla;
     }
+
+    public String getDataString(){
+        java.text.SimpleDateFormat simpleDateFormat = new java.text.SimpleDateFormat("dd/MM/yy");
+        return simpleDateFormat.format(this.data);
+    }
 }
