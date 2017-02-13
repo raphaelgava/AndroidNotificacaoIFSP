@@ -15,7 +15,6 @@
     <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/imageView2"
         android:src="@mipmap/logoifsp" />
 
     <ProgressBar
@@ -38,7 +37,6 @@
         android:layout_height="0dp">
 
         <LinearLayout
-            android:id="@+id/email_login_form"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">

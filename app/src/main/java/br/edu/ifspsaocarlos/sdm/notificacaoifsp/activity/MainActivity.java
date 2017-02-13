@@ -17,12 +17,16 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.WindowManager;
 
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.R;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.layout.ChangeUserDataFragment;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.layout.GridNotificationsFragment;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.service.FetchJSONService;
 
-public class MainActivity extends AppCompatActivity implements OnNavigationItemSelectedListener, GridNotificationsFragment.OnFragmentInteractionListener {
+public class MainActivity extends AppCompatActivity implements OnNavigationItemSelectedListener,
+        GridNotificationsFragment.OnFragmentInteractionListener,
+        ChangeUserDataFragment.OnFragmentInteractionListener{
 
     private String token;
     private android.support.v4.app.FragmentManager fragmentManager;
@@ -31,9 +35,13 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        toolbar.bringToFront();
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -47,7 +55,7 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.setDrawerListener(toggle);
+        drawer.addDrawerListener(toggle);
         toggle.syncState();
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
@@ -70,7 +78,7 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
 
 
             Log.d("TCC", token);
-        }// TODO: 1/30/2017 pesar na mensagem caso o token não chegue!!!
+        }// TODO: 1/30/2017 pensar na mensagem caso o token não chegue!!!
     }
 
     @Override
@@ -111,10 +119,13 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_camera) {
+        if (id == R.id.nav_class_schedule) {
             // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
-
+            fragmentManager.beginTransaction().replace(R.id.content_frame,
+                    GridNotificationsFragment.newInstance(null, null)).commit();
+        } else if (id == R.id.nav_user_data) {
+            fragmentManager.beginTransaction().replace(R.id.content_frame,
+                    ChangeUserDataFragment.newInstance(null, null)).commit();
         } else if (id == R.id.nav_slideshow) {
 
         } else if (id == R.id.nav_manage) {

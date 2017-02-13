@@ -15,8 +15,7 @@
     <ImageView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:srcCompat="?android:attr/alertDialogIcon"
-        android:id="@+id/imageView" />
+        app:srcCompat="?android:attr/alertDialogIcon" />
 
     <Button
         android:text="Button"

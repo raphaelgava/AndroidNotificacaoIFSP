@@ -28,6 +28,11 @@ import java.util.ListIterator;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.R;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.adapter.CustomGrid;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.Oferecimento;
+//todo inserir mapa no frame ade acezso ao item
+//todo decidir se tera o de fato o botao de "criate = mail = vermelhinho abaixo"
+//todo estudar OnFragmentInteractionListener (verificar se cada fragmento tem que ter o seu e se o main tem que implementar todos)
+
+
 
 /**
  * A simple {@link Fragment} subclass.

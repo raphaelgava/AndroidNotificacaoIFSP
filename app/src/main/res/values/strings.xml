@@ -12,7 +12,7 @@
     <string name="prompt_password">Password</string>
     <string name="action_sign_in_short">Sign in</string>
     <string name="error_invalid_email">This record is invalid</string>
-    <string name="error_invalid_password">This password is too short</string>
+    <string name="error_invalid_password">This password is empty or too short</string>
     <string name="error_incorrect_password">This password is incorrect</string>
     <string name="error_field_required">This field is required</string>
     <string name="permission_rationale">"Contacts permissions are needed for providing email
@@ -24,12 +24,36 @@
     <!--<string name="url_base">http://192.168.0.32:8000/</string>-->
     <string name="url_base">https://notificacaoifsp.herokuapp.com/</string><!--site-->
     <string name="url_login">api-token-auth/</string>
-    <string name="url_tipo_notificacao">tipo_notificacao_json/</string>
     <string name="url_login_username">username</string>
     <string name="url_login_password">password</string>
-    <string name="header_authorization">Authorization: Token </string>
     <string name="json_token">token</string>
 
+    <!--User form-->
+    <string name="email">E-mail</string>
+    <string name="password">Password</string>
+    <string name="confirmPassword">Re-Password</string>
+    <string name="send">Send</string>
+    <string name="sex">Sex</string>
+    <string name="male">Male</string>
+    <string name="female">Female</string>
+    <string name="msg_changed">Data was changed</string>
+
+
     <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <!--
+    TODO: Before you run your application, you need a Google Maps API key.
+
+    See this page for more information:
+    https://developers.google.com/maps/documentation/android/start#get_an_android_certificate_and_the_google_maps_api_key
+
+    Once you have your key (it starts with "AIza"), replace the "google_maps_key"
+    string in this file.
+
+    Note: This resource is used for the debug build target. Update this file if you just want to run
+    the demo app.
+    -->
+    <string name="google_maps_key" templateMergeStrategy="preserve" translatable="false">
+        AIzaSyDxTQ3AyRciufC-ew13cC5kY2DIn7nsy64
+    </string>
 </resources>

@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.graphics.Color;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -55,12 +56,13 @@ public class CustomGrid extends RecyclerView.Adapter<CustomGrid.ItemViewHolder> 
         if ((position % GridNotificationsFragment.NUMBER_COLUMN == 0) ||
                 (position % GridNotificationsFragment.NUMBER_COLUMN == 2) ||
                 (position % GridNotificationsFragment.NUMBER_COLUMN == 4)){
-            holder.mLayoutPrincipal.setBackgroundColor(0xAA32CD32);
+            holder.mLayoutPrincipal.setBackgroundResource(R.color.colorCell);
+            //holder.mLayoutPrincipal.setBackgroundColor(0xAA32CD32);
             Log.d("TCC", "Green" + position);
         }
         else{
             holder.mLayoutPrincipal.setBackgroundColor(Color.WHITE);
-            Log.d("TCC", "Blue" + position);
+            Log.d("TCC", "White" + position);
         }
     }
 
@@ -95,6 +97,7 @@ public class CustomGrid extends RecyclerView.Adapter<CustomGrid.ItemViewHolder> 
 
                     final Dialog d = new Dialog(v.getContext());
                     d.setContentView(view);
+                    d.setCancelable(false); //Modal behavior
                     d.show();
                     botao.setOnClickListener(new View.OnClickListener() {
                         @Override
@@ -107,69 +110,4 @@ public class CustomGrid extends RecyclerView.Adapter<CustomGrid.ItemViewHolder> 
             });
         }
     }
-
-//public class CustomGrid extends List<Oferecimento> {
-//    private Context mContext;
-//    //    private final String[] web;
-////    private final int[] Imageid;
-//    private LayoutInflater inflador;
-//
-//    public CustomGrid(Activity tela, List<Oferecimento> listaOferecimentos) {
-//        super(tela, R.layout.celula_grid, listaOferecimentos);
-//        inflador = (LayoutInflater) tela.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-//    }
-//
-//    public View getView(int position, View convertView, ViewGroup parent) {
-//        ViewHolder holder;
-//        if ( convertView == null ) {
-//            // infla uma nova célula
-//            convertView = inflador.inflate(R.layout.celula_grid, null);
-//            holder = new ViewHolder();
-//            holder.data = (TextView) convertView.findViewById(R.id.tv_data);
-//            holder.sigla = (TextView) convertView.findViewById(R.id.tv_sigla);;
-//            convertView.setTag(holder);
-//        }
-//        else {
-//            holder = (ViewHolder) convertView.getTag();
-//        }
-//        Oferecimento ofer = getItem(position);
-//        holder.data.setText(ofer.getData().toString());
-//        holder.sigla.setText(ofer.getSigla());
-//        return convertView;
-//    }
-//
-//    static class ViewHolder {
-//        public TextView data;
-//        public TextView sigla;
-//    }
-
-
-
-
-
-//        public CustomGrid(Context c,String[] web,int[] Imageid ) {
-//            mContext = c;
-//            this.Imageid = Imageid;
-//            this.web = web;
-//        }
-//
-//        @Override
-//        public View getView(int position, View convertView, ViewGroup parent) {
-//            // TODO Auto-generated method stub
-//            View grid;
-//            LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-//
-//            if (convertView == null) {
-//                grid = new View(mContext);
-//                grid = inflater.inflate(R.layout.celula_grid, null);
-//                TextView data = (TextView) grid.findViewById(R.id.tv_data);
-//                TextView oferecimento = (TextView)grid.findViewById(R.id.tv_oferecimento);
-//                data.setText(web[position]);
-//                oferecimento.setText(Imageid[position]);
-//            } else {
-//                grid = (View) convertView;
-//            }
-//
-//            return grid;
-//        }
 }
