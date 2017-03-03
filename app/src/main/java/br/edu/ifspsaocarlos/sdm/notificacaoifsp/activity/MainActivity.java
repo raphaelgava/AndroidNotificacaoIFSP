@@ -21,16 +21,19 @@ import android.view.WindowManager;
 
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.R;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.layout.ChangeUserDataFragment;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.layout.CreateNotificationFragment;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.layout.GridNotificationsFragment;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.layout.TemplateFragment;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.service.FetchJSONService;
 
 public class MainActivity extends AppCompatActivity implements OnNavigationItemSelectedListener,
-        GridNotificationsFragment.OnFragmentInteractionListener,
-        ChangeUserDataFragment.OnFragmentInteractionListener{
+        TemplateFragment.OnFragmentInteractionListener{
 
     private String token;
     private android.support.v4.app.FragmentManager fragmentManager;
     private Intent serviceIntent;
+
+    private FloatingActionButton fab;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,12 +46,19 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
         setSupportActionBar(toolbar);
         toolbar.bringToFront();
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                //Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+                //        .setAction("Action", null).show();
+
+                fragmentManager.beginTransaction().replace(R.id.content_frame,
+                        CreateNotificationFragment.newInstance(null, null)).commit();
+                fab.setVisibility(View.INVISIBLE);
+
+                DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+                drawer.closeDrawer(GravityCompat.START);
             }
         });
 
@@ -123,11 +133,15 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
             // Handle the camera action
             fragmentManager.beginTransaction().replace(R.id.content_frame,
                     GridNotificationsFragment.newInstance(null, null)).commit();
+            fab.setVisibility(View.VISIBLE);
         } else if (id == R.id.nav_user_data) {
             fragmentManager.beginTransaction().replace(R.id.content_frame,
                     ChangeUserDataFragment.newInstance(null, null)).commit();
+            fab.setVisibility(View.INVISIBLE);
         } else if (id == R.id.nav_slideshow) {
-
+            fragmentManager.beginTransaction().replace(R.id.content_frame,
+                    CreateNotificationFragment.newInstance(null, null)).commit();
+            fab.setVisibility(View.INVISIBLE);
         } else if (id == R.id.nav_manage) {
 
         } else if (id == R.id.nav_share) {

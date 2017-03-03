@@ -1,11 +1,17 @@
 package br.edu.ifspsaocarlos.sdm.notificacaoifsp.model;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
+import java.io.Serializable;
 import java.util.Date;
 
 /**
  * Created by rapha on 9/28/2016.
  */
-public class Oferecimento {
+//OUTRA OPÇÃO PARA ENVIAR OBJETO PELO INTENT É O Parcelable!!!
+public class Oferecimento implements Serializable {
+    public static final long  serialVersionUID = 100L;
     private Date data;
     private String sigla;
 

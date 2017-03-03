@@ -29,31 +29,24 @@
     <string name="json_token">token</string>
 
     <!--User form-->
+    <string name="name">Name</string>
+    <string name="lastName">Last Name</string>
     <string name="email">E-mail</string>
     <string name="password">Password</string>
     <string name="confirmPassword">Re-Password</string>
     <string name="send">Send</string>
     <string name="sex">Sex</string>
+    <string name="tipoFormacao">Education</string>
     <string name="male">Male</string>
     <string name="female">Female</string>
     <string name="msg_changed">Data was changed</string>
 
+    <!--Notification form-->
+    <string name="time">00:00</string>
+    <string name="date">00/00/0000</string>
+
 
     <!-- TODO: Remove or change this placeholder text -->
 
-    <!--
-    TODO: Before you run your application, you need a Google Maps API key.
-
-    See this page for more information:
-    https://developers.google.com/maps/documentation/android/start#get_an_android_certificate_and_the_google_maps_api_key
-
-    Once you have your key (it starts with "AIza"), replace the "google_maps_key"
-    string in this file.
-
-    Note: This resource is used for the debug build target. Update this file if you just want to run
-    the demo app.
-    -->
-    <string name="google_maps_key" templateMergeStrategy="preserve" translatable="false">
-        AIzaSyDxTQ3AyRciufC-ew13cC5kY2DIn7nsy64
-    </string>
+    <string name="title_activity_maps">Map</string>
 </resources>

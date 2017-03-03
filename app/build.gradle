@@ -10,6 +10,17 @@ android {
         targetSdkVersion 24
         versionCode 1
         versionName "1.0"
+        /*
+            Error:The number of method references in a .dex file cannot exceed 64K.
+            Learn how to resolve this issue at https://developer.android.com/tools/building/multidex.html
+        */
+        multiDexEnabled true
+    }
+    dexOptions {
+        /*
+            Error:java.lang.OutOfMemoryError: GC overhead limit exceeded
+        */
+        javaMaxHeapSize "4g"
     }
     buildTypes {
         release {
@@ -22,11 +33,17 @@ android {
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile files('libs/volley.jar')
+
+    /*
+        Error:The number of method references in a .dex file cannot exceed 64K.
+        Learn how to resolve this issue at https://developer.android.com/tools/building/multidex.html
+    */
     compile 'com.android.support:appcompat-v7:24.2.1'
     compile 'com.android.support:design:24.2.1'
     compile 'com.android.support:support-v4:24.2.1'
     compile 'com.android.support:cardview-v7:24.2.1'
     compile 'com.android.support:recyclerview-v7:24.2.1'
     compile 'net.cachapa.expandablelayout:expandablelayout:2.3'
-
+    compile 'com.google.android.gms:play-services:10.2.0'
+    compile 'com.android.support:multidex:1.0.1'
 }

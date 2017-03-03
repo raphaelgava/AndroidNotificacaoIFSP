@@ -1,0 +1,3 @@
+to get SHA to use google maps
+
+keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android -keypass android

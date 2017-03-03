@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="tipoFormacao">
+        <item>Technical</item>
+        <item>Graduation</item>
+        <item>Post Graduation</item>
+        <item>Master Degree</item>
+        <item>Phd</item>
+        <item>Habilitation</item>
+    </string-array>
+</resources>

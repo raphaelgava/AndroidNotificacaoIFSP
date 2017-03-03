@@ -1,28 +1,20 @@
 package br.edu.ifspsaocarlos.sdm.notificacaoifsp.adapter;
 
-import android.app.Activity;
-import android.app.Dialog;
-import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
-import android.support.v4.content.ContextCompat;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.BaseAdapter;
-import android.widget.Button;
-import android.widget.FrameLayout;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import java.util.List;
 
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.activity.MapsActivity;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.R;
-import br.edu.ifspsaocarlos.sdm.notificacaoifsp.activity.MainActivity;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.layout.GridNotificationsFragment;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.Oferecimento;
 
@@ -77,7 +69,6 @@ public class CustomGrid extends RecyclerView.Adapter<CustomGrid.ItemViewHolder> 
         private TextView txtSigla;
         private TextView txtDate;
 
-
         public ItemViewHolder(final View itemView) {
             super(itemView);
 
@@ -88,8 +79,18 @@ public class CustomGrid extends RecyclerView.Adapter<CustomGrid.ItemViewHolder> 
                 @Override
                 public void onClick(View v) {
                     Oferecimento offer = mListaOferecimentos.get((Integer) v.getTag());
+
+                    Intent intent = new Intent(v.getContext(), MapsActivity.class);
+                    intent.putExtra("oferecimento", offer);
+                    v.getContext().startActivity(intent);
+/*
+                    Oferecimento offer = mListaOferecimentos.get((Integer) v.getTag());
+
                     //Layout customizado na Dialog
-                    final View view = LayoutInflater.from(v.getContext()).inflate(R.layout.layout_dialog, null, false);
+                    Context c = v.getContext();
+                    LayoutInflater l = LayoutInflater.from(c);
+                    final View view = l.inflate(R.layout.layout_dialog, null, false);
+                    //final View view = LayoutInflater.from(c).inflate(R.layout.layout_dialog, null, false);
                     TextView texto = (TextView) view.findViewById(R.id.edtParametro);
                     texto.setText(offer.getSigla());
 
@@ -105,7 +106,7 @@ public class CustomGrid extends RecyclerView.Adapter<CustomGrid.ItemViewHolder> 
                             d.dismiss();
                         }
                     });
-
+                    */
                 }
             });
         }
