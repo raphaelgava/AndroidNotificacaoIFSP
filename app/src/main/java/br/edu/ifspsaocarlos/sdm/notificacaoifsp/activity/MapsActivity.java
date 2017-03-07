@@ -1,15 +1,27 @@
 package br.edu.ifspsaocarlos.sdm.notificacaoifsp.activity;
 
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.FragmentManager;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.res.Resources;
+import android.location.LocationManager;
+import android.provider.Settings;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -18,10 +30,15 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.Manifest;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.R;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.Oferecimento;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
+public class MapsActivity extends FragmentActivity implements
+        GoogleMap.OnMyLocationButtonClickListener,
+        OnMapReadyCallback,
+        ActivityCompat.OnRequestPermissionsResultCallback {
+
     private GoogleMap mMap;
     private Button botao;
     private TextView texto;
@@ -40,10 +57,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         offer = (Oferecimento) getIntent().getSerializableExtra("oferecimento");
 
-        texto = (TextView) findViewById(R.id.edtParametro);
+        texto = (TextView) findViewById(R.id.txtParametro);
         texto.bringToFront();
         if (offer != null) {
-            texto.setText(offer.getSigla());
+            texto.setText(offer.getSigla() + ": esse texto é apenas para eu saber como será distribuido na tela independente do tamanho pois o texto pode ser bem grande vindo do servidor. Ainda assim faltou texto por isso estou adicionando mais algumas palavras de teste.");
         }
 
         botao = (Button) findViewById(R.id.btnDialog);
@@ -54,6 +71,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 finish();
             }
         });
+        //enableMyLocation();
     }
 
 
@@ -75,5 +93,142 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         LatLng sydney = new LatLng(-34, 151);
         mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+    }
+
+    /**
+     * Request code for location permission request.
+     *
+     * @see #onRequestPermissionsResult(int, String[], int[])
+     */
+    private static final int MY_LOCATION_PERMISSION_REQUEST_CODE = 1;
+
+    /**
+     * Flag indicating whether a requested permission has been denied after returning in
+     * {@link #onRequestPermissionsResult(int, String[], int[])}.
+     */
+    private boolean mPermissionDenied = false;
+
+    /**
+     * Enables the My Location layer if the fine location permission has been granted.
+     */
+    private void enableMyLocation() {
+        // Here, thisActivity is the current activity
+        if (ContextCompat.checkSelfPermission(this,
+                android.Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(this,
+                    new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
+                    MY_LOCATION_PERMISSION_REQUEST_CODE);
+            Toast.makeText(getApplicationContext(), "Teste 4", Toast.LENGTH_SHORT).show();
+            /*
+            // Should we show an explanation?
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    android.Manifest.permission.ACCESS_FINE_LOCATION)) {
+
+                // Show an expanation to the user *asynchronously* -- don't block
+                // this thread waiting for the user's response! After the user
+                // sees the explanation, try again to request the permission.
+                Toast.makeText(getApplicationContext(), "Teste 3", Toast.LENGTH_SHORT).show();
+
+            } else {
+
+                // No explanation needed, we can request the permission.
+
+                ActivityCompat.requestPermissions(this,
+                        new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
+                        MY_LOCATION_PERMISSION_REQUEST_CODE);
+                Toast.makeText(getApplicationContext(), "Teste 4", Toast.LENGTH_SHORT).show();
+
+                // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
+                // app-defined int constant. The callback method gets the
+                // result of the request.
+            }
+            */
+        }
+        else{
+            Toast.makeText(getApplicationContext(), "Teste 5", Toast.LENGTH_SHORT).show();
+            LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+
+            if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)){
+                Toast.makeText(this, "GPS is Enabled in your devide", Toast.LENGTH_SHORT).show();
+            }else{
+                showGPSDisabledAlertToUser();
+            }
+        }
+    }
+
+    @Override
+    public void onResume(){
+        super.onResume();
+        enableMyLocation();
+    }
+
+    @Override
+    public boolean onMyLocationButtonClick() {
+        Toast.makeText(this, "MyLocation button clicked", Toast.LENGTH_SHORT).show();
+        // Return false so that we don't consume the event and the default behavior still occurs
+        // (the camera animates to the user's current position).
+        return false;
+    }
+
+    // TODO: 3/7/2017 testar melhor o deny/allow... problema Screen overlay detected... dar zoom no mapa... testar my location!!! 
+
+    private void showGPSDisabledAlertToUser(){
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this, R.style.Theme_AppCompat_Light_Dialog);
+        alertDialogBuilder.setMessage("GPS is disabled in your device. Would you like to enable it?")
+                .setCancelable(false)
+                .setPositiveButton("Goto Settings",
+                        new DialogInterface.OnClickListener(){
+                            public void onClick(DialogInterface dialog, int id){
+                                Intent callGPSSettingIntent = new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                                startActivity(callGPSSettingIntent);
+                            }
+                        });
+        alertDialogBuilder.setNegativeButton("Cancel",
+                new DialogInterface.OnClickListener(){
+                    public void onClick(DialogInterface dialog, int id){
+                        finish();
+                        dialog.cancel();
+                    }
+                });
+        AlertDialog alert = alertDialogBuilder.create();
+        alert.show();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case MY_LOCATION_PERMISSION_REQUEST_CODE: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Toast.makeText(getApplicationContext(), "Teste 1", Toast.LENGTH_SHORT).show();
+                    LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+
+                    if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)){
+                        Toast.makeText(this, "GPS is Enabled in your devide", Toast.LENGTH_SHORT).show();
+                    }else{
+                        showGPSDisabledAlertToUser();
+                    }
+                    //final Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                    //startActivity(intent);
+
+                    // permission was granted, yay! Do the
+                    // contacts-related task you need to do.
+
+                } else {
+                    Toast.makeText(getApplicationContext(), "Teste 2", Toast.LENGTH_SHORT).show();
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+                    finish();
+                }
+                return;
+            }
+
+            // other 'case' lines to check for other
+            // permissions this app might request
+        }
     }
 }

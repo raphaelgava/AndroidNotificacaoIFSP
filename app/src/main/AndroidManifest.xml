@@ -16,6 +16,8 @@
          location permissions for the 'MyLocation' functionality. 
     -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <!-- Para evitar problema de Screen overlay detected-->
+    <uses-permission android:name="manifest.PERMISSION.SYSTEM_ALERT_WINDOW" />
 
     <application
         android:name="android.support.multidex.MultiDexApplication"

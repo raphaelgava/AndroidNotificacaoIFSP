@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_centerHorizontal="true"
+    android:minHeight="170dp"
+    android:minWidth="300dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <GridLayout
+            android:id="@+id/grid"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:columnCount="5"
+            android:orientation="horizontal"
+            android:rowCount="4"
+            android:useDefaultMargins="true">
+            <!--
+            <ImageButton
+                android:id="@+id/b1"
+                android:layout_width="58dp"
+                android:layout_height="58dp"/>
+
+            <ImageButton
+                android:id="@+id/b20"
+                android:layout_width="58dp"
+                android:layout_height="58dp"/>
+-->
+        </GridLayout>
+
+        <Button
+            android:id="@+id/b21"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:minHeight="36dp"
+            android:padding="8dp"
+            android:text="@string/white" />
+    </LinearLayout>
+
+</ScrollView>

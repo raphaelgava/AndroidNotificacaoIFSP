@@ -3,33 +3,32 @@ package br.edu.ifspsaocarlos.sdm.notificacaoifsp.layout;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.Context;
-
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import android.net.Uri;
-import android.os.Build;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.ShapeDrawable;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.DatePicker;
-import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
-import br.edu.ifspsaocarlos.sdm.notificacaoifsp.R;
-
-import com.google.android.gms.plus.PlusOneButton;
-
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.Locale;
 
-import static android.app.DatePickerDialog.*;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.R;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.color.MyColorChosserDialog;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.color.MyColorListener;
+
+import static android.app.DatePickerDialog.OnDateSetListener;
 
 /**
  * A fragment with a Google +1 button.
@@ -41,9 +40,8 @@ import static android.app.DatePickerDialog.*;
  */
 public class CreateNotificationFragment extends TemplateFragment {
 
-    private Button btnDatePicker, btnTimePicker;
-    private EditText txtDate, txtTime;
     private TextView tvDate, tvTime;
+    private Button btnSave, btnColor;
     private int mYear, mMonth, mDay, mHour, mMinute;
 
     private Calendar c;
@@ -53,9 +51,16 @@ public class CreateNotificationFragment extends TemplateFragment {
     public CreateNotificationFragment() {
         // Required empty public constructor
         c = Calendar.getInstance();
-        formatDate = new SimpleDateFormat("d/MM/yyyy");
+        formatDate = new SimpleDateFormat("dd/MM/yyyy");
         //formatTime = new SimpleDateFormat("hh:mm");//12h
         formatTime = new SimpleDateFormat("kk:mm");//24h
+
+        c = Calendar.getInstance();
+        mYear = c.get(Calendar.YEAR);
+        mMonth = c.get(Calendar.MONTH);
+        mDay = c.get(Calendar.DAY_OF_MONTH);
+        mHour = c.get(Calendar.HOUR_OF_DAY);
+        mMinute = c.get(Calendar.MINUTE);
     }
 
     /**
@@ -86,6 +91,8 @@ public class CreateNotificationFragment extends TemplateFragment {
         {
             tvDate = (TextView) view.findViewById(R.id.txtInDate);
             tvTime = (TextView) view.findViewById(R.id.txtInTime);
+            btnSave = (Button) view.findViewById(R.id.btnSendNotification);
+            btnColor = (Button) view.findViewById(R.id.btnColor);
 
             // TODO: 3/2/2017 esta setando a data de ontem! (1/mar quando já era 2/mar
             tvDate.setText(formatDate.format(c.getTime()));
@@ -103,25 +110,126 @@ public class CreateNotificationFragment extends TemplateFragment {
                     onClickMethod(view);
                 }
             });
+
+            final ImageView shape =  (ImageView) view.findViewById(R.id.imvShape);
+            //shape.setBackgroundColor(0xff9C27B0);
+            btnColor.setOnClickListener(new View.OnClickListener(){
+                public void onClick(View view){
+                ArrayList<Integer> images = new ArrayList<Integer>();
+
+                int red =        0xffF44336;
+                int pink =       0xffE91E63;
+                int Purple =     0xff9C27B0;
+                int DeepPurple = 0xff673AB7;
+                int Indigo =     0xff3F51B5;
+                int Blue =       0xff2196F3;
+                int LightBlue =  0xff03A9F4;
+                int Cyan =       0xff00BCD4;
+                int Teal =       0xff009688;
+                int Green =      0xff4CAF50;
+                int LightGreen = 0xff8BC34A;
+                int Lime =       0xffCDDC39;
+                int Yellow =     0xffFFEB3B;
+                int Amber =      0xffFFC107;
+                int Orange =     0xffFF9800;
+                int DeepOrange = 0xffFF5722;
+                int Brown =      0xff795548;
+                int Grey =       0xff9E9E9E;
+                int BlueGray =   0xff607D8B;
+                int Black =      0xff000000;
+                int White =      0xffffffff;
+                images.add(red);
+                images.add(pink);
+                images.add(Purple);
+                images.add(DeepPurple);
+                images.add(Indigo);
+                images.add(Blue);
+                images.add(LightBlue);
+                images.add(Cyan);
+                images.add(Teal);
+                images.add(Green);
+                images.add(LightGreen);
+                images.add(Lime);
+                images.add(Yellow);
+                images.add(Amber);
+                images.add(Orange);
+                images.add(DeepOrange);
+                images.add(Brown);
+                images.add(Grey);
+                images.add(BlueGray);
+                images.add(Black);
+                images.add(White);
+                    images.add(red);
+                    images.add(pink);
+                    images.add(Purple);
+                    images.add(DeepPurple);
+                    images.add(Indigo);
+                    images.add(Blue);
+                    images.add(LightBlue);
+                    images.add(Cyan);
+                    images.add(Teal);
+                    images.add(Green);
+                    images.add(LightGreen);
+                    images.add(Lime);
+                    images.add(Yellow);
+                    images.add(Amber);
+                    images.add(Orange);
+                    images.add(DeepOrange);
+                    images.add(Brown);
+                    images.add(Grey);
+                    images.add(BlueGray);
+                    images.add(Black);
+                    images.add(White);
+
+                MyColorChosserDialog dialog = new MyColorChosserDialog(view.getContext(), images);
+                dialog.setTitle("teste");
+                dialog.setColorListener(new MyColorListener() {
+                    @Override
+                    public void OnColorClick(View v, int color) {
+                        //do whatever you want to with the values
+
+                        //back.setColorFilter(color, PorterDuff.Mode.SRC);
+                        //shape.setBackground(back);
+                        shape.setBackgroundColor(color);
+                        Toast.makeText(v.getContext(), "oi", Toast.LENGTH_LONG).show();
+                    }
+                });
+                //customize the dialog however you want
+                dialog.show();
+                }
+            });
+
+            btnSave.setOnClickListener(new View.OnClickListener(){
+                public void onClick(View view){
+                    submitForm();
+                }
+            });
         }
         return view;
     }
 
-    public void onClickMethod(View v) {
-        c = Calendar.getInstance();
-        mYear = c.get(Calendar.YEAR);
-        mMonth = c.get(Calendar.MONTH);
-        mDay = c.get(Calendar.DAY_OF_MONTH);
-        mHour = c.get(Calendar.HOUR_OF_DAY);
-        mMinute = c.get(Calendar.MINUTE);
+    /**
+     * Validating form
+     */
+    private void submitForm() {
+//        if ((!validateEmail()) || (!validatePassword())) {
+//            return;
+//        }
+        Toast.makeText(getActivity().getApplicationContext(), R.string.msg_changed, Toast.LENGTH_SHORT).show();
+        getActivity().getFragmentManager().popBackStack();
+    }
 
+    public void onClickMethod(View v) {
         if (v == tvDate){
             DatePickerDialog datePickerDialog = new DatePickerDialog(v.getContext(),
                 new OnDateSetListener() {
                     @Override
                     public void onDateSet(DatePicker view, int year,int monthOfYear, int dayOfMonth) {
-                        Date date = new GregorianCalendar(year, monthOfYear-1, dayOfMonth).getTime();
+                        Date date = new GregorianCalendar(year, monthOfYear, dayOfMonth).getTime();
                         tvDate.setText(formatDate.format(date));
+                        c.set(Calendar.YEAR, year);
+                        c.set(Calendar.MONTH, monthOfYear);
+                        c.set(Calendar.DAY_OF_MONTH, dayOfMonth);
                         //tvDate.setText(dayOfMonth + "/" + (monthOfYear + 1)+ "/" + year);
                     }
                 }, mYear, mMonth, mDay);
@@ -136,12 +244,12 @@ public class CreateNotificationFragment extends TemplateFragment {
                     @Override
                     public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
                         if (((mYear == c.get(Calendar.YEAR)) && (mMonth == c.get(Calendar.MONTH)) && (mDay == c.get(Calendar.DAY_OF_MONTH))) &&
-                            ((mHour < c.get(Calendar.HOUR_OF_DAY)) || ((mHour == c.get(Calendar.HOUR_OF_DAY)) && (mMinute <= (c.get(Calendar.MINUTE) + 10))))) {
+                            ((hourOfDay < c.get(Calendar.HOUR_OF_DAY)) || ((hourOfDay == c.get(Calendar.HOUR_OF_DAY)) && (minute <= (c.get(Calendar.MINUTE) + 10))))) {
                             Toast.makeText(view.getContext(), "Set time at least 10 minutes from now", Toast.LENGTH_LONG).show();
                         } else {
                             //tvTime.setText(hourOfDay + ":" + minute);
                             c.set(Calendar.HOUR_OF_DAY, hourOfDay);
-                            c.set(Calendar.MINUTE, mMinute);
+                            c.set(Calendar.MINUTE, minute);
                             tvTime.setText(formatTime.format(c.getTime()));
                         }
                     }
@@ -150,113 +258,3 @@ public class CreateNotificationFragment extends TemplateFragment {
         }
     }
 }
-//public class CreateNotificationFragment extends Fragment {
-//    // TODO: Rename parameter arguments, choose names that match
-//    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-//    private static final String ARG_PARAM1 = "param1";
-//    private static final String ARG_PARAM2 = "param2";
-//    // The request code must be 0 or greater.
-//    private static final int PLUS_ONE_REQUEST_CODE = 0;
-//    // The URL to +1.  Must be a valid URL.
-//    private final String PLUS_ONE_URL = "http://developer.android.com";
-//    // TODO: Rename and change types of parameters
-//    private String mParam1;
-//    private String mParam2;
-//    private PlusOneButton mPlusOneButton;
-//
-//    private OnFragmentInteractionListener mListener;
-//
-//    public CreateNotificationFragment() {
-//        // Required empty public constructor
-//    }
-//
-//    /**
-//     * Use this factory method to create a new instance of
-//     * this fragment using the provided parameters.
-//     *
-//     * @param param1 Parameter 1.
-//     * @param param2 Parameter 2.
-//     * @return A new instance of fragment CreateNotificationFragment.
-//     */
-//    // TODO: Rename and change types and number of parameters
-//    //public static CreateNotificationFragment newInstance(String param1, String param2) {
-//    public static CreateNotificationFragment newInstance(Context context, Bundle args) {
-//        CreateNotificationFragment fragment = new CreateNotificationFragment();
-//        //Bundle args = new Bundle();
-//        //args.putString(ARG_PARAM1, param1);
-//        //args.putString(ARG_PARAM2, param2);
-//        fragment.setArguments(args);
-//        return fragment;
-//    }
-//
-//    @Override
-//    public void onCreate(Bundle savedInstanceState) {
-//        super.onCreate(savedInstanceState);
-//        if (getArguments() != null) {
-//            mParam1 = getArguments().getString(ARG_PARAM1);
-//            mParam2 = getArguments().getString(ARG_PARAM2);
-//        }
-//    }
-//
-//    @Override
-//    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-//                             Bundle savedInstanceState) {
-//        // Inflate the layout for this fragment
-//        View view = inflater.inflate(R.layout.fragment_create_notification, container, false);
-//
-//        //Find the +1 button
-//        mPlusOneButton = (PlusOneButton) view.findViewById(R.id.plus_one_button);
-//
-//        return view;
-//    }
-//
-//    @Override
-//    public void onResume() {
-//        super.onResume();
-//
-//        // Refresh the state of the +1 button each time the activity receives focus.
-//        mPlusOneButton.initialize(PLUS_ONE_URL, PLUS_ONE_REQUEST_CODE);
-//    }
-//
-//    // TODO: Rename method, update argument and hook method into UI event
-//    public void onButtonPressed(Uri uri) {
-//        if (mListener != null) {
-//            mListener.onFragmentInteraction(uri);
-//        }
-//    }
-//
-//    @Override
-//    public void onAttach(Context context) {
-//        super.onAttach(context);
-//        if (context instanceof OnFragmentInteractionListener) {
-//            mListener = (OnFragmentInteractionListener) context;
-//        } else {
-//            throw new RuntimeException(context.toString()
-//                    + " must implement OnFragmentInteractionListener");
-//        }
-//    }
-//
-//    @Override
-//    public void onDetach() {
-//        super.onDetach();
-//        mListener = null;
-//    }
-//
-//    // TODO: 2/28/2017 retirar os métodos das interfaces de cada fragmento se não for usar
-//
-//    /**
-//     * This interface must be implemented by activities that contain this
-//     * fragment to allow an interaction in this fragment to be communicated
-//     * to the activity and potentially other fragments contained in that
-//     * activity.
-//     * <p>
-//     * See the Android Training lesson <a href=
-//     * "http://developer.android.com/training/basics/fragments/communicating.html"
-//     * >Communicating with Other Fragments</a> for more information.
-//     */
-//    public interface OnFragmentInteractionListener {
-//        // TODO: Update argument type and name
-//        void onFragmentInteraction(Uri uri);
-//    }
-//
-//}
