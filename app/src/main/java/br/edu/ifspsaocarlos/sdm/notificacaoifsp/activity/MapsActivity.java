@@ -10,6 +10,7 @@ import android.content.res.Resources;
 import android.location.LocationManager;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
@@ -93,6 +94,8 @@ public class MapsActivity extends FragmentActivity implements
         LatLng sydney = new LatLng(-34, 151);
         mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+
+        mMap.setOnMyLocationButtonClickListener(this);
     }
 
     /**
@@ -113,14 +116,14 @@ public class MapsActivity extends FragmentActivity implements
      */
     private void enableMyLocation() {
         // Here, thisActivity is the current activity
-        if (ContextCompat.checkSelfPermission(this,
-                android.Manifest.permission.ACCESS_FINE_LOCATION)
+        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
 
             ActivityCompat.requestPermissions(this,
                     new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
                     MY_LOCATION_PERMISSION_REQUEST_CODE);
-            Toast.makeText(getApplicationContext(), "Teste 4", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(getApplicationContext(), "Teste 4", Toast.LENGTH_SHORT).show();
+
             /*
             // Should we show an explanation?
             if (ActivityCompat.shouldShowRequestPermissionRationale(this,
@@ -147,11 +150,18 @@ public class MapsActivity extends FragmentActivity implements
             */
         }
         else{
-            Toast.makeText(getApplicationContext(), "Teste 5", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(getApplicationContext(), "Teste 5", Toast.LENGTH_SHORT).show();
+            //Snackbar.make(getCurrentFocus(), "Checking GPS", Snackbar.LENGTH_LONG).setAction("Action", null).show();
             LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
 
             if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)){
                 Toast.makeText(this, "GPS is Enabled in your devide", Toast.LENGTH_SHORT).show();
+                if (mMap != null) {
+                    // Access to the location has been granted to the app.
+                    mMap.setMyLocationEnabled(true);
+                    mMap.getUiSettings().setMyLocationButtonEnabled(true);
+                    Toast.makeText(this, "MyLocations", Toast.LENGTH_SHORT).show();
+                }
             }else{
                 showGPSDisabledAlertToUser();
             }
@@ -172,7 +182,7 @@ public class MapsActivity extends FragmentActivity implements
         return false;
     }
 
-    // TODO: 3/7/2017 testar melhor o deny/allow... problema Screen overlay detected... dar zoom no mapa... testar my location!!! 
+    // TODO: 3/7/2017 testar melhor o deny/allow... problema Screen overlay detected... dar zoom no mapa... testar my location!!!
 
     private void showGPSDisabledAlertToUser(){
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this, R.style.Theme_AppCompat_Light_Dialog);

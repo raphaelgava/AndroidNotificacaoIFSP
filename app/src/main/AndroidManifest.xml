@@ -15,8 +15,14 @@
          Google Maps Android API v2, but you must specify either coarse or fine
          location permissions for the 'MyLocation' functionality. 
     -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <!-- Para evitar problema de Screen overlay detected-->
+    <!--
+        http://stackoverflow.com/questions/39174846/screen-overlay-detected-blocks-android-permissions
+        check if you have a Toast visible when interacting with the permissions popup. Though the Overlay Detected popup doesn't mention it, a Toast also counts as an overlay
+        check if any of your dependencies require it.
+    -->
     <uses-permission android:name="manifest.PERMISSION.SYSTEM_ALERT_WINDOW" />
 
     <application
