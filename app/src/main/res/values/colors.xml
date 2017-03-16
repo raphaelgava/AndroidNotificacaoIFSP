@@ -5,4 +5,10 @@
     <color name="colorAccent">#FF4081</color>
     <color name="colorBackgroudCard">#006400</color>
     <color name="colorCell">#ADFF2F</color>
+
+    <color name="colorOptionMap">#D0FFFFFF</color>
+
+    <color name="text_secondary_color_black">#8A000000</color>
+    <color name="colorDivider">#1F000000</color>
+    <color name="color_gray_4E4D50">#4E4D50</color>
 </resources>

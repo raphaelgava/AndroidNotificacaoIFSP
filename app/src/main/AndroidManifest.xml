@@ -17,7 +17,7 @@
     -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <!-- Para evitar problema de Screen overlay detected-->
+    <!-- Para evitar problema de Screen overlay detected -->
     <!--
         http://stackoverflow.com/questions/39174846/screen-overlay-detected-blocks-android-permissions
         check if you have a Toast visible when interacting with the permissions popup. Though the Overlay Detected popup doesn't mention it, a Toast also counts as an overlay
@@ -70,7 +70,8 @@
         <activity
             android:name=".activity.MapsActivity"
             android:label="@string/title_activity_maps"
-            android:theme="@android:style/Theme.Holo.Light.Dialog" />
+            android:theme="@style/Theme_Dialog" />
+        <activity android:name=".activity.RemetentListActivity"></activity>
     </application>
 
 </manifest>

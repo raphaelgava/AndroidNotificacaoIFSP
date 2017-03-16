@@ -1,3 +1,11 @@
 to get SHA to use google maps
 
 keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android -keypass android
+
+
+para criar o arquivo my-release-key.keystore
+keytool -genkey -v -keystore my-release-key.keystore -alias alias_name -keyalg RSA -keysize 2048 -validity 10000
+
+
+para verificar o arquivo
+keytool -list -v -keystore mystore.keystore

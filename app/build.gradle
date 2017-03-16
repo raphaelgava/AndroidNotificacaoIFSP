@@ -1,9 +1,16 @@
 apply plugin: 'com.android.application'
 
 android {
+    signingConfigs {
+        config {
+            keyAlias 'myKey'
+            keyPassword 'masterkey'
+            storeFile file('D:/IFSP/TCC/Android/myStore.jks')
+            storePassword 'masterkey'
+        }
+    }
     compileSdkVersion 24
     buildToolsVersion '25.0.0'
-
     defaultConfig {
         applicationId "br.edu.ifspsaocarlos.sdm.notificacaoifsp"
         minSdkVersion 19
@@ -26,6 +33,10 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.config
+        }
+        debug {
+            signingConfig signingConfigs.config
         }
     }
 }
@@ -33,11 +44,12 @@ android {
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile files('libs/volley.jar')
-
     /*
-        Error:The number of method references in a .dex file cannot exceed 64K.
-        Learn how to resolve this issue at https://developer.android.com/tools/building/multidex.html
-    */
+                Error:The number of method references in a .dex file cannot exceed 64K.
+                Learn how to resolve this issue at https://developer.android.com/tools/building/multidex.html
+            */
+    //https://github.com/TurkiAlkhatib/Material-Color-Picker
+    //compile 'com.turki-alkhateeb:materialcolorpicker:1.0.7'
     compile 'com.android.support:appcompat-v7:24.2.1'
     compile 'com.android.support:design:24.2.1'
     compile 'com.android.support:support-v4:24.2.1'
@@ -46,7 +58,5 @@ dependencies {
     compile 'net.cachapa.expandablelayout:expandablelayout:2.3'
     compile 'com.google.android.gms:play-services:10.2.0'
     compile 'com.android.support:multidex:1.0.1'
-
-    //https://github.com/TurkiAlkhatib/Material-Color-Picker
-    //compile 'com.turki-alkhateeb:materialcolorpicker:1.0.7'
+    //compile 'com.android.support.constraint:constraint-layout:+'
 }

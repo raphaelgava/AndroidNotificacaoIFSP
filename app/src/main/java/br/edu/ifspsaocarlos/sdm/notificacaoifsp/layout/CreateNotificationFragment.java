@@ -9,11 +9,16 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.ShapeDrawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.DatePicker;
+import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
@@ -43,10 +48,21 @@ public class CreateNotificationFragment extends TemplateFragment {
     private TextView tvDate, tvTime;
     private Button btnSave, btnColor;
     private int mYear, mMonth, mDay, mHour, mMinute;
+    private EditText edtDescription;
+    private Spinner spCountries, spBusinessType;
 
     private Calendar c;
     private SimpleDateFormat formatDate;
     private SimpleDateFormat formatTime;
+
+    // TODO: 3/13/2017 FAZER CAMPOS
+//    datahora = models.DateTimeField("Data notificação", auto_now_add=True)  # Field name made lowercase.
+//    id_tipo = models.ForeignKey(TipoNotificacao, verbose_name="Tipo notificação")  # Field name made lowercase.
+//    id_local = models.ForeignKey(Local, verbose_name="Local", blank=True, null=True)  # Field name made lowercase.
+//    descricao = models.CharField("Descrição", max_length=255)  # Field name made lowercase.
+//    titulo = models.CharField("Título", max_length=45)  # Field name made lowercase.
+//    servidor = models.ForeignKey(Servidor)  # Field name made lowercase.
+//    remetente = models.ManyToManyField(Remetente)
 
     public CreateNotificationFragment() {
         // Required empty public constructor
@@ -94,7 +110,6 @@ public class CreateNotificationFragment extends TemplateFragment {
             btnSave = (Button) view.findViewById(R.id.btnSendNotification);
             btnColor = (Button) view.findViewById(R.id.btnColor);
 
-            // TODO: 3/2/2017 esta setando a data de ontem! (1/mar quando já era 2/mar
             tvDate.setText(formatDate.format(c.getTime()));
             tvTime.setText(formatTime.format(c.getTime()));
 
@@ -110,6 +125,51 @@ public class CreateNotificationFragment extends TemplateFragment {
                     onClickMethod(view);
                 }
             });
+
+            edtDescription = (EditText) view.findViewById(R.id.edtDescription);
+            edtDescription.setOnTouchListener(new View.OnTouchListener() {
+                public boolean onTouch(View view, MotionEvent event) {
+                    // TODO Auto-generated method stub
+                    if (view.getId() == R.id.edtDescription) {
+                        view.getParent().requestDisallowInterceptTouchEvent(true);
+                        switch (event.getAction()&MotionEvent.ACTION_MASK){
+                            case MotionEvent.ACTION_UP:
+                                view.getParent().requestDisallowInterceptTouchEvent(false);
+                                break;
+                        }
+                    }
+                    return false;
+                }
+            });
+
+            // TODO: 3/12/2017 ADICIONAR SPINNER PARA FAZER FUNÇÃO DO COMBOBOX DOS ITENS!!!
+
+            // TODO: 3/13/2017 utilizar lista para poder fazer a função do ajax! de ir filtrando!!! 
+            spCountries = (Spinner) view.findViewById(R.id.spCountries);
+            spBusinessType = (Spinner) view.findViewById(R.id.spBussinessType);
+            String businessType[] = { "Automobile", "Food", "Computers", "Education",
+                    "Personal", "Travel" };
+            ArrayAdapter<String> adapterBusinessType;
+            adapterBusinessType = new ArrayAdapter<String>(getContext(), android.R.layout.simple_spinner_item, businessType);
+            adapterBusinessType.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
+            spBusinessType.setAdapter(adapterBusinessType);
+            spCountries.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> adapter, View v,
+                                           int position, long id) {
+                    // On selecting a spinner item
+                    String scountry = adapter.getItemAtPosition(position).toString();
+                    // Showing selected spinner item
+                    Toast.makeText(v.getContext().getApplicationContext(),
+                            "Selected Country : " + scountry, Toast.LENGTH_SHORT).show();
+                }
+                @Override
+                public void onNothingSelected(AdapterView<?> arg0) {
+                    // TODO Auto-generated method stub
+                }
+            });
+
 
             final ImageView shape =  (ImageView) view.findViewById(R.id.imvShape);
             //shape.setBackgroundColor(0xff9C27B0);
@@ -236,7 +296,7 @@ public class CreateNotificationFragment extends TemplateFragment {
             datePickerDialog.getDatePicker().setMinDate(c.getTimeInMillis());
             datePickerDialog.show();
         }
-        //// TODO: 3/2/2017 verificar a hora mínima baseada na data TESTAR!!!!!!
+
         if (v == tvTime){
             // Launch Time Picker Dialog
             TimePickerDialog timePickerDialog = new TimePickerDialog(v.getContext(),

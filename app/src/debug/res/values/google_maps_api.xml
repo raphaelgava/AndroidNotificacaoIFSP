@@ -14,6 +14,9 @@
 
     Once you have your key (it starts with "AIza"), replace the "google_maps_key"
     string in this file.
+
+    To criate the store file and configurate on Android Studio.
+    https://developer.android.com/studio/publish/app-signing.html?hl=pt-br#sign-auto
     -->
     <string name="google_maps_key" templateMergeStrategy="preserve" translatable="false">
         AIzaSyDxTQ3AyRciufC-ew13cC5kY2DIn7nsy64

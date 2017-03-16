@@ -17,6 +17,7 @@ import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,6 +30,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.Manifest;
@@ -41,13 +43,16 @@ public class MapsActivity extends FragmentActivity implements
         ActivityCompat.OnRequestPermissionsResultCallback {
 
     private GoogleMap mMap;
-    private Button botao;
+    private Button botao, btnGoMark;
     private TextView texto;
     private Oferecimento offer;
+    private LatLng position;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        //setTheme(android.R.style.Theme_Holo_Light_Dialog);
         setContentView(R.layout.layout_dialog);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -56,12 +61,13 @@ public class MapsActivity extends FragmentActivity implements
 
         this.setFinishOnTouchOutside(false);
 
+        position = new LatLng(-34, 151);
         offer = (Oferecimento) getIntent().getSerializableExtra("oferecimento");
 
         texto = (TextView) findViewById(R.id.txtParametro);
         texto.bringToFront();
         if (offer != null) {
-            texto.setText(offer.getSigla() + ": esse texto é apenas para eu saber como será distribuido na tela independente do tamanho pois o texto pode ser bem grande vindo do servidor. Ainda assim faltou texto por isso estou adicionando mais algumas palavras de teste.");
+            texto.setText(offer.getSigla() + ": esse texto é apenas para eu saber como será distribuido na tela independente do tamanho pois o texto pode ser bem grande vindo do servidor. Ainda assim faltou texto por isso estou adicionando mais algumas palavras de teste. Parte 22309837542:esse texto é apenas para eu saber como será distribuido na tela independente do tamanho pois o texto pode ser bem grande vindo do servidor. Ainda assim faltou texto por isso estou adicionando mais algumas palavras de teste.");
         }
 
         botao = (Button) findViewById(R.id.btnDialog);
@@ -73,6 +79,16 @@ public class MapsActivity extends FragmentActivity implements
             }
         });
         //enableMyLocation();
+
+        btnGoMark = (Button) findViewById(R.id.btnGoMark);
+        btnGoMark.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mMap != null){
+                    mMap.moveCamera(CameraUpdateFactory.newLatLng(position));
+                }
+            }
+        });
     }
 
 
@@ -91,11 +107,21 @@ public class MapsActivity extends FragmentActivity implements
         mMap = googleMap;
 
         // Add a marker in Sydney and move the camera
-        LatLng sydney = new LatLng(-34, 151);
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+        mMap.addMarker(new MarkerOptions().position(position).title("Marker in Sydney"));
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(position));
 
         mMap.setOnMyLocationButtonClickListener(this);
+
+
+        enableMyLocation();
+
+//        if (flagShowReCenter) {
+//            // Access to the location has been granted to the app.
+//            mMap.setMyLocationEnabled(true);
+//            mMap.getUiSettings().setMyLocationButtonEnabled(true);
+//            //Toast.makeText(this, "MyLocations", Toast.LENGTH_SHORT).show();
+//            Log.d("TCC", "Center maps is visible");
+//        }
     }
 
     /**
@@ -119,11 +145,10 @@ public class MapsActivity extends FragmentActivity implements
         if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
 
-            ActivityCompat.requestPermissions(this,
-                    new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
+            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
                     MY_LOCATION_PERMISSION_REQUEST_CODE);
             //Toast.makeText(getApplicationContext(), "Teste 4", Toast.LENGTH_SHORT).show();
-
+            Log.d("TCC", "Requesting GPS permission");
             /*
             // Should we show an explanation?
             if (ActivityCompat.shouldShowRequestPermissionRationale(this,
@@ -150,28 +175,34 @@ public class MapsActivity extends FragmentActivity implements
             */
         }
         else{
-            //Toast.makeText(getApplicationContext(), "Teste 5", Toast.LENGTH_SHORT).show();
-            //Snackbar.make(getCurrentFocus(), "Checking GPS", Snackbar.LENGTH_LONG).setAction("Action", null).show();
-            LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+            buttonReCenterMaps();
+        }
+    }
 
-            if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)){
-                Toast.makeText(this, "GPS is Enabled in your devide", Toast.LENGTH_SHORT).show();
-                if (mMap != null) {
-                    // Access to the location has been granted to the app.
-                    mMap.setMyLocationEnabled(true);
-                    mMap.getUiSettings().setMyLocationButtonEnabled(true);
-                    Toast.makeText(this, "MyLocations", Toast.LENGTH_SHORT).show();
-                }
-            }else{
-                showGPSDisabledAlertToUser();
+    private void buttonReCenterMaps() {
+        //Toast.makeText(getApplicationContext(), "Teste 5", Toast.LENGTH_SHORT).show();
+        //Snackbar.make(getCurrentFocus(), "Checking GPS", Snackbar.LENGTH_LONG).setAction("Action", null).show();
+        LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+
+        if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)){
+            //Toast.makeText(this, "GPS is Enabled in your devide", Toast.LENGTH_SHORT).show();
+            Log.d("TCC", "GPS is enabled in your devide");
+            if (mMap != null) {
+                // Access to the location has been granted to the app.
+                mMap.setMyLocationEnabled(true);
+                mMap.getUiSettings().setMyLocationButtonEnabled(true);
+                //Toast.makeText(this, "MyLocations", Toast.LENGTH_SHORT).show();
+                Log.d("TCC", "Center maps is visible");
             }
+        }else{
+            showGPSDisabledAlertToUser();
         }
     }
 
     @Override
     public void onResume(){
         super.onResume();
-        enableMyLocation();
+//        enableMyLocation();
     }
 
     @Override
@@ -181,8 +212,6 @@ public class MapsActivity extends FragmentActivity implements
         // (the camera animates to the user's current position).
         return false;
     }
-
-    // TODO: 3/7/2017 testar melhor o deny/allow... problema Screen overlay detected... dar zoom no mapa... testar my location!!!
 
     private void showGPSDisabledAlertToUser(){
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this, R.style.Theme_AppCompat_Light_Dialog);
@@ -214,22 +243,13 @@ public class MapsActivity extends FragmentActivity implements
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    Toast.makeText(getApplicationContext(), "Teste 1", Toast.LENGTH_SHORT).show();
-                    LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-
-                    if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)){
-                        Toast.makeText(this, "GPS is Enabled in your devide", Toast.LENGTH_SHORT).show();
-                    }else{
-                        showGPSDisabledAlertToUser();
-                    }
-                    //final Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                    //startActivity(intent);
-
+                    buttonReCenterMaps();
                     // permission was granted, yay! Do the
                     // contacts-related task you need to do.
 
                 } else {
-                    Toast.makeText(getApplicationContext(), "Teste 2", Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(getApplicationContext(), "Teste 2", Toast.LENGTH_SHORT).show();
+                    Log.d("TCC", "Permission denied");
                     // permission denied, boo! Disable the
                     // functionality that depends on this permission.
                     finish();

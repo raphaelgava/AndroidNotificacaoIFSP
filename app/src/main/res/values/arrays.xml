@@ -8,4 +8,13 @@
         <item>Phd</item>
         <item>Habilitation</item>
     </string-array>
+
+    <string-array name="country_arrays">
+        <item>Technical</item>
+        <item>Graduation</item>
+        <item>Post Graduation</item>
+        <item>Master Degree</item>
+        <item>Phd</item>
+        <item>Habilitation</item>
+    </string-array>
 </resources>

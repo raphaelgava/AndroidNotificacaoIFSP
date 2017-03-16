@@ -8,12 +8,14 @@ import android.support.v4.app.Fragment;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.RadioButton;
 import android.widget.Toast;
 
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.R;
@@ -30,8 +32,8 @@ public class ChangeUserDataFragment extends TemplateFragment{
     private EditText inputEmail, inputPassword, inputConfirm;
     private TextInputLayout inputLayoutEmail, inputLayoutPassword, inputLayoutConfirm;
     private Button btnSignUp;
+    private RadioButton inputMale, inputFemale;
 
-    // TODO: 2/13/2017 acertar ação do radio button (os dois estão ficando selecionados)
     // TODO: 2/13/2017 verificar o tipo de usuário para mostrar as opções para cada tipo (Servidor/Professor)
     public ChangeUserDataFragment() {
         // Required empty public constructor
@@ -68,6 +70,8 @@ public class ChangeUserDataFragment extends TemplateFragment{
             inputEmail = (EditText) view.findViewById(R.id.edtEmail);
             inputPassword = (EditText) view.findViewById(R.id.edtPassword);
             inputConfirm = (EditText) view.findViewById(R.id.edtConfirmPassword);
+            inputMale = (RadioButton) view.findViewById(R.id.rbtMale);
+            inputFemale = (RadioButton) view.findViewById(R.id.rbtFemale);
             btnSignUp = (Button) view.findViewById(R.id.btnSend);
 
             inputEmail.addTextChangedListener(new MyTextWatcher(inputEmail));
@@ -94,7 +98,26 @@ public class ChangeUserDataFragment extends TemplateFragment{
         Toast.makeText(getActivity().getApplicationContext(), R.string.msg_changed, Toast.LENGTH_SHORT).show();
         getActivity().getFragmentManager().popBackStack();
     }
+/*
+    public void onRadioButtonClicked(View view) {
+        // Is the button now checked?
+        boolean checked = ((RadioButton) view).isChecked();
 
+        if (checked) {
+            // Check which radio button was clicked
+            switch (view.getId()) {
+                case R.id.rbtMale:
+                    inputFemale.setChecked(false);
+                        break;
+                case R.id.rbtFemale:
+                    inputMale.setChecked(false);
+                        break;
+                default:
+                    Log.d("TCC", "Sex optiion wrong");
+            }
+        }
+    }
+*/
     private boolean validateEmail() {
         String email = inputEmail.getText().toString().trim();
 

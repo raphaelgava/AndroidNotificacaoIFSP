@@ -86,9 +86,11 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
             serviceIntent = new Intent(this, FetchJSONService.class);
             startService(serviceIntent);
 
-
             Log.d("TCC", token);
-        }// TODO: 1/30/2017 pensar na mensagem caso o token não chegue!!!
+        }
+        else{
+            Snackbar.make(drawer, "Token not received.", Snackbar.LENGTH_INDEFINITE).show();
+        }
     }
 
     @Override

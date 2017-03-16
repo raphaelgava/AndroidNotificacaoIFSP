@@ -40,7 +40,7 @@
             android:layout_margin="16dp"
             android:minHeight="36dp"
             android:padding="8dp"
-            android:text="@string/white" />
+            android:text="@string/set_color" />
     </LinearLayout>
 
 </ScrollView>
