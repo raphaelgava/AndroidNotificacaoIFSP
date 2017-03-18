@@ -4,14 +4,22 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.widget.ArrayAdapter;
+import android.widget.EditText;
+
+import java.util.ArrayList;
 
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.R;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.adapter.RemetentAdapter;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.Remetente;
 
 public class RemetentListActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
     private RemetentAdapter remetentAdapter;
+    private EditText edtResearch;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,10 +35,44 @@ public class RemetentListActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(mLayoutManager);
         recyclerView.setHasFixedSize(false);
 
+        edtResearch = (EditText) findViewById(R.id.edtFind);
+        edtResearch.addTextChangedListener(new TextWatcher() {
+
+            public void afterTextChanged(Editable arg0) {
+                // TODO Auto-generated method stub
+            }
+
+            public void beforeTextChanged(CharSequence arg0, int arg1,
+                                          int arg2, int arg3) {
+                // TODO Auto-generated method stub
+            }
+
+            public void onTextChanged(CharSequence arg0, int arg1, int arg2,
+                                      int arg3) {
+                remetentAdapter.getFilter().filter(arg0.toString());
+            }
+        });
+
 //        fetchUsers();
 //        startMessagesService();
+        createList();
     }
 
+    private ArrayList<Remetente> array;
+    private void createList(){
+        array = new ArrayList<Remetente>();
+        char my = 0x61;
+        for (int i = 0; i < 4; i++){
+            Remetente r = new Remetente();
+            r.setCode(i);
+            r.setDescription(my + "Item " + i);
+            my++;
+            array.add(r);
+        }
+
+        remetentAdapter = new RemetentAdapter(array);
+        recyclerView.setAdapter(remetentAdapter);
+    }
 
 /*
     private void fetchUsers() {

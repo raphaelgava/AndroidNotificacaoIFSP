@@ -48,7 +48,7 @@
                 android:layout_height="50dp"
                 android:background="@drawable/shape_border"
                 android:id="@+id/imvShape"/>
-
+<!--
             <Spinner
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -64,11 +64,17 @@
                 android:prompt="@string/business_prompt"
                 style="@style/Base.Widget.AppCompat.Spinner.Underlined">
             </Spinner>
-
+-->
             <Button
                 android:id="@+id/btnColor"
                 android:layout_width="match_parent"
                 android:text="Set Color"
+                android:layout_height="wrap_content" />
+
+            <Button
+                android:id="@+id/btnRemetent"
+                android:layout_width="match_parent"
+                android:text="Set Remetent"
                 android:layout_height="wrap_content" />
 
             <Button

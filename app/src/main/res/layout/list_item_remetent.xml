@@ -4,8 +4,9 @@
     android:layout_width="match_parent"
     android:layout_height="72dp"
     android:layout_centerVertical="true"
+    android:id="@+id/llRemetentList"
     android:background="?android:attr/selectableItemBackground">
-
+<!--
     <LinearLayout
         android:id="@+id/llRemetentList"
         android:layout_width="match_parent"
@@ -32,7 +33,45 @@
             android:layout_height="wrap_content"
             android:text="Description" />
     </LinearLayout>
+-->
+    <TextView
+        android:id="@+id/txtBase"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_margin="5dp"
+        android:textSize="18sp" />
 
+    <TextView
+        android:id="@+id/txtRemetentCode"
+        style="@style/list_item_primary_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Code"
+        android:layout_alignBaseline="@+id/txtBase"
+        android:layout_alignBottom="@+id/txtBase"
+        android:layout_alignParentRight="true"
+        android:layout_toRightOf="@+id/txtBase"
+        android:textSize="18sp" />
+
+
+    <TextView
+        android:id="@+id/txtRemetentDesc"
+        style="@style/list_item_secondary_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Description"
+        android:layout_alignLeft="@+id/txtRemetentCode"
+        android:layout_below="@+id/txtBase" />
+
+    <CheckBox
+        android:id="@+id/chec_seleciona_pessoa"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/txtRemetentDesc"
+        android:layout_alignRight="@+id/txtRemetentCode"
+        android:layout_margin="5dp"/>
     <View
         style="@style/divider"
         android:layout_alignParentBottom="true" />

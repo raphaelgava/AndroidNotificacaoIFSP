@@ -9,7 +9,7 @@ import java.io.Serializable;
 public class Remetente implements Serializable {
     public static final long  serialVersionUID = 100L;
     private int code;
-    private String descrption;
+    private String description;
 
     public Remetente() {
     }
@@ -22,11 +22,11 @@ public class Remetente implements Serializable {
         this.code = code;
     }
 
-    public String getDescrption() {
-        return descrption;
+    public String getDescription() {
+        return description;
     }
 
-    public void setDescrption(String descrption) {
-        this.descrption = descrption;
+    public void setDescription(String descrption) {
+        this.description = descrption;
     }
 }

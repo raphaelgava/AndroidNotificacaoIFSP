@@ -3,11 +3,13 @@ package br.edu.ifspsaocarlos.sdm.notificacaoifsp.layout;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.ShapeDrawable;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -30,6 +32,7 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.R;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.activity.RemetentListActivity;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.color.MyColorChosserDialog;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.color.MyColorListener;
 
@@ -45,11 +48,13 @@ import static android.app.DatePickerDialog.OnDateSetListener;
  */
 public class CreateNotificationFragment extends TemplateFragment {
 
+    private final int RESULT_REMETENT_ACTIVITY = 1;
+
     private TextView tvDate, tvTime;
-    private Button btnSave, btnColor;
+    private Button btnSave, btnColor, btnRemetent;
     private int mYear, mMonth, mDay, mHour, mMinute;
     private EditText edtDescription;
-    private Spinner spCountries, spBusinessType;
+    //private Spinner spCountries, spBusinessType;
 
     private Calendar c;
     private SimpleDateFormat formatDate;
@@ -109,6 +114,7 @@ public class CreateNotificationFragment extends TemplateFragment {
             tvTime = (TextView) view.findViewById(R.id.txtInTime);
             btnSave = (Button) view.findViewById(R.id.btnSendNotification);
             btnColor = (Button) view.findViewById(R.id.btnColor);
+            btnRemetent = (Button) view.findViewById(R.id.btnRemetent);
 
             tvDate.setText(formatDate.format(c.getTime()));
             tvTime.setText(formatTime.format(c.getTime()));
@@ -144,7 +150,8 @@ public class CreateNotificationFragment extends TemplateFragment {
 
             // TODO: 3/12/2017 ADICIONAR SPINNER PARA FAZER FUNÇÃO DO COMBOBOX DOS ITENS!!!
 
-            // TODO: 3/13/2017 utilizar lista para poder fazer a função do ajax! de ir filtrando!!! 
+            // TODO: 3/13/2017 utilizar lista para poder fazer a função do ajax! de ir filtrando!!!
+            /*
             spCountries = (Spinner) view.findViewById(R.id.spCountries);
             spBusinessType = (Spinner) view.findViewById(R.id.spBussinessType);
             String businessType[] = { "Automobile", "Food", "Computers", "Education",
@@ -169,6 +176,16 @@ public class CreateNotificationFragment extends TemplateFragment {
                     // TODO Auto-generated method stub
                 }
             });
+            */
+            btnRemetent.setOnClickListener(new View.OnClickListener(){
+                public void onClick(View view){
+                    Intent intent = new Intent(view.getContext(),RemetentListActivity.class);
+                    startActivityForResult(intent, RESULT_REMETENT_ACTIVITY);
+                }
+            });
+            // TODO: 3/18/2017 chcekbox nos itens da lista para representar o para quem será enviado 
+            // TODO: 3/18/2017 acertar quadradinho representando a cor  
+            // TODO: 3/18/2017 pensar no esquema do servidor igual ao que o professor tinha feito de pegar dados a partir do ultimo item reccebido apenas
 
 
             final ImageView shape =  (ImageView) view.findViewById(R.id.imvShape);
@@ -219,27 +236,6 @@ public class CreateNotificationFragment extends TemplateFragment {
                 images.add(BlueGray);
                 images.add(Black);
                 images.add(White);
-                    images.add(red);
-                    images.add(pink);
-                    images.add(Purple);
-                    images.add(DeepPurple);
-                    images.add(Indigo);
-                    images.add(Blue);
-                    images.add(LightBlue);
-                    images.add(Cyan);
-                    images.add(Teal);
-                    images.add(Green);
-                    images.add(LightGreen);
-                    images.add(Lime);
-                    images.add(Yellow);
-                    images.add(Amber);
-                    images.add(Orange);
-                    images.add(DeepOrange);
-                    images.add(Brown);
-                    images.add(Grey);
-                    images.add(BlueGray);
-                    images.add(Black);
-                    images.add(White);
 
                 MyColorChosserDialog dialog = new MyColorChosserDialog(view.getContext(), images);
                 dialog.setTitle("teste");
@@ -266,6 +262,20 @@ public class CreateNotificationFragment extends TemplateFragment {
             });
         }
         return view;
+    }
+
+    public void onActivityResult(int requestCode, int resultCode, Intent data)
+    {
+        super.onActivityResult(requestCode, resultCode, data);
+        // check if the request code is same as what is passed  here it is 2
+        switch (requestCode){
+            case RESULT_REMETENT_ACTIVITY:
+                //String message=data.getStringExtra("MESSAGE");
+                //textView1.setText(message);
+                break;
+            default:
+                Log.d("TCC", "Activity Result wrong");
+        }
     }
 
     /**
