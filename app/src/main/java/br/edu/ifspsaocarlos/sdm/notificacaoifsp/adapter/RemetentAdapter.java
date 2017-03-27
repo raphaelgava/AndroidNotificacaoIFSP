@@ -2,14 +2,15 @@ package br.edu.ifspsaocarlos.sdm.notificacaoifsp.adapter;
 
 import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.Filter;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-
 
 import java.util.ArrayList;
 import java.util.List;
@@ -91,6 +92,9 @@ public class RemetentAdapter extends RecyclerView.Adapter<RemetentAdapter.ItemVi
             //Setar os valores conforme a grid faz scroll
             holder.txtCode.setText(Integer.toString((remetente.getCode())));
             holder.txtDescription.setText(remetente.getDescription());
+            holder.ckbSelected.setChecked(remetente.isChecked());
+            //set position to identify which object was selected
+            holder.ckbSelected.setTag(position);
             holder.mLayoutPrincipal.setTag(position);
         }
     }
@@ -105,24 +109,41 @@ public class RemetentAdapter extends RecyclerView.Adapter<RemetentAdapter.ItemVi
         private RelativeLayout mLayoutPrincipal;
         private TextView txtCode;
         private TextView txtDescription;
+        private CheckBox ckbSelected;
 
         public ItemViewHolder(final View itemView) {
             super(itemView);
 
             txtCode = (TextView) itemView.findViewById(R.id.txtRemetentCode);
             txtDescription = (TextView) itemView.findViewById(R.id.txtRemetentDesc);
+            ckbSelected = (CheckBox) itemView.findViewById(R.id.ckbSelected);
+            ckbSelected.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    //It was used onClick instead of onCheckedChanged because it is making problem when setChecked
+                    selectItem(v);
+                }
+            });
+
             mLayoutPrincipal = (RelativeLayout) itemView.findViewById(R.id.llRemetentList);
             mLayoutPrincipal.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Remetente remetente = mListaRemetentes.get((Integer) v.getTag());
-                    if (remetente != null) {
-                        Intent intent = new Intent(v.getContext(), RemetentListActivity.class);
-                        intent.putExtra("remetente", remetente);
-                        v.getContext().startActivity(intent);
-                    }
+                    selectItem(v);
                 }
             });
+        }
+
+        private void selectItem(View v) {
+            Remetente remetente = mListaRemetentes.get((Integer) v.getTag());
+            if(remetente != null)
+            {
+                if (remetente.isChecked() == ckbSelected.isChecked()) {
+                    //it means that layout was toched
+                    ckbSelected.setChecked(!ckbSelected.isChecked());
+                }
+                remetente.setChecked(ckbSelected.isChecked());
+            }
         }
     }
 }

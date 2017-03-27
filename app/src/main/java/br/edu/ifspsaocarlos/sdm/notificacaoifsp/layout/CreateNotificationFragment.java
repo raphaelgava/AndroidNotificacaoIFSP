@@ -1,5 +1,6 @@
 package br.edu.ifspsaocarlos.sdm.notificacaoifsp.layout;
 
+import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.Context;
@@ -7,13 +8,17 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.LayerDrawable;
 import android.graphics.drawable.ShapeDrawable;
 import android.os.Bundle;
+import android.support.design.widget.TextInputLayout;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -35,6 +40,7 @@ import br.edu.ifspsaocarlos.sdm.notificacaoifsp.R;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.activity.RemetentListActivity;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.color.MyColorChosserDialog;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.color.MyColorListener;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.Remetente;
 
 import static android.app.DatePickerDialog.OnDateSetListener;
 
@@ -50,10 +56,11 @@ public class CreateNotificationFragment extends TemplateFragment {
 
     private final int RESULT_REMETENT_ACTIVITY = 1;
 
-    private TextView tvDate, tvTime;
-    private Button btnSave, btnColor, btnRemetent;
+    private TextView tvDate, tvTime, tvType;
+    private Button btnSave, btnRemetent;
     private int mYear, mMonth, mDay, mHour, mMinute;
-    private EditText edtDescription;
+    private EditText edtDescription, edtTitle;
+    private TextInputLayout txtTitle, txtDescription;
     //private Spinner spCountries, spBusinessType;
 
     private Calendar c;
@@ -61,13 +68,9 @@ public class CreateNotificationFragment extends TemplateFragment {
     private SimpleDateFormat formatTime;
 
     // TODO: 3/13/2017 FAZER CAMPOS
-//    datahora = models.DateTimeField("Data notificação", auto_now_add=True)  # Field name made lowercase.
-//    id_tipo = models.ForeignKey(TipoNotificacao, verbose_name="Tipo notificação")  # Field name made lowercase.
+    //// TODO: 3/27/2017 criar esquema de setar o local pelo marker (save the state of mapFragment - maps example) 
 //    id_local = models.ForeignKey(Local, verbose_name="Local", blank=True, null=True)  # Field name made lowercase.
-//    descricao = models.CharField("Descrição", max_length=255)  # Field name made lowercase.
-//    titulo = models.CharField("Título", max_length=45)  # Field name made lowercase.
-//    servidor = models.ForeignKey(Servidor)  # Field name made lowercase.
-//    remetente = models.ManyToManyField(Remetente)
+
 
     public CreateNotificationFragment() {
         // Required empty public constructor
@@ -113,7 +116,7 @@ public class CreateNotificationFragment extends TemplateFragment {
             tvDate = (TextView) view.findViewById(R.id.txtInDate);
             tvTime = (TextView) view.findViewById(R.id.txtInTime);
             btnSave = (Button) view.findViewById(R.id.btnSendNotification);
-            btnColor = (Button) view.findViewById(R.id.btnColor);
+            tvType = (TextView) view.findViewById(R.id.txtCor);
             btnRemetent = (Button) view.findViewById(R.id.btnRemetent);
 
             tvDate.setText(formatDate.format(c.getTime()));
@@ -132,6 +135,9 @@ public class CreateNotificationFragment extends TemplateFragment {
                 }
             });
 
+            txtDescription = (TextInputLayout) view.findViewById(R.id.txtDescription);
+            txtTitle = (TextInputLayout) view.findViewById(R.id.txtTitle);
+
             edtDescription = (EditText) view.findViewById(R.id.edtDescription);
             edtDescription.setOnTouchListener(new View.OnTouchListener() {
                 public boolean onTouch(View view, MotionEvent event) {
@@ -148,9 +154,8 @@ public class CreateNotificationFragment extends TemplateFragment {
                 }
             });
 
-            // TODO: 3/12/2017 ADICIONAR SPINNER PARA FAZER FUNÇÃO DO COMBOBOX DOS ITENS!!!
+            edtTitle = (EditText) view.findViewById(R.id.edtTitle);
 
-            // TODO: 3/13/2017 utilizar lista para poder fazer a função do ajax! de ir filtrando!!!
             /*
             spCountries = (Spinner) view.findViewById(R.id.spCountries);
             spBusinessType = (Spinner) view.findViewById(R.id.spBussinessType);
@@ -183,14 +188,13 @@ public class CreateNotificationFragment extends TemplateFragment {
                     startActivityForResult(intent, RESULT_REMETENT_ACTIVITY);
                 }
             });
-            // TODO: 3/18/2017 chcekbox nos itens da lista para representar o para quem será enviado 
-            // TODO: 3/18/2017 acertar quadradinho representando a cor  
             // TODO: 3/18/2017 pensar no esquema do servidor igual ao que o professor tinha feito de pegar dados a partir do ultimo item reccebido apenas
 
 
-            final ImageView shape =  (ImageView) view.findViewById(R.id.imvShape);
-            //shape.setBackgroundColor(0xff9C27B0);
-            btnColor.setOnClickListener(new View.OnClickListener(){
+            //final ImageView shape =  (ImageView) view.findViewById(R.id.imvShape);
+            final GradientDrawable bgDrawable = (GradientDrawable) tvType.getBackground();
+
+            tvType.setOnClickListener(new View.OnClickListener(){
                 public void onClick(View view){
                 ArrayList<Integer> images = new ArrayList<Integer>();
 
@@ -245,8 +249,9 @@ public class CreateNotificationFragment extends TemplateFragment {
                         //do whatever you want to with the values
 
                         //back.setColorFilter(color, PorterDuff.Mode.SRC);
-                        //shape.setBackground(back);
-                        shape.setBackgroundColor(color);
+                        //shape.setBackgroundColor(color);
+                        bgDrawable.setColor(color);
+
                         Toast.makeText(v.getContext(), "oi", Toast.LENGTH_LONG).show();
                     }
                 });
@@ -270,6 +275,13 @@ public class CreateNotificationFragment extends TemplateFragment {
         // check if the request code is same as what is passed  here it is 2
         switch (requestCode){
             case RESULT_REMETENT_ACTIVITY:
+                if (resultCode == Activity.RESULT_OK){
+                    ArrayList<Remetente> array = (ArrayList<Remetente>) data.getSerializableExtra("remententList");
+
+                    for (int i = 0; i < array.size(); i++) {
+                        Log.d("TCC", array.get(i).getDescription());
+                    }
+                }
                 //String message=data.getStringExtra("MESSAGE");
                 //textView1.setText(message);
                 break;
@@ -281,13 +293,62 @@ public class CreateNotificationFragment extends TemplateFragment {
     /**
      * Validating form
      */
-    private void submitForm() {
-//        if ((!validateEmail()) || (!validatePassword())) {
-//            return;
-//        }
-        Toast.makeText(getActivity().getApplicationContext(), R.string.msg_changed, Toast.LENGTH_SHORT).show();
+    public void submitForm() {
+        if ((!validateTitle()) || (!validateDescription()) || (!validateRemetent())) {
+            return;
+        }
+        Toast.makeText(getActivity().getApplicationContext(), R.string.msg_send_notification, Toast.LENGTH_SHORT).show();
         getActivity().getFragmentManager().popBackStack();
     }
+
+    private boolean validateTitle(){
+        String title = edtTitle.getText().toString().trim();
+
+        if (title.isEmpty()) {
+            txtTitle.setError(getString(R.string.error_invalid_title));
+            requestFocus(txtTitle);
+            return false;
+        } else {
+            txtTitle.setErrorEnabled(false);
+        }
+
+        return true;
+    }
+
+    private boolean validateDescription(){
+        String title = edtDescription.getText().toString().trim();
+
+        if (title.isEmpty()) {
+            txtDescription.setError(getString(R.string.error_invalid_description));
+            requestFocus(txtDescription);
+            return false;
+        } else {
+            txtDescription.setErrorEnabled(false);
+        }
+
+        return true;
+    }
+
+    private boolean validateRemetent(){
+        String title = edtDescription.getText().toString().trim();
+
+        if (title.isEmpty()) {
+            txtDescription.setError(getString(R.string.error_invalid_description));
+            requestFocus(txtDescription);
+            return false;
+        } else {
+            txtDescription.setErrorEnabled(false);
+        }
+
+        return true;
+    }
+
+    private void requestFocus(View view) {
+        if (view.requestFocus()) {
+            getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+        }
+    }
+
 
     public void onClickMethod(View v) {
         if (v == tvDate){

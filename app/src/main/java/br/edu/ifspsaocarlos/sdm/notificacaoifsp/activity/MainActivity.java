@@ -18,6 +18,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.WindowManager;
+import android.widget.Toast;
 
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.R;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.layout.ChangeUserDataFragment;
@@ -34,6 +35,8 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
     private Intent serviceIntent;
 
     private FloatingActionButton fab;
+
+    private final String TAG_FRAG_CREATE_NOTIFICATION = "tagNotification";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,7 +92,7 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
             Log.d("TCC", token);
         }
         else{
-            Snackbar.make(drawer, "Token not received.", Snackbar.LENGTH_INDEFINITE).show();
+            //Snackbar.make(drawer, "Token not received.", Snackbar.LENGTH_INDEFINITE).show();
         }
     }
 
@@ -131,6 +134,7 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
+        //https://developer.android.com/studio/write/vector-asset-studio.html#running -> mudar ícones
         if (id == R.id.nav_class_schedule) {
             // Handle the camera action
             fragmentManager.beginTransaction().replace(R.id.content_frame,
@@ -140,16 +144,17 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
             fragmentManager.beginTransaction().replace(R.id.content_frame,
                     ChangeUserDataFragment.newInstance(null, null)).commit();
             fab.setVisibility(View.INVISIBLE);
-        } else if (id == R.id.nav_slideshow) {
+        } else if (id == R.id.nav_notification) {
             fragmentManager.beginTransaction().replace(R.id.content_frame,
-                    CreateNotificationFragment.newInstance(null, null)).commit();
+                    CreateNotificationFragment.newInstance(null, null), TAG_FRAG_CREATE_NOTIFICATION).commit();
             fab.setVisibility(View.INVISIBLE);
-        } else if (id == R.id.nav_manage) {
-
-        } else if (id == R.id.nav_share) {
-
         } else if (id == R.id.nav_send) {
-
+            CreateNotificationFragment myFragment = (CreateNotificationFragment) fragmentManager.findFragmentByTag(TAG_FRAG_CREATE_NOTIFICATION);
+            if (myFragment != null && myFragment.isVisible()) {
+                myFragment.submitForm();
+            }else{
+                Toast.makeText(getApplicationContext(), R.string.msg_not_creating_notification, Toast.LENGTH_SHORT).show();
+            }
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);

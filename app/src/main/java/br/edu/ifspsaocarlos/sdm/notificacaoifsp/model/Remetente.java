@@ -10,6 +10,7 @@ public class Remetente implements Serializable {
     public static final long  serialVersionUID = 100L;
     private int code;
     private String description;
+    private boolean checked;
 
     public Remetente() {
     }
@@ -28,5 +29,13 @@ public class Remetente implements Serializable {
 
     public void setDescription(String descrption) {
         this.description = descrption;
+    }
+
+    public boolean isChecked() {
+        return checked;
+    }
+
+    public void setChecked(boolean checked) {
+        this.checked = checked;
     }
 }

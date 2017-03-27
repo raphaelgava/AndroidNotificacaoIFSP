@@ -1,12 +1,14 @@
 package br.edu.ifspsaocarlos.sdm.notificacaoifsp.activity;
 
-import android.support.v7.app.AppCompatActivity;
+import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.widget.ArrayAdapter;
+import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 
 import java.util.ArrayList;
@@ -20,6 +22,7 @@ public class RemetentListActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private RemetentAdapter remetentAdapter;
     private EditText edtResearch;
+    private Button btnEndRemetent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,9 +31,9 @@ public class RemetentListActivity extends AppCompatActivity {
 
         LinearLayoutManager mLayoutManager = new LinearLayoutManager(this);
         recyclerView = (RecyclerView) findViewById(R.id.recyclerList);
-        /**
-         * O erro: No adapter attached; skipping layout. Acontece pois não esta setando o adapter
-         * antes do layoutmanager.
+        /*
+          O erro: No adapter attached; skipping layout. Acontece pois não esta setando o adapter
+          antes do layoutmanager.
          */
         recyclerView.setLayoutManager(mLayoutManager);
         recyclerView.setHasFixedSize(false);
@@ -53,11 +56,27 @@ public class RemetentListActivity extends AppCompatActivity {
             }
         });
 
+        btnEndRemetent = (Button) findViewById(R.id.btnEndRemetent) ;
+        btnEndRemetent.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent data = new Intent();
+                data.putExtra("remententList", array);
+                setResult(RESULT_OK, data);
+                finish();            }
+        });
+
 //        fetchUsers();
 //        startMessagesService();
         createList();
     }
+/*
+    @Override
+    protected void onPostCreate(Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
 
+    }
+*/
     private ArrayList<Remetente> array;
     private void createList(){
         array = new ArrayList<Remetente>();
