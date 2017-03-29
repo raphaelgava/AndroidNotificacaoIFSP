@@ -68,7 +68,7 @@ public class CreateNotificationFragment extends TemplateFragment {
     private SimpleDateFormat formatTime;
 
     // TODO: 3/13/2017 FAZER CAMPOS
-    //// TODO: 3/27/2017 criar esquema de setar o local pelo marker (save the state of mapFragment - maps example) 
+    //// TODO: 3/27/2017 criar esquema de setar o local pelo marker (save the state of mapFragment - maps example)
 //    id_local = models.ForeignKey(Local, verbose_name="Local", blank=True, null=True)  # Field name made lowercase.
 
 

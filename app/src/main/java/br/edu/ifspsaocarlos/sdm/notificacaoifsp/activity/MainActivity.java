@@ -27,6 +27,8 @@ import br.edu.ifspsaocarlos.sdm.notificacaoifsp.layout.GridNotificationsFragment
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.layout.TemplateFragment;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.service.FetchJSONService;
 
+import static java.security.AccessController.getContext;
+
 public class MainActivity extends AppCompatActivity implements OnNavigationItemSelectedListener,
         TemplateFragment.OnFragmentInteractionListener{
 
@@ -121,7 +123,9 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_about) {
+            Intent intentNovo = new Intent(this, AboutActivity.class);
+            startActivity(intentNovo);
             return true;
         }
 
