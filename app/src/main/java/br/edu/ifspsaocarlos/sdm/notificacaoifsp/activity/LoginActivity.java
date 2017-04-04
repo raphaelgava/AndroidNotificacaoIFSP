@@ -70,8 +70,8 @@ public class LoginActivity extends AppCompatActivity {
         });
 
 
-        Button mEmailSignInButton = (Button) findViewById(R.id.email_sign_in_button);
-        mEmailSignInButton.setOnClickListener(new OnClickListener() {
+        Button btnSignInButton = (Button) findViewById(R.id.btnSign_in_button);
+        btnSignInButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
                 attemptLogin();
@@ -168,19 +168,43 @@ public class LoginActivity extends AppCompatActivity {
                             public void onResponse(JSONObject s) {
                                 showProgress(false);
                                 try {
-                                    String token;
+                                    // TODO: 4/2/2017 O maps pra inserir um marker tem que pressionar e segurar!!!
 
-                                    token = s.getString(getString(R.string.json_token));
-                                    Intent inicio = new Intent(LoginActivity.this, MainActivity.class);
-                                    inicio.putExtra(getString(R.string.json_token), token);
-                                    startActivity(inicio);
+                                    if ((s.has(getString(R.string.json_token)) && (!s.isNull(getString(R.string.json_token)))) &&
+                                        (s.has(getString(R.string.json_id)) && (!s.isNull(getString(R.string.json_id)))) &&
+                                        (s.has(getString(R.string.json_group)) && (!s.isNull(getString(R.string.json_group))))){
+
+                                        String token;
+                                        Integer id;
+                                        String group;
+
+                                        token = s.getString(getString(R.string.json_token));
+                                        id = s.getInt(getString(R.string.json_id));
+                                        group = s.getString(getString(R.string.json_group));
+
+                                        Intent inicio = new Intent(LoginActivity.this, MainActivity.class);
+                                        inicio.putExtra(getString(R.string.json_token), token);
+                                        inicio.putExtra(getString(R.string.json_id), id);
+                                        inicio.putExtra(getString(R.string.json_group), group);
+                                        inicio.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                                        startActivity(inicio);
+                                    }else{
+                                        Log.e("SDM", "nas entradas do user");
+                                        Toast.makeText(LoginActivity.this, "Missing some user data",
+                                                Toast.LENGTH_SHORT).show();
+                                    }
                                 } catch (JSONException e) {
                                     e.printStackTrace();
+                                    Toast.makeText(LoginActivity.this, "Error during receive json data: " + e.toString(),
+                                            Toast.LENGTH_SHORT).show();
+                                }catch(Exception e){
+                                    Toast.makeText(LoginActivity.this, "Error during receive data: " + e.toString(),
+                                            Toast.LENGTH_SHORT).show();
                                 }
                             }
                         }, new Response.ErrorListener() {
                     public void onErrorResponse(VolleyError volleyError) {
-                        Toast.makeText(LoginActivity.this, "Erro na recuperação do usuário",
+                        Toast.makeText(LoginActivity.this, "Error during authenticate user.",
                                 Toast.LENGTH_SHORT).show();
                         showProgress(false);
                     }
@@ -188,6 +212,8 @@ public class LoginActivity extends AppCompatActivity {
                 queue.add(jsonObjectRequest);
             } catch (Exception e) {
                 Log.e("SDM", "Erro na leitura de mensagens");
+                Toast.makeText(LoginActivity.this, "Error during sending authentication: " + e.toString(),
+                        Toast.LENGTH_SHORT).show();
             }
         }
     }

@@ -141,41 +141,42 @@ public class MapsActivity extends FragmentActivity implements
      * Enables the My Location layer if the fine location permission has been granted.
      */
     private void enableMyLocation() {
-        // Here, thisActivity is the current activity
-        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
+        if (mMap != null) {
+            // Here, thisActivity is the current activity
+            if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)
+                    != PackageManager.PERMISSION_GRANTED) {
 
-            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
-                    MY_LOCATION_PERMISSION_REQUEST_CODE);
-            //Toast.makeText(getApplicationContext(), "Teste 4", Toast.LENGTH_SHORT).show();
-            Log.d("TCC", "Requesting GPS permission");
-            /*
-            // Should we show an explanation?
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
-                    android.Manifest.permission.ACCESS_FINE_LOCATION)) {
-
-                // Show an expanation to the user *asynchronously* -- don't block
-                // this thread waiting for the user's response! After the user
-                // sees the explanation, try again to request the permission.
-                Toast.makeText(getApplicationContext(), "Teste 3", Toast.LENGTH_SHORT).show();
-
-            } else {
-
-                // No explanation needed, we can request the permission.
-
-                ActivityCompat.requestPermissions(this,
-                        new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
+                ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
                         MY_LOCATION_PERMISSION_REQUEST_CODE);
-                Toast.makeText(getApplicationContext(), "Teste 4", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(getApplicationContext(), "Teste 4", Toast.LENGTH_SHORT).show();
+                Log.d("TCC", "Requesting GPS permission");
+                /*
+                // Should we show an explanation?
+                if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                        android.Manifest.permission.ACCESS_FINE_LOCATION)) {
 
-                // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
-                // app-defined int constant. The callback method gets the
-                // result of the request.
+                    // Show an expanation to the user *asynchronously* -- don't block
+                    // this thread waiting for the user's response! After the user
+                    // sees the explanation, try again to request the permission.
+                    Toast.makeText(getApplicationContext(), "Teste 3", Toast.LENGTH_SHORT).show();
+
+                } else {
+
+                    // No explanation needed, we can request the permission.
+
+                    ActivityCompat.requestPermissions(this,
+                            new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
+                            MY_LOCATION_PERMISSION_REQUEST_CODE);
+                    Toast.makeText(getApplicationContext(), "Teste 4", Toast.LENGTH_SHORT).show();
+
+                    // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
+                    // app-defined int constant. The callback method gets the
+                    // result of the request.
+                }
+                */
+            } else {
+                buttonReCenterMaps();
             }
-            */
-        }
-        else{
-            buttonReCenterMaps();
         }
     }
 
@@ -202,7 +203,7 @@ public class MapsActivity extends FragmentActivity implements
     @Override
     public void onResume(){
         super.onResume();
-//        enableMyLocation();
+        enableMyLocation();
     }
 
     @Override
@@ -221,14 +222,15 @@ public class MapsActivity extends FragmentActivity implements
                         new DialogInterface.OnClickListener(){
                             public void onClick(DialogInterface dialog, int id){
                                 Intent callGPSSettingIntent = new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                                //callGPSSettingIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                                 startActivity(callGPSSettingIntent);
                             }
                         });
         alertDialogBuilder.setNegativeButton("Cancel",
                 new DialogInterface.OnClickListener(){
                     public void onClick(DialogInterface dialog, int id){
-                        finish();
                         dialog.cancel();
+                        finish();
                     }
                 });
         AlertDialog alert = alertDialogBuilder.create();

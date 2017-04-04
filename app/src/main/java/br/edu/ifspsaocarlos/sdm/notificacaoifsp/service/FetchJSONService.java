@@ -50,6 +50,7 @@ public class FetchJSONService extends Service implements Runnable {
         while (appAberta) {
             try {
                 Thread.sleep(getResources().getInteger(R.integer.tempo_inatividade_servico));
+                // TODO: 3/29/2017 se precisar pensar num esquema de enumeration pra definir o que sera buscado pela thread!!
                 buscarNotificacao();
 //                if (!primeiraBusca && novoNumeroContatos != ultimoNumeroContatos) {
 //                    NotificationManager nm = (NotificationManager)

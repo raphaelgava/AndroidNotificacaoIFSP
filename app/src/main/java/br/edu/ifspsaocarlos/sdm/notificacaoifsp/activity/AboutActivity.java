@@ -17,14 +17,14 @@ public class AboutActivity extends AppCompatActivity {
         setContentView(R.layout.activity_about);
 
         // setup toolBar
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);//to show the back button on the actionbar
         getSupportActionBar().setTitle("");
         getSupportActionBar().setElevation(0f);
     }
 
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case android.R.id.home:
+            case android.R.id.home:// back button on action bar
                 // app icon in action bar clicked; goto parent activity.
                 this.finish();
                 return true;

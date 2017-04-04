@@ -82,6 +82,8 @@ public class CustomGrid extends RecyclerView.Adapter<CustomGrid.ItemViewHolder> 
 
                     Intent intent = new Intent(v.getContext(), MapsActivity.class);
                     intent.putExtra("oferecimento", offer);
+                    //Não pode inserir essa opção aqui pois se cancelar o pedido de GPS vai fechar a app!!!
+                    //intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     v.getContext().startActivity(intent);
 /*
                     Oferecimento offer = mListaOferecimentos.get((Integer) v.getTag());

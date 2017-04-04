@@ -1,5 +1,6 @@
 package br.edu.ifspsaocarlos.sdm.notificacaoifsp.activity;
 
+import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -88,6 +89,9 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
         token = getIntent().getStringExtra(getString(R.string.json_token));
 
         if (token != null) {
+            String toast = getIntent().getIntExtra(getString(R.string.json_id), 0) + " - " + getIntent().getStringExtra(getString(R.string.json_group));
+            Toast.makeText(MainActivity.this, toast,
+                    Toast.LENGTH_SHORT).show();
             serviceIntent = new Intent(this, FetchJSONService.class);
             startService(serviceIntent);
 
@@ -98,14 +102,29 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
         }
     }
 
+    public void onDestroy(){
+        if (serviceIntent != null) {
+            stopService(serviceIntent);
+        }
+        super.onDestroy();
+    }
+
     @Override
     public void onBackPressed() {
+
+        if (fragmentManager.getBackStackEntryCount() == 0) {
+            moveTaskToBack(true); // faz com que não volte para a tela de login!!!!
+            //this.finish();
+        } else {
+            fragmentManager.popBackStack();
+        }
+        /*
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
             moveTaskToBack(true); // faz com que não volte para a tela de login!!!!
-        }
+        }*/
     }
 
     @Override
@@ -125,6 +144,8 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_about) {
             Intent intentNovo = new Intent(this, AboutActivity.class);
+            //Não pode inserir essa opção pois se não, fecha a aplicação!!!
+            //intentNovo.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intentNovo);
             return true;
         }
@@ -138,19 +159,29 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
+        // Create new fragment and transaction
+        android.support.v4.app.FragmentTransaction transaction = fragmentManager.beginTransaction();
+
         //https://developer.android.com/studio/write/vector-asset-studio.html#running -> mudar ícones
         if (id == R.id.nav_class_schedule) {
-            // Handle the camera action
             fragmentManager.beginTransaction().replace(R.id.content_frame,
                     GridNotificationsFragment.newInstance(null, null)).commit();
             fab.setVisibility(View.VISIBLE);
         } else if (id == R.id.nav_user_data) {
-            fragmentManager.beginTransaction().replace(R.id.content_frame,
-                    ChangeUserDataFragment.newInstance(null, null)).commit();
+            transaction.replace(R.id.content_frame,
+                    ChangeUserDataFragment.newInstance(null, null));
+            transaction.addToBackStack(null);
+            transaction.commit();
+//            fragmentManager.beginTransaction().replace(R.id.content_frame,
+//                    ChangeUserDataFragment.newInstance(null, null)).commit();
             fab.setVisibility(View.INVISIBLE);
         } else if (id == R.id.nav_notification) {
-            fragmentManager.beginTransaction().replace(R.id.content_frame,
-                    CreateNotificationFragment.newInstance(null, null), TAG_FRAG_CREATE_NOTIFICATION).commit();
+            transaction.replace(R.id.content_frame,
+                    CreateNotificationFragment.newInstance(null, null));
+            transaction.addToBackStack(null);
+            transaction.commit();
+//            fragmentManager.beginTransaction().replace(R.id.content_frame,
+//                    CreateNotificationFragment.newInstance(null, null), TAG_FRAG_CREATE_NOTIFICATION).commit();
             fab.setVisibility(View.INVISIBLE);
         } else if (id == R.id.nav_send) {
             CreateNotificationFragment myFragment = (CreateNotificationFragment) fragmentManager.findFragmentByTag(TAG_FRAG_CREATE_NOTIFICATION);
@@ -159,6 +190,11 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
             }else{
                 Toast.makeText(getApplicationContext(), R.string.msg_not_creating_notification, Toast.LENGTH_SHORT).show();
             }
+        } else if (id == R.id.nav_quit) {
+            Intent intentNovo = new Intent(this, LoginActivity.class);
+            intentNovo.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intentNovo);
+            finish();
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);

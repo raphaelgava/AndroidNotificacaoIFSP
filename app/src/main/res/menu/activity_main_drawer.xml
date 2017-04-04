@@ -26,4 +26,13 @@
         </menu>
     </item>
 
+    <item android:title="Exit">
+        <menu>
+            <item
+                android:id="@+id/nav_quit"
+                android:icon="@drawable/ic_menu_exit_to_app"
+                android:title="Logout" />
+        </menu>
+    </item>
+
 </menu>
