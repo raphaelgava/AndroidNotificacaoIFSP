@@ -110,6 +110,13 @@ public class GridNotificationsFragment extends TemplateFragment{
     private int configurarLegenda(){
         //week = (LinearLayout) thisView.findViewById(R.id.gridWeek);
         week.removeAllViews();
+
+        Rect rectWeek = new Rect();
+        week.getGlobalVisibleRect(rectWeek);
+        //GridLayoutManager.LayoutParams layout = new GridLayoutManager.LayoutParams(rectWeek.width(), rectWeek.height());
+        //layout.setMargins(0, rectBar.bottom, rectWeek.right, rectBar.bottom + rectWeek.height());
+        //week.setLayoutParams(layout);
+
         String[] days = getResources().getStringArray(R.array.days_of_week);
 
         LayoutParams paramsExample = new LayoutParams(0, LayoutParams.MATCH_PARENT, 1f);
@@ -132,13 +139,7 @@ public class GridNotificationsFragment extends TemplateFragment{
         //LinearLayout bar = (LinearLayout) thisView.findViewById(R.id.gridWeek);
         //bar.getLocationOnScreen(posicao);
 
-        Rect rectf = new Rect();
-        Rect rectbar = new Rect();
-        Toolbar toolbar = (Toolbar) getActivity().findViewById(R.id.toolbar);
-        toolbar.getGlobalVisibleRect(rectbar);
-        week.getGlobalVisibleRect(rectf);
-
-        return rectf.bottom;
+        return rectWeek.bottom;
     }
 
     private void configurarAdapter() {

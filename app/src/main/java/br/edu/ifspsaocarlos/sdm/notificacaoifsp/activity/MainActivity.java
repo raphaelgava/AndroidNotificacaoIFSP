@@ -22,6 +22,7 @@ import android.view.WindowManager;
 import android.widget.Toast;
 
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.R;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.Uteis.EnumFragments;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.layout.ChangeUserDataFragment;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.layout.CreateNotificationFragment;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.layout.GridNotificationsFragment;
@@ -47,21 +48,20 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
 
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
-        setContentView(R.layout.activity_main);
+        //setContentView(R.layout.activity_main);
+        setContentView(R.layout.app_bar_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        toolbar.bringToFront();
+        //toolbar.bringToFront();
 
         fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab.bringToFront();
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 //Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                 //        .setAction("Action", null).show();
-
-                fragmentManager.beginTransaction().replace(R.id.content_frame,
-                        CreateNotificationFragment.newInstance(null, null)).commit();
-                fab.setVisibility(View.INVISIBLE);
+               setFragTransactionStack(EnumFragments.FRAG_NOTIFICATION, R.id.content_frame, true);
 
                 DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
                 drawer.closeDrawer(GravityCompat.START);
@@ -109,14 +109,21 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
         super.onDestroy();
     }
 
+    // TODO: 6/29/2017 ACERTAR TAG PARA DESCOBRIR SE E DA GRID PARA PODER DEIXAR VSIBLE O BOTAO DE NOTIFICACAO!!!! 
+
     @Override
     public void onBackPressed() {
-
-        if (fragmentManager.getBackStackEntryCount() == 0) {
+        int lastFragEntry = fragmentManager.getBackStackEntryCount();
+        if (lastFragEntry > 0) {
+            String lastFragTag = fragmentManager.getBackStackEntryAt(lastFragEntry - 1).getName();
+            Toast.makeText(this.getApplicationContext(), lastFragTag, Toast.LENGTH_LONG).show();
+            fragmentManager.popBackStack();
+            if (lastFragTag.isEmpty() || lastFragTag.equals(EnumFragments.FRAG_GRID.toString())){
+                fab.setVisibility(View.VISIBLE);
+            }
+        } else {
             moveTaskToBack(true); // faz com que não volte para a tela de login!!!!
             //this.finish();
-        } else {
-            fragmentManager.popBackStack();
         }
         /*
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -153,36 +160,35 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
         return super.onOptionsItemSelected(item);
     }
 
+    private void setFragTransactionStack(EnumFragments frag, int content, boolean flagAddStack){
+        // Create new fragment and transaction
+        android.support.v4.app.FragmentTransaction transaction = fragmentManager.beginTransaction();
+
+        transaction.replace(content,
+                ChangeUserDataFragment.newInstance(null, null));
+        if (flagAddStack) {
+            transaction.addToBackStack(frag.toString());
+            transaction.commit();
+//            fragmentManager.beginTransaction().replace(R.id.content_frame,
+//                    ChangeUserDataFragment.newInstance(null, null)).commit();
+        }
+        fab.setVisibility(View.INVISIBLE);
+    }
+
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        // Create new fragment and transaction
-        android.support.v4.app.FragmentTransaction transaction = fragmentManager.beginTransaction();
-
         //https://developer.android.com/studio/write/vector-asset-studio.html#running -> mudar ícones
         if (id == R.id.nav_class_schedule) {
-            fragmentManager.beginTransaction().replace(R.id.content_frame,
-                    GridNotificationsFragment.newInstance(null, null)).commit();
+            setFragTransactionStack(EnumFragments.FRAG_GRID, R.id.content_frame, false);
             fab.setVisibility(View.VISIBLE);
         } else if (id == R.id.nav_user_data) {
-            transaction.replace(R.id.content_frame,
-                    ChangeUserDataFragment.newInstance(null, null));
-            transaction.addToBackStack(null);
-            transaction.commit();
-//            fragmentManager.beginTransaction().replace(R.id.content_frame,
-//                    ChangeUserDataFragment.newInstance(null, null)).commit();
-            fab.setVisibility(View.INVISIBLE);
+            setFragTransactionStack(EnumFragments.FRAG_USER, R.id.content_frame, true);
         } else if (id == R.id.nav_notification) {
-            transaction.replace(R.id.content_frame,
-                    CreateNotificationFragment.newInstance(null, null));
-            transaction.addToBackStack(null);
-            transaction.commit();
-//            fragmentManager.beginTransaction().replace(R.id.content_frame,
-//                    CreateNotificationFragment.newInstance(null, null), TAG_FRAG_CREATE_NOTIFICATION).commit();
-            fab.setVisibility(View.INVISIBLE);
+            setFragTransactionStack(EnumFragments.FRAG_NOTIFICATION, R.id.content_frame, true);
         } else if (id == R.id.nav_send) {
             CreateNotificationFragment myFragment = (CreateNotificationFragment) fragmentManager.findFragmentByTag(TAG_FRAG_CREATE_NOTIFICATION);
             if (myFragment != null && myFragment.isVisible()) {
