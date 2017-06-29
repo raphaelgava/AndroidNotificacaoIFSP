@@ -1,14 +1,44 @@
-<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:id="@+id/cell_layout2"
+    android:background="@drawable/shape_border"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:padding="5dp">
+
+    <TextView
+        android:id="@+id/tv_sigla"
+        android:layout_width="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center_vertical"
+        android:layout_height="wrap_content"
+        android:text="SDM"
+        android:layout_alignParentTop="true"
+        android:layout_alignEnd="@+id/tv_data" />
+
+    <TextView
+        android:id="@+id/tv_data"
+        android:layout_width="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center_vertical"
+        android:layout_height="wrap_content"
+        android:text="09/11"
+        android:layout_below="@+id/tv_sigla"
+        android:layout_alignParentStart="true" />
+
+</LinearLayout>
+<!--<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@color/colorBackgroudCard">
+    android:background="@color/colorBackgroundCard">
     <android.support.v7.widget.CardView
         xmlns:card_view="http://schemas.android.com/apk/res-auto"
-        android:layout_gravity="center"
+        android:id="@+id/card"
         android:layout_width="match_parent"
         android:layout_height="80dp"
         card_view:elevation="5dp"
@@ -46,3 +76,4 @@
         </LinearLayout>
     </android.support.v7.widget.CardView>
 </LinearLayout>
+-->

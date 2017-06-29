@@ -5,7 +5,8 @@ android {
         config {
             keyAlias 'myKey'
             keyPassword 'masterkey'
-            storeFile file('D:/IFSP/TCC/Android/myStore.jks')
+            storeFile file('../../myStore.jks') // = D:/IFSP/TCC/Android/
+            //storeFile file('myStore.jks') //= D:\IFSP\TCC\Android\NotificacaoIFSP\app
             storePassword 'masterkey'
         }
     }

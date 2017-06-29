@@ -4,15 +4,15 @@
     android:layout_height="match_parent"
     tools:context="br.edu.ifspsaocarlos.sdm.notificacaoifsp.layout.ChangeUserDataFragment">
 
-    <ScrollView
-        xmlns:android="http://schemas.android.com/apk/res/android"
+    <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scrollbars="vertical">
+
         <LinearLayout
             android:layout_width="match_parent"
-            android:orientation="vertical"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
             <!--Put form controls here-->
 
@@ -49,8 +49,8 @@
                     android:id="@+id/edtEmail"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="textEmailAddress"
-                    android:hint="@string/email" />
+                    android:hint="@string/email"
+                    android:inputType="textEmailAddress" />
             </android.support.design.widget.TextInputLayout>
 
             <android.support.design.widget.TextInputLayout
@@ -62,8 +62,8 @@
                     android:id="@+id/edtPassword"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="textPassword"
-                    android:hint="@string/password" />
+                    android:hint="@string/password"
+                    android:inputType="textPassword" />
             </android.support.design.widget.TextInputLayout>
 
             <android.support.design.widget.TextInputLayout
@@ -75,24 +75,23 @@
                     android:id="@+id/edtConfirmPassword"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="textPassword"
-                    android:hint="@string/confirmPassword" />
+                    android:hint="@string/confirmPassword"
+                    android:inputType="textPassword" />
             </android.support.design.widget.TextInputLayout>
 
             <android.support.design.widget.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@drawable/shape_border"
-                android:layout_margin="5dp">
+                android:layout_margin="5dp"
+                android:background="@drawable/shape_border">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/sex"
-                    android:paddingTop="5dp"
                     android:paddingLeft="5dp"
-                    android:textSize="18dp"
-                    />
+                    android:paddingTop="5dp"
+                    android:text="@string/sex"
+                    android:textSize="18dp" />
 
                 <View
                     android:id="@+id/view1"
@@ -106,24 +105,24 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
 
-                    android:orientation="horizontal"
                     android:gravity="center"
+                    android:orientation="horizontal"
                     android:paddingBottom="5dp">
 
                     <RadioButton
                         android:id="@+id/rbtMale"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/male"
                         android:checked="true"
+                        android:paddingRight="30dp"
 
-                        android:paddingRight="30dp"/>
+                        android:text="@string/male" />
 
                     <RadioButton
                         android:id="@+id/rbtFemale"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/female"/>
+                        android:text="@string/female" />
                 </RadioGroup>
             </android.support.design.widget.TextInputLayout>
 
@@ -134,26 +133,27 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/tipoFormacao"
-                    android:paddingTop="5dp"
                     android:paddingLeft="5dp"
-                    android:textSize="18dp"
-                    />
+                    android:paddingTop="5dp"
+                    android:text="@string/tipoFormacao"
+                    android:textSize="18dp" />
+
                 <Spinner
                     android:id="@+id/spnTipoFormacao"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:entries="@array/tipoFormacao"/>
+                    android:entries="@array/tipoFormacao" />
             </android.support.design.widget.TextInputLayout>
 
-            <Button android:id="@+id/btnSend"
+            <Button
+                android:id="@+id/btnSend"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/send"
-                android:background="@color/colorPrimary"
-                android:layout_marginTop="40dp"
                 android:layout_margin="5dp"
-                android:textColor="@android:color/white"/>
+                android:layout_marginTop="40dp"
+                android:background="@color/colorPrimary"
+                android:text="@string/send"
+                android:textColor="@android:color/white" />
         </LinearLayout>
     </ScrollView>
 </FrameLayout>

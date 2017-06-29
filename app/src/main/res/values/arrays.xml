@@ -9,12 +9,11 @@
         <item>Habilitation</item>
     </string-array>
 
-    <string-array name="country_arrays">
-        <item>Technical</item>
-        <item>Graduation</item>
-        <item>Post Graduation</item>
-        <item>Master Degree</item>
-        <item>Phd</item>
-        <item>Habilitation</item>
+    <string-array name="days_of_week">
+        <item>SUN</item>
+        <item>TUE</item>
+        <item>WED</item>
+        <item>THU</item>
+        <item>FRI</item>
     </string-array>
 </resources>
