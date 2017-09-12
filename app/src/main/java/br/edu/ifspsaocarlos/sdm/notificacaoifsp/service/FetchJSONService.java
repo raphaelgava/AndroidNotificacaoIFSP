@@ -1,57 +1,88 @@
 package br.edu.ifspsaocarlos.sdm.notificacaoifsp.service;
 
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
-import android.graphics.BitmapFactory;
 import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
+
+import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.R;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.activity.MainActivity;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.util.ServiceState;
 
-
+/**
+ * Para funcionar tem que estar registrado no manifest!!
+ */
 public class FetchJSONService extends Service implements Runnable {
     private boolean appAberta;
     private boolean primeiraBusca;
     private static int ultimoNumeroContatos;
     private static int novoNumeroContatos;
+
+    private ServiceState machine;
+    private RequestQueue queue;
+
     public FetchJSONService() {
+        machine = ServiceState.getInstance();
     }
+
     public IBinder onBind(Intent intent) {
 // TODO: Return the communication channel to the service.
         throw new UnsupportedOperationException("Not yet implemented");
     }
+
     public void onCreate() {
         super.onCreate();
         appAberta = true;
         primeiraBusca = true;
         ultimoNumeroContatos = 0;
         Log.e("", "onCreate");
+        queue = Volley.newRequestQueue(FetchJSONService.this);
+
         new Thread(this).start();
     }
+
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.e("", "onStartCommand");
         return super.onStartCommand(intent, flags, startId);
     }
+
     public void run() {
         Log.e("", "run");
         while (appAberta) {
             try {
                 Thread.sleep(getResources().getInteger(R.integer.tempo_inatividade_servico));
-                // TODO: 3/29/2017 se precisar pensar num esquema de enumeration pra definir o que sera buscado pela thread!!
-                buscarNotificacao();
+                if (machine.hasItemEnabled() == true){
+                    ServiceState.EnumServiceState state = machine.popState();
+                    switch (state){
+                        case ENUM_NOTIFICATION:
+                            buscarNotificacao();
+                            break;
+                        case ENUM_USER:
+                            buscarUsuario();
+                            break;
+                        case ENUM_OFERECIMENTO:
+                            break;
+                    }
+                }
+
+
+
 //                if (!primeiraBusca && novoNumeroContatos != ultimoNumeroContatos) {
 //                    NotificationManager nm = (NotificationManager)
 //                            getSystemService(NOTIFICATION_SERVICE);
@@ -76,10 +107,111 @@ public class FetchJSONService extends Service implements Runnable {
 //                primeiraBusca = false;
             }
             catch (InterruptedException ie) {
-                Log.e("SDM", "Erro na thread de recuperação de contato");
+                Log.e("TCC", "Erro na thread de recuperação de contato");
             }
         }
     }
+
+    private void buscarUsuario() {
+
+        String url = getString(R.string.url_base);
+
+        boolean flagOk = true;
+
+        switch (MainActivity.getPeronType()){
+            case ENUM_STUDENT: url += getString(R.string.url_student); break;
+            case ENUM_EMPLOYEE: url += getString(R.string.url_employee); break;
+            case ENUM_PROFESSOR: url += getString(R.string.url_professor); break;
+            default:
+                Log.e("TCC", "Tipo pessoa desconhecida");
+                flagOk = false;
+        }
+
+        if (flagOk == true) {
+            url += MainActivity.getUserId();
+            try {
+
+                JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, url, null,
+                        new Response.Listener<JSONObject>() {
+                            @Override
+                            public void onResponse(JSONObject s) {
+                                novoNumeroContatos = s.length();
+                                Toast.makeText(FetchJSONService.this, "Finalmente: " + s.toString(), Toast.LENGTH_SHORT).show();
+                                
+                                
+                                /* // TODO: 9/12/2017 caso queira pegar um array de dentro do json!!! 
+                                JSONArray jsonArray;
+                                try {
+                                    jsonArray = s.getJSONArray("contatos");
+                                    novoNumeroContatos = s.length();
+                                    Toast.makeText(FetchJSONService.this, "Finalmente: " + s.toString(), Toast.LENGTH_SHORT).show();
+                                } catch (JSONException je) {
+                                    Toast.makeText(FetchJSONService.this, "Erro na conversão " +
+                                            "de objeto JSON!", Toast.LENGTH_SHORT).show();
+                                }
+                                */
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError volleyError) {
+                                Toast.makeText(FetchJSONService.this, "Erro na recuperação do usuário: " + volleyError.toString(), Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                ){
+                    @Override
+                    public Map<String, String> getHeaders() throws AuthFailureError {
+                        Map<String, String> headers = new HashMap<>();
+                        // Basic Authentication
+                        //String auth = "Basic " + Base64.encodeToString(CONSUMER_KEY_AND_SECRET.getBytes(), Base64.NO_WRAP);
+
+                        headers.put(getString(R.string.authorization), MainActivity.getAuth()); //Authorization Token ...
+                        return headers;
+                    }
+                };
+                
+                
+                /* 
+                // TODO: 9/12/2017 SE FOR UTILIZAR ARRAY TEM QUE UTILIZAR ESSA FORMA. CASO CONTÁRIO OCORRERÁ UMA EXCEÇÃO: com.android.volley.ParseError: org.json.JSONException
+
+                JsonArrayRequest jsonObjectRequest = new JsonArrayRequest(Request.Method.GET, url, null,
+                        new Response.Listener<JSONArray>() {
+                            @Override
+                            public void onResponse(JSONArray s) {
+                                //JSONArray jsonArray;
+                                //jsonArray = s.getJSONArray("contatos");
+                                novoNumeroContatos = s.length();
+                                Toast.makeText(FetchJSONService.this, "Finalmente: " + s.toString(), Toast.LENGTH_SHORT).show();
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError volleyError) {
+                                Toast.makeText(FetchJSONService.this, "Erro na recuperação do usuário: " + volleyError.toString(), Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                ){
+                    @Override
+                    public Map<String, String> getHeaders() throws AuthFailureError {
+                        Map<String, String> headers = new HashMap<>();
+                        // Basic Authentication
+                        //String auth = "Basic " + Base64.encodeToString(CONSUMER_KEY_AND_SECRET.getBytes(), Base64.NO_WRAP);
+
+                        headers.put(getString(R.string.authorization), MainActivity.getAuth()); //Authorization Token ...
+                        return headers;
+                    }
+                };
+                */
+                jsonObjectRequest.setTag("MyTAG");
+
+                queue.add(jsonObjectRequest);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+
     private void buscarNotificacao() {
         RequestQueue queue = Volley.newRequestQueue(FetchJSONService.this);
         String url = getString(R.string.url_base) + "contato";
@@ -112,10 +244,16 @@ public class FetchJSONService extends Service implements Runnable {
     public void onDestroy() {
         super.onDestroy();
         Log.e("", "onDestroy");
+
+        queue.cancelAll("MyTAG");
+
         appAberta = false;
         stopSelf();
     }
 }
+
+
+
 //
 //
 //import android.app.NotificationManager;
@@ -156,6 +294,153 @@ public class FetchJSONService extends Service implements Runnable {
 //import io.realm.RealmQuery;
 //import io.realm.RealmResults;
 //
+//public class FetchJSONService extends Service {
+//    private MyAsyncTask task;
+//    private ServiceState machine;
+//
+//    @Override
+//    public void onCreate() {
+//        super.onCreate();
+//
+//        task = new MyAsyncTask();
+//        task.execute();
+//
+//        machine = ServiceState.getInstance();
+//    }
+//
+//    @Override
+//    public int onStartCommand(Intent intent, int flags, int startId) {
+//        super.onStartCommand(intent, flags, startId);
+//
+//        return Service.START_NOT_STICKY;
+//    }
+//
+//    @Nullable
+//    @Override
+//    public IBinder onBind(Intent intent) {
+//        return null;
+//    }
+//
+//    @Override
+//    public void onDestroy() {
+//
+//        task.cancel(true);
+//        super.onDestroy();
+//    }
+//
+//    class MyAsyncTask extends AsyncTask<Void, Void, Void> {
+//        private Context context;
+//        private RequestQueue requestQueue;
+//        private int requestSize;
+//
+//        public MyAsyncTask() {
+//            super();
+//            this.context = getApplication();
+//
+////            userId = Helpers.getUserId(context);
+////            isFirstUse = Helpers.isFirstUse(context);
+//
+//            requestQueue = Volley.newRequestQueue(context);
+//            requestSize = 0;
+//
+//        }
+//
+//        @Override
+//        protected Void doInBackground(Void... params) {
+//
+//            if (machine.hasItemEnabled() == true){
+//                    ServiceState.EnumServiceState state = machine.popState();
+//                    switch (state){
+//                        case ENUM_NOTIFICATION:
+//                            //buscarNotificacao();
+//                            break;
+//                        case ENUM_USER:
+//                            buscarUsuario();
+//                            break;
+//                        case ENUM_OFERECIMENTO:
+//                            break;
+//                    }
+//                }
+//
+//
+//
+//            // loop para esperar todas as requests finalizarem antes de começar o próximo burst
+//            while (!isCancelled() && (requestSize != 0)) {
+//                try {
+//                    Thread.sleep(50);
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//
+//            try {
+//                Thread.sleep(1000);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//
+//            requestQueue.cancelAll("TAGS");
+//
+//            return null;
+//        }
+//
+//        private void buscarUsuario() {
+//            RequestQueue queue = Volley.newRequestQueue(FetchJSONService.this);
+//            String url = getString(R.string.url_base);
+//
+//            UserLogin user = MainActivity.getUser();
+//
+//            boolean flagOk = true;
+//            switch (user.getPersonType()){
+//                case ENUM_STUDENT: url += getString(R.string.url_student); break;
+//                case ENUM_EMPLOYEE: url += getString(R.string.url_employee); break;
+//                case ENUM_PROFESSOR: url += getString(R.string.url_professor); break;
+//                default:
+//                    Log.e("TCC", "Tipo pessoa desconhecida");
+//                    flagOk = false;
+//            }
+//
+//
+//            if (flagOk == true) {
+//                try {
+//                    HashMap<String, String> params = new HashMap<String, String>();
+//                    params.put(getString(R.string.url_login_username), Integer.toString(user.getId()));
+//                    JSONObject object = new JSONObject(params);
+//
+//                    JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, url, object,
+//                            new Response.Listener<JSONObject>() {
+//                                public void onResponse(JSONObject s) {
+//                                    JSONArray jsonArray;
+//                                    try {
+//                                        jsonArray = s.getJSONArray("contatos");
+//                                        int novoNumeroContatos = jsonArray.length();
+//                                    } catch (JSONException je) {
+//                                        Toast.makeText(FetchJSONService.this, "Erro na conversão " +
+//                                                "de objeto JSON!", Toast.LENGTH_SHORT).show();
+//                                    }
+//                                }
+//                            }, new Response.ErrorListener() {
+//                        public void onErrorResponse(VolleyError volleyError) {
+//                            Toast.makeText(FetchJSONService.this, "Erro na recuperação do número " +
+//                                    "de contatos!", Toast.LENGTH_SHORT).show();
+//                        }
+//                    });
+//                    queue.add(jsonObjectRequest);
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        }
+//
+//        @Override
+//        protected void onPostExecute(Void s) {
+//            task = new MyAsyncTask();
+//            task.execute();
+//        }
+//    }
+//}
+
+
 //public class FetchJSONService extends Service {
 //    private MyAsyncTask task;
 ////    private MyApplication myApplication;

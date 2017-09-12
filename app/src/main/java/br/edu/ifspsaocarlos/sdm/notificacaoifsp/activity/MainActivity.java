@@ -1,40 +1,45 @@
 package br.edu.ifspsaocarlos.sdm.notificacaoifsp.activity;
 
-import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.NavigationView.OnNavigationItemSelectedListener;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.Fragment;
-import android.util.Log;
-import android.view.View;
 import android.support.design.widget.NavigationView;
+import android.support.design.widget.NavigationView.OnNavigationItemSelectedListener;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.WindowManager;
 import android.widget.Toast;
 
-import br.edu.ifspsaocarlos.sdm.notificacaoifsp.R;
-import br.edu.ifspsaocarlos.sdm.notificacaoifsp.Uteis.EnumFragments;
-import br.edu.ifspsaocarlos.sdm.notificacaoifsp.layout.ChangeUserDataFragment;
-import br.edu.ifspsaocarlos.sdm.notificacaoifsp.layout.CreateNotificationFragment;
-import br.edu.ifspsaocarlos.sdm.notificacaoifsp.layout.GridNotificationsFragment;
-import br.edu.ifspsaocarlos.sdm.notificacaoifsp.layout.TemplateFragment;
-import br.edu.ifspsaocarlos.sdm.notificacaoifsp.service.FetchJSONService;
+import java.util.Date;
 
-import static java.security.AccessController.getContext;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.R;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.layout.CreateNotificationFragment;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.layout.FragmentFactory;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.layout.TemplateFragment;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.Person;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.UserLogin;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.service.FetchJSONService;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.util.EnumUserType;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.util.ServiceState;
+import io.realm.Realm;
 
 public class MainActivity extends AppCompatActivity implements OnNavigationItemSelectedListener,
         TemplateFragment.OnFragmentInteractionListener{
 
-    private String token;
+    private static UserLogin actualUser;
+    private static EnumUserType type;
+    private static String userId;
+    private static String auth;
+
     private android.support.v4.app.FragmentManager fragmentManager;
     private Intent serviceIntent;
 
@@ -48,11 +53,9 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
 
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
-        //setContentView(R.layout.activity_main);
         setContentView(R.layout.app_bar_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        //toolbar.bringToFront();
 
         fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.bringToFront();
@@ -61,7 +64,7 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
             public void onClick(View view) {
                 //Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                 //        .setAction("Action", null).show();
-               setFragTransactionStack(EnumFragments.FRAG_NOTIFICATION, R.id.content_frame, true);
+               setFragTransactionStack(R.id.nav_notification, R.id.content_frame, true);
 
                 DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
                 drawer.closeDrawer(GravityCompat.START);
@@ -78,28 +81,140 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
         navigationView.setNavigationItemSelectedListener(this);
 
         fragmentManager = getSupportFragmentManager();
-        fragmentManager.beginTransaction().replace(R.id.content_frame,
-                GridNotificationsFragment.newInstance(null, null)).commit();
+        setFragTransactionStack(R.id.nav_class_schedule, R.id.content_frame, true);
 
-        //fragmentManager = getSupportFragmentManager();
-        //Fragment frag = GridNotificationsFragment.newInstance(this, getBundleCurrentFragment());
-        //Fragment frag = GridNotificationsFragment.newInstance("GridNotificationsFragment", null);
-        //fragmentManager.beginTransaction().replace(R.id.content_frame, frag).commit();
+        /**
+         * Verifica se esta cadastrado para só depois startar o que tem que startar. Sem isso ele
+         * insere você na lista de usuários pois ele acaba percorrendo o fetUser duas vezes.
+         */
 
-        token = getIntent().getStringExtra(getString(R.string.json_token));
+        actualUser = checkUser(getIntent());
+        if ( actualUser != null) {
 
-        if (token != null) {
-            String toast = getIntent().getIntExtra(getString(R.string.json_id), 0) + " - " + getIntent().getStringExtra(getString(R.string.json_group));
-            Toast.makeText(MainActivity.this, toast,
-                    Toast.LENGTH_SHORT).show();
+            String toast = actualUser.getId() + " - " + actualUser.getGroup() + " - " + Boolean.toString(actualUser.getFlag());
+            //Toast.makeText(MainActivity.this, toast,Toast.LENGTH_SHORT).show();
+
+            userId = Integer.toString(actualUser.getId());
+            type = actualUser.getPersonType();
+            auth = getString(R.string.json_token) + " " + actualUser.getToken();
+
+            Log.d("TCC", toast);
+
             serviceIntent = new Intent(this, FetchJSONService.class);
             startService(serviceIntent);
 
-            Log.d("TCC", token);
+            checkUserData(actualUser);
+            //updateAdapter();
+            //startMessagesService();
         }
         else{
-            //Snackbar.make(drawer, "Token not received.", Snackbar.LENGTH_INDEFINITE).show();
+            goBackToLogin();
         }
+    }
+
+    /*
+    * Used to determine which type the user is at FetchJSONService
+    */
+    public static EnumUserType getPeronType(){
+        return type;
+    }
+
+    public static String getUserId(){
+        return userId;
+    }
+
+    public static String getAuth(){
+        return auth;
+    }
+
+    private void checkUserData(UserLogin user){
+        Person person = null;
+        Realm realm = Realm.getDefaultInstance();
+
+        if (user != null){
+            person = realm.where(Person.class).equalTo("username", Integer.toString(user.getId())).findFirst();
+            if (person == null) {
+                Log.d("TCC", "Sending json get person data");
+                ServiceState.getInstance().pushState(ServiceState.EnumServiceState.ENUM_USER);
+            }
+        }
+    }
+
+    private UserLogin checkUser(Intent intent) {
+        UserLogin user;
+        final UserLogin userN;
+        Realm realm = Realm.getDefaultInstance();
+
+        String token = intent.getStringExtra(getString(R.string.json_token));
+        Log.d("TCC", token);
+        if (token != null){
+            user = realm.where(UserLogin.class).equalTo("token", token).findFirst();
+
+            boolean flagContinue = false;
+            if (user == null)
+            {
+                flagContinue = true;
+            }
+            else{
+                Date userDate;
+                userDate = user.getLastUpdate();
+                if (userDate == null)
+                {
+                    flagContinue = true;
+                }
+                else {
+                    /*
+                     * Feito isso pois se o servidor for promovido a professor o aplicativo tem que atualizar a busca
+                    * */
+                    Date data_atual = new java.util.Date();
+                    long diferenca = (data_atual.getTime() - userDate.getTime()) / (1000 * 60); //Tempo de atualização do Token (15 min)
+                    if (diferenca > 14) {
+                        flagContinue = true;
+                    }
+                }
+            }
+
+            if (flagContinue == true)
+            {
+                userN = new UserLogin();
+                userN.setToken(token);
+                userN.setId(intent.getIntExtra(getString(R.string.json_id), 0));
+                userN.setGroup(intent.getStringExtra(getString(R.string.json_group)));
+                userN.setFlag(intent.getBooleanExtra(getString(R.string.json_prof), false));
+                userN.setLastUpdate(new java.util.Date());
+
+                try {
+                    //Symmetric
+                    realm.beginTransaction();
+                    realm.copyToRealmOrUpdate(userN);
+                    realm.commitTransaction();
+                    return userN;
+                }catch (Exception e){
+                    Log.d("TCC", "Error to insert User: " + e.toString());
+                    return null;
+                }
+/*
+                realm.executeTransactionAsync(new Realm.Transaction() {
+                    @Override
+                    public void execute(Realm bgRealm) {
+                        bgRealm.copyToRealmOrUpdate(userN);
+                    }
+                }, new Realm.Transaction.OnSuccess() {
+                    @Override
+                    public void onSuccess() {
+                        Log.d("TCC", "User inserted");
+                    }
+                }, new Realm.Transaction.OnError() {
+                    @Override
+                    public void onError(Throwable error) {
+                        Log.d("TCC", "Error to insert User: " + error.toString());
+                    }
+                });
+                */
+            }
+            return user;
+        }
+        return null;
     }
 
     public void onDestroy(){
@@ -109,16 +224,17 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
         super.onDestroy();
     }
 
-    // TODO: 6/29/2017 ACERTAR TAG PARA DESCOBRIR SE E DA GRID PARA PODER DEIXAR VSIBLE O BOTAO DE NOTIFICACAO!!!! 
+    // TODO: 6/29/2017 ACERTAR TAG PARA DESCOBRIR SE E DA GRID PARA PODER DEIXAR VSIBLE O BOTAO DE NOTIFICACAO!!!!
 
     @Override
     public void onBackPressed() {
         int lastFragEntry = fragmentManager.getBackStackEntryCount();
-        if (lastFragEntry > 0) {
-            String lastFragTag = fragmentManager.getBackStackEntryAt(lastFragEntry - 1).getName();
-            Toast.makeText(this.getApplicationContext(), lastFragTag, Toast.LENGTH_LONG).show();
+        if (lastFragEntry > 1) {
+            lastFragEntry = lastFragEntry - 2;
+            String lastFragTag = fragmentManager.getBackStackEntryAt(lastFragEntry).getName();
+            //Toast.makeText(this.getApplicationContext(), lastFragTag, Toast.LENGTH_LONG).show();
             fragmentManager.popBackStack();
-            if (lastFragTag.isEmpty() || lastFragTag.equals(EnumFragments.FRAG_GRID.toString())){
+            if (lastFragTag.isEmpty() || lastFragTag.equals(Integer.toString(R.id.nav_class_schedule))){
                 fab.setVisibility(View.VISIBLE);
             }
         } else {
@@ -160,19 +276,26 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
         return super.onOptionsItemSelected(item);
     }
 
-    private void setFragTransactionStack(EnumFragments frag, int content, boolean flagAddStack){
+    private void setFragTransactionStack(int fragType, int content, boolean flagAddStack){
         // Create new fragment and transaction
         android.support.v4.app.FragmentTransaction transaction = fragmentManager.beginTransaction();
 
-        transaction.replace(content,
-                ChangeUserDataFragment.newInstance(null, null));
-        if (flagAddStack) {
-            transaction.addToBackStack(frag.toString());
-            transaction.commit();
-//            fragmentManager.beginTransaction().replace(R.id.content_frame,
-//                    ChangeUserDataFragment.newInstance(null, null)).commit();
+        if (fragType == R.id.nav_class_schedule){
+            if (fragmentManager.getBackStackEntryCount() >= 1) {
+                fragmentManager.popBackStackImmediate(0, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+            }
+
+            fab.setVisibility(View.VISIBLE);
         }
-        fab.setVisibility(View.INVISIBLE);
+        else{
+            fab.setVisibility(View.INVISIBLE);
+        }
+
+        transaction.replace(content, FragmentFactory.CreateFragment(null, null, fragType));
+        if (flagAddStack) {
+            transaction.addToBackStack(Integer.toString(fragType));
+            transaction.commit();
+        }
     }
 
     @SuppressWarnings("StatementWithEmptyBody")
@@ -182,14 +305,7 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
         int id = item.getItemId();
 
         //https://developer.android.com/studio/write/vector-asset-studio.html#running -> mudar ícones
-        if (id == R.id.nav_class_schedule) {
-            setFragTransactionStack(EnumFragments.FRAG_GRID, R.id.content_frame, false);
-            fab.setVisibility(View.VISIBLE);
-        } else if (id == R.id.nav_user_data) {
-            setFragTransactionStack(EnumFragments.FRAG_USER, R.id.content_frame, true);
-        } else if (id == R.id.nav_notification) {
-            setFragTransactionStack(EnumFragments.FRAG_NOTIFICATION, R.id.content_frame, true);
-        } else if (id == R.id.nav_send) {
+        if (id == R.id.nav_send) {
             CreateNotificationFragment myFragment = (CreateNotificationFragment) fragmentManager.findFragmentByTag(TAG_FRAG_CREATE_NOTIFICATION);
             if (myFragment != null && myFragment.isVisible()) {
                 myFragment.submitForm();
@@ -197,15 +313,21 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
                 Toast.makeText(getApplicationContext(), R.string.msg_not_creating_notification, Toast.LENGTH_SHORT).show();
             }
         } else if (id == R.id.nav_quit) {
-            Intent intentNovo = new Intent(this, LoginActivity.class);
-            intentNovo.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            startActivity(intentNovo);
-            finish();
+            goBackToLogin();
+        }else{
+            setFragTransactionStack(id, R.id.content_frame, true);
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    private void goBackToLogin() {
+        Intent intentNovo = new Intent(this, LoginActivity.class);
+        intentNovo.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intentNovo);
+        finish();
     }
 
     @Override

@@ -8,8 +8,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import br.edu.ifspsaocarlos.sdm.notificacaoifsp.R;
-
 /**
  * Created by rapha on 2/28/2017.
  */

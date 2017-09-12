@@ -1,4 +1,5 @@
 apply plugin: 'com.android.application'
+apply plugin: 'realm-android'
 
 android {
     signingConfigs {
@@ -51,6 +52,8 @@ dependencies {
             */
     //https://github.com/TurkiAlkhatib/Material-Color-Picker
     //compile 'com.turki-alkhateeb:materialcolorpicker:1.0.7'
+
+    //noinspection GradleCompatible
     compile 'com.android.support:appcompat-v7:24.2.1'
     compile 'com.android.support:design:24.2.1'
     compile 'com.android.support:support-v4:24.2.1'
@@ -59,5 +62,6 @@ dependencies {
     compile 'net.cachapa.expandablelayout:expandablelayout:2.3'
     compile 'com.google.android.gms:play-services:10.2.0'
     compile 'com.android.support:multidex:1.0.1'
+
     //compile 'com.android.support.constraint:constraint-layout:+'
 }

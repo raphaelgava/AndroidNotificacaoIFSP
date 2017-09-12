@@ -21,22 +21,33 @@
 
     <!-- Strings related to service -->
     <!--<string name="url_base">http://127.0.0.1:8000/</string>-->
-    <!--<string name="url_base">http://192.168.0.32:8000/</string>-->
-    <string name="url_base">https://notificacaoifsp.herokuapp.com/</string><!--site-->
+    <string name="url_base">http://192.168.43.94:8000/</string>
+    <!--<string name="url_base">https://notificacaoifsp.herokuapp.com/</string>&lt;!&ndash;site&ndash;&gt;-->
     <string name="url_login">api-token-auth/</string>
     <string name="url_login_username">username</string>
     <string name="url_login_password">password</string>
+
+    <string name="url_student">aluno_json/</string>
+    <string name="url_employee">servidor_json/</string>
+    <string name="url_professor">professor_json/</string>
+
     <string name="json_token">token</string>
     <string name="json_id">id</string>
     <string name="json_group">group</string>
+    <string name="json_prof">prof</string>
 
-    <!--User form-->
+    <!--Authentication-->
+    <string name="authorization">Authorization</string>
+
+    <!--UserLogin form-->
+    <string name="username">Username</string>
     <string name="name">Name</string>
     <string name="lastName">Last Name</string>
     <string name="email">E-mail</string>
     <string name="password">Password</string>
     <string name="confirmPassword">Re-Password</string>
     <string name="send">Send</string>
+    <string name="birthday">Birthday</string>
     <string name="sex">Sex</string>
     <string name="tipoFormacao">Education</string>
     <string name="male">Male</string>

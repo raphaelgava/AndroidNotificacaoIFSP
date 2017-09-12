@@ -2,46 +2,25 @@ package br.edu.ifspsaocarlos.sdm.notificacaoifsp.layout;
 
 import android.content.Context;
 import android.content.res.Configuration;
-import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.Rect;
-import android.icu.text.SimpleDateFormat;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.RequiresApi;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Adapter;
-import android.widget.FrameLayout;
-import android.widget.GridLayout;
 import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
-import android.widget.ListAdapter;
 import android.widget.TextView;
-
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.OnMapReadyCallback;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ListIterator;
 
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.R;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.adapter.CustomGrid;
@@ -159,7 +138,7 @@ public class GridNotificationsFragment extends TemplateFragment{
 
             c.add(Calendar.DATE, i); // Adding days
             offer.setData(c.getTime());
-
+/*
             switch (i % NUMBER_COLUMN){
                 case 0:
                     offer.setSigla("SDM");
@@ -179,6 +158,8 @@ public class GridNotificationsFragment extends TemplateFragment{
                 default:
                     Log.d("TCC", "conta inválida!!!");
             }
+           */
+            offer.setSigla("Empty");
             //offer.setSigla(String.valueOf(i));
             mListaOferecimentos.add(offer);
         }

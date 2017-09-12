@@ -34,10 +34,8 @@ import org.json.JSONObject;
 import java.util.HashMap;
 
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.R;
-import br.edu.ifspsaocarlos.sdm.notificacaoifsp.service.FetchJSONService;
 
 import static android.Manifest.permission.INTERNET;
-import static android.Manifest.permission.CAMERA;
 
 /**
  * A login screen that offers login via email/password.
@@ -172,25 +170,29 @@ public class LoginActivity extends AppCompatActivity {
 
                                     if ((s.has(getString(R.string.json_token)) && (!s.isNull(getString(R.string.json_token)))) &&
                                         (s.has(getString(R.string.json_id)) && (!s.isNull(getString(R.string.json_id)))) &&
-                                        (s.has(getString(R.string.json_group)) && (!s.isNull(getString(R.string.json_group))))){
+                                        (s.has(getString(R.string.json_group)) && (!s.isNull(getString(R.string.json_group)))) &&
+                                        (s.has(getString(R.string.json_prof)) && (!s.isNull(getString(R.string.json_prof))))){
 
                                         String token;
                                         Integer id;
                                         String group;
+                                        Boolean prof;
 
                                         token = s.getString(getString(R.string.json_token));
                                         id = s.getInt(getString(R.string.json_id));
                                         group = s.getString(getString(R.string.json_group));
+                                        prof = s.getBoolean(getString(R.string.json_prof));
 
                                         Intent inicio = new Intent(LoginActivity.this, MainActivity.class);
                                         inicio.putExtra(getString(R.string.json_token), token);
                                         inicio.putExtra(getString(R.string.json_id), id);
                                         inicio.putExtra(getString(R.string.json_group), group);
+                                        inicio.putExtra(getString(R.string.json_prof), prof);
                                         inicio.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                                         startActivity(inicio);
                                     }else{
                                         Log.e("SDM", "nas entradas do user");
-                                        Toast.makeText(LoginActivity.this, "Missing some user data",
+                                        Toast.makeText(LoginActivity.this, "Missing some user data or you are inactive",
                                                 Toast.LENGTH_SHORT).show();
                                     }
                                 } catch (JSONException e) {

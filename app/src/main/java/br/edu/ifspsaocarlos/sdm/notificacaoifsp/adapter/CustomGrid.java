@@ -1,36 +1,18 @@
 package br.edu.ifspsaocarlos.sdm.notificacaoifsp.adapter;
 
-import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
-import android.content.res.Configuration;
-import android.graphics.Color;
 import android.graphics.Point;
-import android.graphics.PorterDuff;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.GradientDrawable;
-import android.os.Build;
-import android.support.design.widget.AppBarLayout;
-import android.support.v4.app.FragmentManager;
-import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.BaseAdapter;
-import android.widget.GridView;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import java.util.List;
 
-import br.edu.ifspsaocarlos.sdm.notificacaoifsp.activity.MapsActivity;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.R;
-import br.edu.ifspsaocarlos.sdm.notificacaoifsp.layout.GridNotificationsFragment;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.activity.MapsActivity;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.Oferecimento;
 
 /*

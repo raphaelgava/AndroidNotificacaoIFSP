@@ -1,14 +1,12 @@
 package br.edu.ifspsaocarlos.sdm.notificacaoifsp.layout;
 
 import android.content.Context;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.TextInputLayout;
 import android.support.v4.app.Fragment;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,7 +32,7 @@ public class ChangeUserDataFragment extends TemplateFragment{
     private Button btnSignUp;
     private RadioButton inputMale, inputFemale;
 
-    // TODO: 2/13/2017 verificar o tipo de usuário para mostrar as opções para cada tipo (Servidor/Professor)
+    // TODO: 2/13/2017 verificar o tipo de usuário para mostrar as opções para cada tipo (Employee/Professor)
     public ChangeUserDataFragment() {
         // Required empty public constructor
     }

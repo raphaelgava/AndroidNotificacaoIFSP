@@ -1,13 +1,10 @@
 package br.edu.ifspsaocarlos.sdm.notificacaoifsp.adapter;
 
-import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.Filter;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -16,7 +13,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.R;
-import br.edu.ifspsaocarlos.sdm.notificacaoifsp.activity.RemetentListActivity;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.Remetente;
 
 /**
