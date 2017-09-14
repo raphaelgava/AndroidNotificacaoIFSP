@@ -37,7 +37,7 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
 
     private static UserLogin actualUser;
     private static EnumUserType type;
-    private static String userId;
+    private static int userId;
     private static String auth;
 
     private android.support.v4.app.FragmentManager fragmentManager;
@@ -94,7 +94,7 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
             String toast = actualUser.getId() + " - " + actualUser.getGroup() + " - " + Boolean.toString(actualUser.getFlag());
             //Toast.makeText(MainActivity.this, toast,Toast.LENGTH_SHORT).show();
 
-            userId = Integer.toString(actualUser.getId());
+            userId = actualUser.getId();
             type = actualUser.getPersonType();
             auth = getString(R.string.json_token) + " " + actualUser.getToken();
 
@@ -119,7 +119,7 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
         return type;
     }
 
-    public static String getUserId(){
+    public static int getUserId(){
         return userId;
     }
 
@@ -132,7 +132,7 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
         Realm realm = Realm.getDefaultInstance();
 
         if (user != null){
-            person = realm.where(Person.class).equalTo("username", Integer.toString(user.getId())).findFirst();
+            person = realm.where(Person.class).equalTo("pk", user.getId()).findFirst();
             if (person == null) {
                 Log.d("TCC", "Sending json get person data");
                 ServiceState.getInstance().pushState(ServiceState.EnumServiceState.ENUM_USER);

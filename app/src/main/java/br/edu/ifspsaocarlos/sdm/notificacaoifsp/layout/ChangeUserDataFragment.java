@@ -17,6 +17,9 @@ import android.widget.RadioButton;
 import android.widget.Toast;
 
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.R;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.activity.MainActivity;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.Person;
+import io.realm.Realm;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -84,6 +87,20 @@ public class ChangeUserDataFragment extends TemplateFragment{
             });
         }
         return view;
+    }
+
+    @Override
+    public void onResume(){
+        super.onResume();
+
+        Person person = null;
+        Realm realm = Realm.getDefaultInstance();
+        person = realm.where(Person.class).equalTo("pk", MainActivity.getUserId()).findFirst();
+
+        if (person != null){
+            Toast.makeText(this.getContext(), person.toString(), Toast.LENGTH_LONG).show();
+        }
+
     }
 
     /**

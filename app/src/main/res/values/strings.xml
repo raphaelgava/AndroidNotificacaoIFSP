@@ -20,8 +20,8 @@
     </string>
 
     <!-- Strings related to service -->
-    <!--<string name="url_base">http://127.0.0.1:8000/</string>-->
-    <string name="url_base">http://192.168.43.94:8000/</string>
+    <string name="url_base">http://192.168.0.16:8000/</string>
+    <!--<string name="url_base">http://192.168.43.94:8000/</string>-->
     <!--<string name="url_base">https://notificacaoifsp.herokuapp.com/</string>&lt;!&ndash;site&ndash;&gt;-->
     <string name="url_login">api-token-auth/</string>
     <string name="url_login_username">username</string>

@@ -23,6 +23,7 @@ import java.util.Map;
 
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.R;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.activity.MainActivity;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.util.EnumParser;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.util.ServiceState;
 
 /**
@@ -31,8 +32,6 @@ import br.edu.ifspsaocarlos.sdm.notificacaoifsp.util.ServiceState;
 public class FetchJSONService extends Service implements Runnable {
     private boolean appAberta;
     private boolean primeiraBusca;
-    private static int ultimoNumeroContatos;
-    private static int novoNumeroContatos;
 
     private ServiceState machine;
     private RequestQueue queue;
@@ -50,7 +49,6 @@ public class FetchJSONService extends Service implements Runnable {
         super.onCreate();
         appAberta = true;
         primeiraBusca = true;
-        ultimoNumeroContatos = 0;
         Log.e("", "onCreate");
         queue = Volley.newRequestQueue(FetchJSONService.this);
 
@@ -118,24 +116,26 @@ public class FetchJSONService extends Service implements Runnable {
 
         boolean flagOk = true;
 
+        EnumParser parser = null;
         switch (MainActivity.getPeronType()){
-            case ENUM_STUDENT: url += getString(R.string.url_student); break;
-            case ENUM_EMPLOYEE: url += getString(R.string.url_employee); break;
-            case ENUM_PROFESSOR: url += getString(R.string.url_professor); break;
+            case ENUM_STUDENT: url += getString(R.string.url_student); parser = EnumParser.ENUM_STUDENT; break;
+            case ENUM_EMPLOYEE: url += getString(R.string.url_employee); parser = EnumParser.ENUM_EMPLOYEE; break;
+            case ENUM_PROFESSOR: url += getString(R.string.url_professor); parser = EnumParser.ENUM_PROFESSOR; break;
             default:
                 Log.e("TCC", "Tipo pessoa desconhecida");
                 flagOk = false;
         }
 
         if (flagOk == true) {
-            url += MainActivity.getUserId();
+            final EnumParser finalParser = parser;
+            url += Integer.toString(MainActivity.getUserId());
             try {
 
                 JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, url, null,
                         new Response.Listener<JSONObject>() {
                             @Override
                             public void onResponse(JSONObject s) {
-                                novoNumeroContatos = s.length();
+                                ParserJSON.getInstance().parserAndSave(s, finalParser);
                                 Toast.makeText(FetchJSONService.this, "Finalmente: " + s.toString(), Toast.LENGTH_SHORT).show();
                                 
                                 
@@ -222,7 +222,6 @@ public class FetchJSONService extends Service implements Runnable {
                             JSONArray jsonArray;
                             try {
                                 jsonArray = s.getJSONArray("contatos");
-                                novoNumeroContatos = jsonArray.length();
                             }
                             catch (JSONException je) {
                                 Toast.makeText(FetchJSONService.this, "Erro na conversão " +

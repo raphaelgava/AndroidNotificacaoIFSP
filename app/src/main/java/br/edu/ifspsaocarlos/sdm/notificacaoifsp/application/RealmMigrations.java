@@ -1,7 +1,5 @@
 package br.edu.ifspsaocarlos.sdm.notificacaoifsp.application;
 
-import java.util.Date;
-
 import io.realm.DynamicRealm;
 import io.realm.RealmMigration;
 import io.realm.RealmObjectSchema;
@@ -20,7 +18,7 @@ public class RealmMigrations implements RealmMigration {
         if (oldVersion == 1) {
             // changes from version 1 to version 2
             final RealmObjectSchema userSchema = schema.get("UserLogin");
-            if (!userSchema.hasField("id")){
+            if (!userSchema.hasField("id")) {
                 userSchema.addField("id", int.class);
             }
             userSchema.addPrimaryKey("id");
@@ -30,14 +28,16 @@ public class RealmMigrations implements RealmMigration {
             oldVersion++;
         }
 
-        if (oldVersion == 2){
+        if (oldVersion == 2) { // TODO: 9/14/2017 esta com problema ao acessar esse migration
+            /*
             final RealmObjectSchema userSchema = schema.get("UserLogin");
 
             if (!userSchema.hasField("lastUpdate")){
                 userSchema.addField("lastUpdate", Date.class);
             }
-
+*/
             oldVersion++;
+
         }
     }
 }
