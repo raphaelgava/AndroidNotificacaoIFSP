@@ -136,8 +136,8 @@ public class FetchJSONService extends Service implements Runnable {
                             @Override
                             public void onResponse(JSONObject s) {
                                 ParserJSON.getInstance().parserAndSave(s, finalParser);
-                                Toast.makeText(FetchJSONService.this, "Finalmente: " + s.toString(), Toast.LENGTH_SHORT).show();
-                                
+                                //Toast.makeText(FetchJSONService.this, "Finalmente: " + s.toString(), Toast.LENGTH_SHORT).show();
+                                Log.d("TCC", "User: " + s.toString());
                                 
                                 /* // TODO: 9/12/2017 caso queira pegar um array de dentro do json!!! 
                                 JSONArray jsonArray;

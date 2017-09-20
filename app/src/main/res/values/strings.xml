@@ -36,6 +36,9 @@
     <string name="json_group">group</string>
     <string name="json_prof">prof</string>
 
+    <string name="json_male">Masculino</string>
+    <string name="json_female">Feminino</string>
+
     <!--Authentication-->
     <string name="authorization">Authorization</string>
 
@@ -50,6 +53,9 @@
     <string name="birthday">Birthday</string>
     <string name="sex">Sex</string>
     <string name="tipoFormacao">Education</string>
+    <string name="formacao">Graduation</string>
+    <string name="turma">Grade</string>
+    <string name="funcao">Job</string>
     <string name="male">Male</string>
     <string name="female">Female</string>
     <string name="msg_changed">Data was changed</string>

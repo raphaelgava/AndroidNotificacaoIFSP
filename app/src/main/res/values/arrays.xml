@@ -9,6 +9,15 @@
         <item>Habilitation</item>
     </string-array>
 
+    <string-array name="tipoFormacaoBR">
+        <item>Técnico</item>
+        <item>Graduação</item>
+        <item>Pós Graduação</item>
+        <item>Mestrado</item>
+        <item>Pós Doutorado</item>
+        <item>Livre Docência</item>
+    </string-array>
+
     <string-array name="days_of_week">
         <item>SUN</item>
         <item>TUE</item>

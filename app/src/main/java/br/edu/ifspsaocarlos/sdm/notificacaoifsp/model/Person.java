@@ -1,5 +1,6 @@
 package br.edu.ifspsaocarlos.sdm.notificacaoifsp.model;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.util.EnumUserType;
@@ -44,15 +45,31 @@ public class Person extends RealmObject {
 
 
     public Person(){
-
+        username = "";
+        first_name = "";
+        last_name = "";
+        email = "";
+        sexo = "";
+        funcao = "";
+        formacao = "";
+        tipo_formacao = "";
+        turma = "";
     }
 
     public int getType() {
         return type;
     }
 
+    public EnumUserType getEnumType(){
+        return EnumUserType.values()[type];
+    }
+
     public void setType(EnumUserType type) {
         this.setType(type.ordinal());
+    }
+
+    private void setType(int type) {
+        this.type = type;
     }
 
 
@@ -104,8 +121,13 @@ public class Person extends RealmObject {
         this.sexo = sexo;
     }
 
-    public Date getDatanascimento() {
-        return datanascimento;
+    public String getDatanascimento() {
+        if (datanascimento != null) {
+            SimpleDateFormat formatDate;
+            formatDate = new SimpleDateFormat("dd/MM/yyyy");
+            return formatDate.format(datanascimento);
+        }
+        return "00/00/0000";
     }
 
     public void setDatanascimento(Date datanascimento) {
@@ -118,10 +140,6 @@ public class Person extends RealmObject {
 
     public void setId_instituto(int id_instituto) {
         this.id_instituto = id_instituto;
-    }
-
-    public void setType(int type) {
-        this.type = type;
     }
 
     public String getFuncao() {

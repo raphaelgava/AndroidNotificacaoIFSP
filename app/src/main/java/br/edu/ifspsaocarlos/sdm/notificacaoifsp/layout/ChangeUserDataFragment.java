@@ -7,14 +7,21 @@ import android.support.v4.app.Fragment;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioButton;
+import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import java.util.Arrays;
+import java.util.List;
 
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.R;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.activity.MainActivity;
@@ -30,10 +37,16 @@ import io.realm.Realm;
  * create an instance of this fragment.
  */
 public class ChangeUserDataFragment extends TemplateFragment{
-    private EditText inputEmail, inputPassword, inputConfirm;
+    private EditText inputEmail, inputPassword, inputConfirm, inputUsername, inputFirstName, inputLastName;
+    private EditText inputJob, inputGrade, inputGraduation;
+    private Spinner inputEducation;
     private TextInputLayout inputLayoutEmail, inputLayoutPassword, inputLayoutConfirm;
+    private TextInputLayout inputLayoutGraduation, inputLayoutEducation, inputLayoutGrade, inputLayoutJob;
+    private TextView txtInDate;
     private Button btnSignUp;
     private RadioButton inputMale, inputFemale;
+
+    private ArrayAdapter<String> spinnerAdapter;
 
     // TODO: 2/13/2017 verificar o tipo de usuário para mostrar as opções para cada tipo (Employee/Professor)
     public ChangeUserDataFragment() {
@@ -68,12 +81,29 @@ public class ChangeUserDataFragment extends TemplateFragment{
             inputLayoutEmail = (TextInputLayout) view.findViewById(R.id.txtEmail);
             inputLayoutPassword = (TextInputLayout) view.findViewById(R.id.txtPassword);
             inputLayoutConfirm = (TextInputLayout) view.findViewById(R.id.txtConfirmPassword);
+            inputUsername = (EditText) view.findViewById(R.id.edtUsername);
+            inputFirstName = (EditText) view.findViewById(R.id.edtName);
+            inputLastName = (EditText) view.findViewById(R.id.edtLastName);
             inputEmail = (EditText) view.findViewById(R.id.edtEmail);
             inputPassword = (EditText) view.findViewById(R.id.edtPassword);
             inputConfirm = (EditText) view.findViewById(R.id.edtConfirmPassword);
             inputMale = (RadioButton) view.findViewById(R.id.rbtMale);
             inputFemale = (RadioButton) view.findViewById(R.id.rbtFemale);
             btnSignUp = (Button) view.findViewById(R.id.btnSend);
+
+            txtInDate = (TextView) view.findViewById(R.id.txtInDate);
+
+            inputLayoutGraduation = (TextInputLayout) view.findViewById(R.id.txtFormacao);
+            inputLayoutEducation = (TextInputLayout) view.findViewById(R.id.txtTipoFormacao);
+            inputLayoutGrade = (TextInputLayout) view.findViewById(R.id.txtTurma);
+            inputLayoutJob = (TextInputLayout) view.findViewById(R.id.txtFuncao);
+
+            inputJob = (EditText) view.findViewById(R.id.edtFuncao);
+            inputGrade = (EditText) view.findViewById(R.id.edtTurma);
+            inputGraduation = (EditText) view.findViewById(R.id.edtFormacao);
+            inputEducation = (Spinner) view.findViewById(R.id.spnTipoFormacao);
+
+            spinnerAdapter = new ArrayAdapter<String>(getContext(), android.R.layout.simple_spinner_dropdown_item, getResources().getStringArray(R.array.tipoFormacao));
 
             inputEmail.addTextChangedListener(new MyTextWatcher(inputEmail));
             inputPassword.addTextChangedListener(new MyTextWatcher(inputPassword));
@@ -98,7 +128,44 @@ public class ChangeUserDataFragment extends TemplateFragment{
         person = realm.where(Person.class).equalTo("pk", MainActivity.getUserId()).findFirst();
 
         if (person != null){
-            Toast.makeText(this.getContext(), person.toString(), Toast.LENGTH_LONG).show();
+            switch (person.getEnumType()){
+                case ENUM_EMPLOYEE:
+                    inputLayoutJob.setVisibility(View.VISIBLE);
+                    inputJob.setText(person.getFuncao());
+                    break;
+                case ENUM_PROFESSOR:
+                    inputLayoutEducation.setVisibility(View.VISIBLE);
+                    inputLayoutGraduation.setVisibility(View.VISIBLE);
+                    inputGraduation.setText(person.getFormacao());
+
+                    inputEducation.setAdapter(spinnerAdapter);
+
+                    String[] myResArray = getResources().getStringArray(R.array.tipoFormacaoBR);
+                    List<String> myResArrayList = Arrays.asList(myResArray);
+
+                    inputEducation.setSelection(myResArrayList.indexOf(person.getTipo_formacao()));
+                    break;
+                case ENUM_STUDENT:
+                    inputLayoutGrade.setVisibility(View.VISIBLE);
+                    inputGrade.setText(person.getTurma());
+                    break;
+            }
+
+            inputFirstName.setText(person.getFirst_name());
+            inputLastName.setText(person.getLast_name());
+            inputUsername.setText(person.getUsername());
+            inputEmail.setText(person.getEmail());
+            if (person.getSexo().equals(getString(R.string.json_female))){
+                inputFemale.setChecked(true);
+                inputMale.setChecked(false);
+            }else{
+                inputFemale.setChecked(false);
+                inputMale.setChecked(true);
+            }
+            txtInDate.setText(person.getDatanascimento());
+
+            Log.d("TCC", person.toString());
+            //Toast.makeText(this.getContext(), person.toString(), Toast.LENGTH_LONG).show();
         }
 
     }
