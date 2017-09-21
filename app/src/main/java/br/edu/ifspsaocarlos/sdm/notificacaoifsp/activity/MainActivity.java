@@ -132,11 +132,11 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
         Realm realm = Realm.getDefaultInstance();
 
         if (user != null){
-            person = realm.where(Person.class).equalTo("pk", user.getId()).findFirst();
-            if (person == null) {
+//            person = realm.where(Person.class).equalTo("pk", user.getId()).findFirst();
+//            if (person == null) {
                 Log.d("TCC", "Sending json get person data");
                 ServiceState.getInstance().pushState(ServiceState.EnumServiceState.ENUM_USER);
-            }
+//            }
         }
     }
 

@@ -29,7 +29,8 @@ public class Oferecimento implements Serializable {
     }
 
     public String getDataString(){
-        java.text.SimpleDateFormat simpleDateFormat = new java.text.SimpleDateFormat("dd/MM/yy");
+        //java.text.SimpleDateFormat simpleDateFormat = new java.text.SimpleDateFormat("dd/MM/yy");
+        java.text.SimpleDateFormat simpleDateFormat = new java.text.SimpleDateFormat("yyyy-MM-dd");
         return simpleDateFormat.format(this.data);
     }
 }

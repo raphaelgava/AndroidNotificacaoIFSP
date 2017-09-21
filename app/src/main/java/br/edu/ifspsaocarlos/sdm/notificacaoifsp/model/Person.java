@@ -20,7 +20,6 @@ import io.realm.annotations.RealmClass;
 * */
 @RealmClass
 public class Person extends RealmObject {
-    // TODO: 9/14/2017 remover as classes filhas que não estao sendo mais utilizadas!!!! 
     @PrimaryKey
     private int pk;
     private String username;
@@ -43,6 +42,8 @@ public class Person extends RealmObject {
     //Student
     private String turma;
 
+    private String password;
+
 
     public Person(){
         username = "";
@@ -54,6 +55,7 @@ public class Person extends RealmObject {
         formacao = "";
         tipo_formacao = "";
         turma = "";
+        setPassword("");
     }
 
     public int getType() {
@@ -76,35 +78,35 @@ public class Person extends RealmObject {
     public int getPk() {
         return pk;
     }
-
+/*
     public void setPk(int pk) {
         this.pk = pk;
     }
-
+*/
     public String getUsername() {
         return username;
     }
-
+/*
     public void setUsername(String username) {
         this.username = username;
     }
-
+*/
     public String getFirst_name() {
         return first_name;
     }
-
+/*
     public void setFirst_name(String first_name) {
         this.first_name = first_name;
     }
-
+*/
     public String getLast_name() {
         return last_name;
     }
-
+/*
     public void setLast_name(String last_name) {
         this.last_name = last_name;
     }
-
+*/
     public String getEmail() {
         return email;
     }
@@ -124,16 +126,18 @@ public class Person extends RealmObject {
     public String getDatanascimento() {
         if (datanascimento != null) {
             SimpleDateFormat formatDate;
-            formatDate = new SimpleDateFormat("dd/MM/yyyy");
+            //formatDate = new SimpleDateFormat("dd/MM/yyyy");
+            formatDate = new SimpleDateFormat("yyyy-MM-dd");
             return formatDate.format(datanascimento);
         }
-        return "00/00/0000";
+        //return "00/00/0000";
+        return "0000-00-00";
     }
 
     public void setDatanascimento(Date datanascimento) {
         this.datanascimento = datanascimento;
     }
-
+/*
     public int getId_instituto() {
         return id_instituto;
     }
@@ -141,7 +145,7 @@ public class Person extends RealmObject {
     public void setId_instituto(int id_instituto) {
         this.id_instituto = id_instituto;
     }
-
+*/
     public String getFuncao() {
         return funcao;
     }
@@ -170,7 +174,16 @@ public class Person extends RealmObject {
         return turma;
     }
 
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+/*
     public void setTurma(String turma) {
         this.turma = turma;
     }
+*/
 }

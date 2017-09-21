@@ -6,6 +6,7 @@
         <item>Post Graduation</item>
         <item>Master Degree</item>
         <item>Phd</item>
+        <item>Post Phd</item>
         <item>Habilitation</item>
     </string-array>
 
@@ -14,6 +15,7 @@
         <item>Graduação</item>
         <item>Pós Graduação</item>
         <item>Mestrado</item>
+        <item>Doutorado</item>
         <item>Pós Doutorado</item>
         <item>Livre Docência</item>
     </string-array>

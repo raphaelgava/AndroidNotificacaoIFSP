@@ -29,6 +29,10 @@ public class RealmMigrations implements RealmMigration {
         }
 
         if (oldVersion == 2) { // TODO: 9/14/2017 esta com problema ao acessar esse migration
+            final RealmObjectSchema userSchema = schema.get("Person");
+            if (!userSchema.hasField("password")) {
+                userSchema.addField("password", String.class);
+            }
             /*
             final RealmObjectSchema userSchema = schema.get("UserLogin");
 

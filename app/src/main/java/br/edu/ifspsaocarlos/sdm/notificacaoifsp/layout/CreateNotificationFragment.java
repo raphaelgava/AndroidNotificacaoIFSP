@@ -66,7 +66,8 @@ public class CreateNotificationFragment extends TemplateFragment {
     public CreateNotificationFragment() {
         // Required empty public constructor
         //c = Calendar.getInstance();
-        formatDate = new SimpleDateFormat("dd/MM/yyyy");
+        //formatDate = new SimpleDateFormat("dd/MM/yyyy");
+        formatDate = new SimpleDateFormat("yyyy-MM-dd");
         //formatTime = new SimpleDateFormat("hh:mm");//12h
         formatTime = new SimpleDateFormat("kk:mm");//24h
 
