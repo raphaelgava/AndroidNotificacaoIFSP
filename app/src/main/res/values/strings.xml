@@ -91,4 +91,8 @@
     <string name="title_activity_maps">Notification Dialog</string>
     <string name="go_mark">Go to mark</string>
     <string name="go_back">Go back</string>
+
+    <!-- Masks -->
+    <string name="mask_date">yyyy-MM-dd</string>
+    <string name="mask_time">kk:mm</string>
 </resources>

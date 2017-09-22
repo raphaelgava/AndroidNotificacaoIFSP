@@ -1,8 +1,5 @@
 package br.edu.ifspsaocarlos.sdm.notificacaoifsp.model;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.util.EnumUserType;
 import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
@@ -27,7 +24,8 @@ public class Person extends RealmObject {
     private String last_name;
     private String email;
     private String sexo;
-    private Date datanascimento;
+    //private Date datanascimento;
+    private String datanascimento;
     private int id_instituto;
 
     private int type;
@@ -56,6 +54,7 @@ public class Person extends RealmObject {
         tipo_formacao = "";
         turma = "";
         setPassword("");
+        datanascimento = "0000-00-00";
     }
 
     public int getType() {
@@ -124,19 +123,25 @@ public class Person extends RealmObject {
     }
 
     public String getDatanascimento() {
-        if (datanascimento != null) {
-            SimpleDateFormat formatDate;
-            //formatDate = new SimpleDateFormat("dd/MM/yyyy");
-            formatDate = new SimpleDateFormat("yyyy-MM-dd");
-            return formatDate.format(datanascimento);
-        }
-        //return "00/00/0000";
-        return "0000-00-00";
+//        if (datanascimento != null) {
+//            //SimpleDateFormat formatDate;
+//            //formatDate = new SimpleDateFormat("dd/MM/yyyy");
+//            //formatDate = new SimpleDateFormat("yyyy-MM-dd");
+//            //datanascimento = formatDate.format(datanascimento);
+//            //return formatDate.format(datanascimento);
+//        }
+//        //return "00/00/0000";
+//        return "0000-00-00";
+        return datanascimento;
     }
-
+/*
     public void setDatanascimento(Date datanascimento) {
         this.datanascimento = datanascimento;
     }
+*/
+    public void setDatanascimento(String datanascimento) {
+    this.datanascimento = datanascimento;
+}
 /*
     public int getId_instituto() {
         return id_instituto;

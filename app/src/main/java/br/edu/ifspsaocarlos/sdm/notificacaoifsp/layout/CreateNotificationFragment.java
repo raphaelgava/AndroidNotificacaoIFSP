@@ -67,9 +67,9 @@ public class CreateNotificationFragment extends TemplateFragment {
         // Required empty public constructor
         //c = Calendar.getInstance();
         //formatDate = new SimpleDateFormat("dd/MM/yyyy");
-        formatDate = new SimpleDateFormat("yyyy-MM-dd");
+        formatDate = new SimpleDateFormat(getString(R.string.mask_date));
         //formatTime = new SimpleDateFormat("hh:mm");//12h
-        formatTime = new SimpleDateFormat("kk:mm");//24h
+        formatTime = new SimpleDateFormat(getString(R.string.mask_time));//24h
 
         c = Calendar.getInstance();
         mYear = c.get(Calendar.YEAR);

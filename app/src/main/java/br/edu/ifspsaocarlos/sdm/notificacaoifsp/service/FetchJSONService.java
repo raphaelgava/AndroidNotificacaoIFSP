@@ -164,7 +164,7 @@ public class FetchJSONService extends Service implements Runnable {
                         Map<String, String> headers = new HashMap<>();
                         // Basic Authentication
                         //String auth = "Basic " + Base64.encodeToString(CONSUMER_KEY_AND_SECRET.getBytes(), Base64.NO_WRAP);
-
+                        headers.put("Content-Type", "application/json");
                         headers.put(getString(R.string.authorization), MainActivity.getAuth()); //Authorization Token ...
                         return headers;
                     }

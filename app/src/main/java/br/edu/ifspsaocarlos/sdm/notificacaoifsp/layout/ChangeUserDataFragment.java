@@ -1,5 +1,6 @@
 package br.edu.ifspsaocarlos.sdm.notificacaoifsp.layout;
 
+import android.app.DatePickerDialog;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.design.widget.TextInputLayout;
@@ -14,6 +15,7 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.Spinner;
@@ -35,10 +37,11 @@ import com.google.gson.GsonBuilder;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -69,10 +72,26 @@ public class ChangeUserDataFragment extends TemplateFragment{
     private RadioButton inputMale, inputFemale;
 
     private ArrayAdapter<String> spinnerAdapter;
-    private Person person = null;
+    private Person person;
+
+    private Calendar c;
+    private SimpleDateFormat formatDate;
+    private int mYear, mMonth, mDay;
+
+    private final Realm realm = Realm.getDefaultInstance();
 
     public ChangeUserDataFragment() {
+        person = null;
+
         // Required empty public constructor
+        //formatDate = new SimpleDateFormat(getString(R.string.mask_date));
+        formatDate = new SimpleDateFormat("yyyy-MM-dd");
+
+        c = Calendar.getInstance();
+        c.add(Calendar.YEAR, -70);
+        mYear = c.get(Calendar.YEAR) + 70;
+        mMonth = c.get(Calendar.MONTH);
+        mDay = c.get(Calendar.DAY_OF_MONTH);
     }
 
     /**
@@ -114,6 +133,12 @@ public class ChangeUserDataFragment extends TemplateFragment{
             btnSignUp = (Button) view.findViewById(R.id.btnSend);
 
             txtInDate = (TextView) view.findViewById(R.id.txtInDate);
+            txtInDate.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    onClickMethod(view);
+                }
+            });
 
             inputLayoutGraduation = (TextInputLayout) view.findViewById(R.id.txtFormacao);
             inputLayoutEducation = (TextInputLayout) view.findViewById(R.id.txtTipoFormacao);
@@ -141,12 +166,40 @@ public class ChangeUserDataFragment extends TemplateFragment{
         return view;
     }
 
+    public void onClickMethod(View v) {
+        if (v == txtInDate) {
+            DatePickerDialog datePickerDialog = new DatePickerDialog(v.getContext(),
+                    new DatePickerDialog.OnDateSetListener() {
+                        @Override
+                        public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
+
+                            if (year > (mYear - 10)){
+                                Toast.makeText(view.getContext(), "Set year before " + (mYear - 10), Toast.LENGTH_LONG).show();
+                            }else{
+                                Date date = new GregorianCalendar(year, monthOfYear, dayOfMonth).getTime();
+                                txtInDate.setText(formatDate.format(date));
+                                c.set(Calendar.YEAR, year);
+                                c.set(Calendar.MONTH, monthOfYear);
+                                c.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+                            }
+                        }
+                    }, mYear, mMonth, mDay);
+            datePickerDialog.getDatePicker().setMinDate(c.getTimeInMillis());
+            datePickerDialog.show();
+        }
+    }
+
+    public void onStop(){
+        super.onStop();
+        stopTransaction();
+    }
+
     @Override
     public void onResume(){
         super.onResume();
 
 
-        Realm realm = Realm.getDefaultInstance();
+        //Realm realm = Realm.getDefaultInstance();
         person = realm.where(Person.class).equalTo("pk", MainActivity.getUserId()).findFirst();
 
         if (person != null){
@@ -192,73 +245,97 @@ public class ChangeUserDataFragment extends TemplateFragment{
 
     }
 
-    private boolean myFinish = false;
-    private void setMyFinish(boolean flag){
-        this.myFinish = flag;
-    }
+    //private boolean myFinish = false;
+    //private void setMyFinish(boolean flag){
+    //    this.myFinish = flag;
+    //}
     private boolean loadNewData() {
-        myFinish = false;
+        boolean myFinish = false;
         if (person != null){
             //Não pode alterar um objeto realm fora de uma transaction!!!
-            Realm realm = Realm.getDefaultInstance();
-            realm.executeTransaction(new Realm.Transaction() {
-                @Override
-                public void execute(Realm realm) {
-                    // TODO: 9/21/2017 ESTA SALVANDO DIRETO NO REALM, PRMEIRO TEM QUE SO ENVIAR O JSON E AO CONFIRMAR AE SIM SALVAR NO REALM!!! 
-                    try {
-                        switch (person.getEnumType()) {
-                            case ENUM_EMPLOYEE:
-                                if (validateText(inputJob, inputLayoutJob) == true) {
-                                    person.setFuncao(inputJob.getText().toString());
-                                    setMyFinish(true);
-                                }
-                                break;
-                            case ENUM_PROFESSOR:
-                                if (validateText(inputGraduation, inputLayoutGraduation) == true) {
-                                    person.setFormacao(inputGraduation.getText().toString());
-                                    String[] myResArray = getResources().getStringArray(R.array.tipoFormacaoBR);
-                                    List<String> myResArrayList = Arrays.asList(myResArray);
-                                    person.setTipo_formacao(myResArrayList.get(inputEducation.getSelectedItemPosition()));
-                                    setMyFinish(true);
-                                }
-                                break;
-                            case ENUM_STUDENT:
-                                //not used
-                                setMyFinish(true);
-                                break;
+            realm.beginTransaction();
+            try {
+                switch (person.getEnumType()) {
+                    case ENUM_EMPLOYEE:
+                        if (validateText(inputJob, inputLayoutJob) == true) {
+                            person.setFuncao(inputJob.getText().toString());
+                            //setMyFinish(true);
+                            myFinish = true;
                         }
-
-                        if (myFinish == true) {
-                            person.setPassword(inputPassword.getText().toString());
-                            
-                            person.setEmail(inputEmail.getText().toString());
-                            if (inputFemale.isChecked() == true) {
-                                person.setSexo(getString(R.string.json_female));
-                            } else {
-                                person.setSexo(getString(R.string.json_male));
-                            }
-
-                            try {
-                                //SimpleDateFormat formato = new SimpleDateFormat("dd/MM/yyyy");
-                                SimpleDateFormat formato = new SimpleDateFormat("yyyy-MM-dd");
-                                Date data = formato.parse(txtInDate.getText().toString());
-                                person.setDatanascimento(data);
-
-                                Log.d("TCC", "New Person: " + person.toString());
-                            } catch (ParseException e) {
-                                Log.d("TCC", "ERROR: " + e.toString());
-                                setMyFinish(false);
-                            }
-                            //Toast.makeText(this.getContext(), person.toString(), Toast.LENGTH_LONG).show();
+                        break;
+                    case ENUM_PROFESSOR:
+                        if (validateText(inputGraduation, inputLayoutGraduation) == true) {
+                            person.setFormacao(inputGraduation.getText().toString());
+                            String[] myResArray = getResources().getStringArray(R.array.tipoFormacaoBR);
+                            List<String> myResArrayList = Arrays.asList(myResArray);
+                            person.setTipo_formacao(myResArrayList.get(inputEducation.getSelectedItemPosition()));
+                            //setMyFinish(true);
+                            myFinish = true;
                         }
-                    }catch (Exception e){
-                        setMyFinish(false);
-                        Log.d("TCC", "ERROR: " + e.toString());
-                    }
+                        break;
+                    case ENUM_STUDENT:
+                        //not used
+                        //setMyFinish(true);
+                        myFinish = true;
+                        break;
                 }
-            });
+
+                if (myFinish == true) {
+                    if (inputPassword.getText().toString().isEmpty()){
+                        person.setPassword("0"); //Nenhum campo pode ficar nulo na hora de enviar
+                    }
+                    else {
+                        person.setPassword(inputPassword.getText().toString());
+                    }
+
+                    person.setEmail(inputEmail.getText().toString());
+                    if (inputFemale.isChecked() == true) {
+                        person.setSexo(getString(R.string.json_female));
+                    } else {
+                        person.setSexo(getString(R.string.json_male));
+                    }
+
+                    //SimpleDateFormat formato = new SimpleDateFormat("dd/MM/yyyy");
+                    //SimpleDateFormat formato = new SimpleDateFormat("yyyy-MM-dd");
+                    //Date data = formato.parse(txtInDate.getText().toString());
+                    //person.setDatanascimento(data);
+                    person.setDatanascimento(txtInDate.getText().toString());
+
+                    Log.d("TCC", "New Person: " + person.toString());
+                    //Toast.makeText(this.getContext(), person.toString(), Toast.LENGTH_LONG).show();
+                }
+            }catch (Exception e){
+                //setMyFinish(true);
+                myFinish = false;
+                stopTransaction();
+                Log.d("TCC", "ERROR: " + e.toString());
+            }
+
+            //Realm realm = Realm.getDefaultInstance();
+//            realm.executeTransaction(new Realm.Transaction() {
+//                @Override
+//                public void execute(Realm realm) {
+//                    try {
+//                    //DESTA MANEIRA ELE JÁ ALTERA NO BANCO DIRETAMENTE!
+//                            person.setDatanascimento(txtInDate.getText().toString());
+//
+//                            Log.d("TCC", "New Person: " + person.toString());
+//                            //Toast.makeText(this.getContext(), person.toString(), Toast.LENGTH_LONG).show();
+//                        }
+//                    }catch (Exception e){
+//                        setMyFinish(false);
+//                        Log.d("TCC", "ERROR: " + e.toString());
+//                    }
+//                }
+//            });
         }
         return myFinish;
+    }
+
+    private void stopTransaction() {
+        if(realm.isInTransaction()) {
+            realm.cancelTransaction();
+        }
     }
 
     /**
@@ -310,7 +387,7 @@ public class ChangeUserDataFragment extends TemplateFragment{
                                     })
                                     .create();
 
-                            Realm realm = Realm.getDefaultInstance();
+                            //Realm realm = Realm.getDefaultInstance();
                             //Person managedModel = realm.copyFromRealm(person);
                             String json = gson.toJson(realm.copyFromRealm(person));
                             JSONObject user = new JSONObject(json);
@@ -320,12 +397,14 @@ public class ChangeUserDataFragment extends TemplateFragment{
                                 JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, url, user,
                                         new Response.Listener<JSONObject>() {
                                             public void onResponse(JSONObject s) {
+                                                realm.commitTransaction();
                                                 Toast.makeText(getContext(), R.string.msg_changed,
                                                         Toast.LENGTH_SHORT).show();
                                                 getActivity().getFragmentManager().popBackStack();
                                             }
                                         }, new Response.ErrorListener() {
                                     public void onErrorResponse(VolleyError volleyError) {
+                                        stopTransaction();
                                         Toast.makeText(getContext(), "Error during update user.",
                                                 Toast.LENGTH_SHORT).show();
                                         Log.e("TCC", "Error during update user." + volleyError.toString());
@@ -336,29 +415,32 @@ public class ChangeUserDataFragment extends TemplateFragment{
                                         Map<String, String> headers = new HashMap<>();
                                         // Basic Authentication
                                         //String auth = "Basic " + Base64.encodeToString(CONSUMER_KEY_AND_SECRET.getBytes(), Base64.NO_WRAP);
-
+                                        headers.put("Content-Type", "application/json");
                                         headers.put(getString(R.string.authorization), MainActivity.getAuth()); //Authorization Token ...
                                         return headers;
                                     }
                                 };
 
-                                VERIFICAR ERRO!!!!!
-                                09-21 05:11:25.233 11000-11477/br.edu.ifspsaocarlos.sdm.notificacaoifsp E/Volley: [237] BasicNetwork.performRequest: Unexpected response code 400 for http://192.168.0.16:8000/professor_json/5/
-                                09-21 05:11:25.261 11000-11000/br.edu.ifspsaocarlos.sdm.notificacaoifsp E/TCC: Error during update user.com.android.volley.ServerError
+//                                VERIFICAR ERRO!!!!! --> problema variaveis do backend!!!
+//                                09-21 05:11:25.233 11000-11477/br.edu.ifspsaocarlos.sdm.notificacaoifsp E/Volley: [237] BasicNetwork.performRequest: Unexpected response code 400 for http://192.168.0.16:8000/professor_json/5/
+//                                09-21 05:11:25.261 11000-11000/br.edu.ifspsaocarlos.sdm.notificacaoifsp E/TCC: Error during update user.com.android.volley.ServerError
 
                                 queue.add(jsonObjectRequest);
                             } catch (Exception e) {
+                                stopTransaction();
                                 Log.e("TCC", "Erro na leitura de mensagens");
                                 Toast.makeText(getContext(), "Error during update user: " + e.toString(),
                                         Toast.LENGTH_SHORT).show();
                             }
                         } catch (JSONException e) {
+                            stopTransaction();
                             Log.e("TCC", "ERROR: " + e.toString());
                         }
                     }
                 }
             }
         }else{
+            stopTransaction();
             Toast.makeText(getContext(), "Without connection!",
                     Toast.LENGTH_SHORT).show();
         }
