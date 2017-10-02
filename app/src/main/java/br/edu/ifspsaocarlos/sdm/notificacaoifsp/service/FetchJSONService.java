@@ -12,12 +12,14 @@ import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -75,6 +77,7 @@ public class FetchJSONService extends Service implements Runnable {
                             buscarUsuario();
                             break;
                         case ENUM_OFERECIMENTO:
+                            buscarOferecimento();
                             break;
                     }
                 }
@@ -211,6 +214,142 @@ public class FetchJSONService extends Service implements Runnable {
         }
     }
 
+    private void buscarOferecimento() {
+        boolean flagOk = true;
+
+        String url = getString(R.string.url_base);
+
+        EnumParser parser = null;
+        switch (MainActivity.getPeronType()){
+            case ENUM_STUDENT:
+            case ENUM_PROFESSOR:
+                url += getString(R.string.url_oferecimento); parser = EnumParser.ENUM_PROFESSOR; break;
+            default:
+                Log.e("TCC", "Tipo pessoa desconhecida");
+                flagOk = false;
+        }
+
+        if (flagOk == true) {
+            final EnumParser finalParser = parser;
+            //url += Integer.toString(MainActivity.getUserId());
+            try {
+                HashMap<String, String> params = new HashMap<String, String>();
+                Calendar cd = Calendar.getInstance();
+                final int year = cd.get(Calendar.YEAR);
+                int month = cd.get(Calendar.MONTH);
+                final int semester;
+                if (month <= 6){
+                    semester = 1;
+                }
+                else{
+                    semester = 2;
+                }
+
+                url += "?ano=" + year + "&semestre=" + semester;
+
+                // TODO: 10/2/2017 continuar a implementação do oferecimento... fazer salvar no bd e verificar o que será feito: só abre a activity após receber os dados ou faz verificação na activity para saber o final 
+
+                StringRequest sr = new StringRequest(Request.Method.GET, url , new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String s) {
+                        try {
+                            JSONArray jsonArray = new JSONArray(s);
+                            for(int i = 0; i < jsonArray.length(); i++) {
+                                JSONObject jsonObj = jsonArray.getJSONObject(i);
+                            }
+                            Toast.makeText(FetchJSONService.this, "Finalmente: " + s, Toast.LENGTH_SHORT).show();
+                        } catch (JSONException e) {
+                            Toast.makeText(FetchJSONService.this, "Erro na conversão " +
+                                    "de objeto JSON!", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                }, new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Toast.makeText(FetchJSONService.this, "Erro na recuperação da offerta: " + error.toString(), Toast.LENGTH_SHORT).show();
+                    }
+                }){
+//                    //Só funciona para POST
+//                    @Override
+//                    protected Map<String,String> getParams(){
+//                        // Posting parameters to login url
+//                        Map<String, String> params = new HashMap<String, String>();
+//
+//                        params.put("ano", Integer.toString(year));
+//                        params.put("semestre", Integer.toString(semester));
+//                        return params;
+//                    }
+
+                    @Override
+                    public Map<String, String> getHeaders() throws AuthFailureError {
+                        Map<String, String> headers = new HashMap<>();
+                        // Basic Authentication
+                        //String auth = "Basic " + Base64.encodeToString(CONSUMER_KEY_AND_SECRET.getBytes(), Base64.NO_WRAP);
+
+                        headers.put(getString(R.string.authorization), MainActivity.getAuth()); //Authorization Token ...
+                        return headers;
+                    }
+                };
+
+                //RequestQueue ExampleRequestQueue = Volley.newRequestQueue(this);
+                //ExampleRequestQueue.add(sr);
+                queue.add(sr);
+
+//                JsonArrayRequest jsonObjectRequest = new JsonArrayRequest(Request.Method.GET, url, null,
+//                        new Response.Listener<JSONArray>() {
+//                            @Override
+//                            public void onResponse(JSONArray s) {
+//                                //JSONArray jsonArray;
+//                                //jsonArray = s.getJSONArray("contatos");
+//                                try {
+//                                    for(int i = 0; i < s.length(); i++) {
+//                                        JSONObject jsonObj = s.getJSONObject(i);
+//                                    }
+//                                    Toast.makeText(FetchJSONService.this, "Finalmente: " + s.toString(), Toast.LENGTH_SHORT).show();
+//                                } catch (JSONException e) {
+//                                    Toast.makeText(FetchJSONService.this, "Erro na conversão " +
+//                                            "de objeto JSON!", Toast.LENGTH_SHORT).show();
+//                                }
+//                            }
+//                        },
+//                        new Response.ErrorListener() {
+//                            @Override
+//                            public void onErrorResponse(VolleyError volleyError) {
+//                                Toast.makeText(FetchJSONService.this, "Erro na recuperação do usuário: " + volleyError.toString(), Toast.LENGTH_SHORT).show();
+//                            }
+//                        }
+//                ){
+//                    @Override
+//                    public Map<String, String> getHeaders() throws AuthFailureError {
+//                        Map<String, String> headers = new HashMap<>();
+//                        // Basic Authentication
+//                        //String auth = "Basic " + Base64.encodeToString(CONSUMER_KEY_AND_SECRET.getBytes(), Base64.NO_WRAP);
+//
+//                        headers.put(getString(R.string.authorization), MainActivity.getAuth()); //Authorization Token ...
+//                        return headers;
+//                    }
+//
+//                    @Override
+//                    protected Map<String, String> getParams() {
+//                        // Posting parameters to login url
+//                        Map<String, String> params = new HashMap<String, String>();
+//
+//                        params.put("ano", Integer.toString(year));
+//                        params.put("semestre", Integer.toString(semester));
+//                        return params;
+//                    }
+//                }
+//
+//                ;
+//                jsonObjectRequest.setTag("MyTAG");
+//
+//                queue.add(jsonObjectRequest);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
 
     private void buscarNotificacao() {
         RequestQueue queue = Volley.newRequestQueue(FetchJSONService.this);
@@ -239,6 +378,9 @@ public class FetchJSONService extends Service implements Runnable {
             e.printStackTrace();
         }
     }
+
+
+
     @Override
     public void onDestroy() {
         super.onDestroy();

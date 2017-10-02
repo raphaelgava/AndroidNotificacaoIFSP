@@ -137,7 +137,7 @@ public class GridNotificationsFragment extends TemplateFragment{
             Oferecimento offer = new Oferecimento();
 
             c.add(Calendar.DATE, i); // Adding days
-            offer.setData(c.getTime());
+            offer.setAno(c.getTime().getYear());
 /*
             switch (i % NUMBER_COLUMN){
                 case 0:

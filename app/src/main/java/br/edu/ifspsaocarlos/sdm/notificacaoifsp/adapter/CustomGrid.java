@@ -79,7 +79,7 @@ public class CustomGrid extends RecyclerView.Adapter<CustomGrid.ItemViewHolder> 
 
         //Setar os valores conforme a grid faz scroll
         holder.txtSigla.setText(offer.getSigla());
-        holder.txtDate.setText(offer.getDataString());
+        holder.txtDate.setText(Integer.toString(offer.getAno()));
         holder.mLayoutPrincipal.setTag(position);
 
         holder.mLayoutPrincipal.setBackgroundResource(R.drawable.shape_color);

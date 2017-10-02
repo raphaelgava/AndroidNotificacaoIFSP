@@ -1,5 +1,6 @@
 package br.edu.ifspsaocarlos.sdm.notificacaoifsp.activity;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -34,6 +35,8 @@ import io.realm.Realm;
 
 public class MainActivity extends AppCompatActivity implements OnNavigationItemSelectedListener,
         TemplateFragment.OnFragmentInteractionListener{
+
+    private final int RESULT_OFFERING_ACTIVITY = 100;
 
     private static UserLogin actualUser;
     private static EnumUserType type;
@@ -314,6 +317,12 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
             }
         } else if (id == R.id.nav_quit) {
             goBackToLogin();
+        } else if (id == R.id.nav_offering){
+            Log.d("TCC", "Sending json get person data");
+            ServiceState.getInstance().pushState(ServiceState.EnumServiceState.ENUM_OFERECIMENTO);
+
+            Intent intent = new Intent(getApplicationContext(),OfferingListActivity.class);
+            startActivityForResult(intent, RESULT_OFFERING_ACTIVITY);
         }else{
             setFragTransactionStack(id, R.id.content_frame, true);
         }
@@ -321,6 +330,29 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    public void onActivityResult(int requestCode, int resultCode, Intent data)
+    {
+        super.onActivityResult(requestCode, resultCode, data);
+        // check if the request code is same as what is passed  here it is 2
+        switch (requestCode){
+            case RESULT_OFFERING_ACTIVITY:
+                if (resultCode == Activity.RESULT_OK){
+                    //ArrayList<Remetente> array = (ArrayList<Remetente>) data.getSerializableExtra("remententList");
+
+                    //for (int i = 0; i < array.size(); i++) {
+                    //    Log.d("TCC", array.get(i).getDescription());
+                    //}
+                    Log.d("TCC", "Offering Activity Result ok");
+                    setFragTransactionStack(R.id.nav_class_schedule, R.id.content_frame, true);
+                }
+                //String message=data.getStringExtra("MESSAGE");
+                //textView1.setText(message);
+                break;
+            default:
+                Log.d("TCC", "Activity Result wrong");
+        }
     }
 
     private void goBackToLogin() {

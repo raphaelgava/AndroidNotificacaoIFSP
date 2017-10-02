@@ -8,6 +8,10 @@
             android:icon="@drawable/ic_menu_class_schedule"
             android:title="Class Schedule" />
         <item
+            android:id="@+id/nav_offering"
+            android:icon="@drawable/ic_menu_offering"
+            android:title="Offering" />
+        <item
             android:id="@+id/nav_user_data"
             android:icon="@drawable/ic_menu_user_data"
             android:title="User Data" />

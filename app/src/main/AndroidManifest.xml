@@ -79,6 +79,9 @@
             android:name=".activity.RemetentListActivity"
             android:configChanges="orientation|screenSize" />
         <activity
+            android:name=".activity.OfferingListActivity"
+            android:configChanges="orientation|screenSize" />
+        <activity
             android:name=".activity.AboutActivity"
             android:configChanges="orientation|screenSize" />
 

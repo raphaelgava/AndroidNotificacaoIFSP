@@ -31,6 +31,7 @@
     <string name="url_student">aluno_json/</string>
     <string name="url_employee">servidor_json/</string>
     <string name="url_professor">professor_json/</string>
+    <string name="url_oferecimento">oferecimento_json/</string>
 
     <string name="json_token">token</string>
     <string name="json_id">id</string>
