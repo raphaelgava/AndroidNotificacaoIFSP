@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="72dp"
+    android:layout_centerVertical="true"
+    android:id="@+id/llOfferingList"
+    android:background="?android:attr/selectableItemBackground">
+    <TextView
+        android:id="@+id/txtBaseOffering"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_margin="5dp"
+        android:textSize="18sp" />
+
+    <TextView
+        android:id="@+id/txtOfferingProf"
+        style="@style/list_item_primary_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Code"
+        android:layout_alignBaseline="@+id/txtBaseOffering"
+        android:layout_alignBottom="@+id/txtBaseOffering"
+        android:layout_alignParentRight="true"
+        android:layout_toRightOf="@+id/txtBaseOffering"
+        android:textSize="18sp" />
+
+
+    <TextView
+        android:id="@+id/txtOfferingDesc"
+        style="@style/list_item_secondary_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Description"
+        android:layout_alignLeft="@+id/txtOfferingProf"
+        android:layout_below="@+id/txtBaseOffering" />
+
+    <CheckBox
+        android:id="@+id/ckbSelectedOffering"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/txtOfferingDesc"
+        android:layout_alignRight="@+id/txtOfferingProf"
+        android:layout_margin="5dp"/>
+    <View
+        style="@style/divider"
+        android:layout_alignParentBottom="true" />
+</RelativeLayout>

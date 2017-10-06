@@ -20,12 +20,15 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
+
 import java.util.Date;
 
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.R;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.layout.CreateNotificationFragment;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.layout.FragmentFactory;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.layout.TemplateFragment;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.Offering;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.Person;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.UserLogin;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.service.FetchJSONService;
@@ -67,24 +70,54 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
             public void onClick(View view) {
                 //Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                 //        .setAction("Action", null).show();
-               setFragTransactionStack(R.id.nav_notification, R.id.content_frame, true);
+               setFragTransactionStack(R.id.nav_notification, R.id.content_frame, null, true);
 
                 DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
                 drawer.closeDrawer(GravityCompat.START);
             }
         });
 
+        final NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
+
+
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close)
+        {
+
+            /** Called when a drawer has settled in a completely closed state. */
+            public void onDrawerClosed(View view) {
+                super.onDrawerClosed(view);
+                //getActionBar().setTitle(mTitle);
+            }
+
+            /** Called when a drawer has settled in a completely open state. */
+            public void onDrawerOpened(View drawerView) {
+                super.onDrawerOpened(drawerView);
+                //getActionBar().setTitle(mDrawerTitle);
+                if (actualUser != null) {
+                    if (getPeronType() == EnumUserType.ENUM_EMPLOYEE){
+                        Menu menu = navigationView.getMenu();
+
+                        MenuItem offering = menu.findItem(R.id.nav_offering);
+                        offering.setVisible(false);
+                    }
+                }
+            }
+        };
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
+//        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+//        navigationView.setNavigationItemSelectedListener(this);
+
+
 
         fragmentManager = getSupportFragmentManager();
-        setFragTransactionStack(R.id.nav_class_schedule, R.id.content_frame, true);
+
+        //MUDAR AQUI!!! TEM QUE CARREGAR DO REALM!!!!!!!!!!!!!
+        setFragTransactionStack(R.id.nav_class_schedule, R.id.content_frame, null, true);
 
         /**
          * Verifica se esta cadastrado para só depois startar o que tem que startar. Sem isso ele
@@ -279,7 +312,7 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
         return super.onOptionsItemSelected(item);
     }
 
-    private void setFragTransactionStack(int fragType, int content, boolean flagAddStack){
+    private void setFragTransactionStack(int fragType, int content, Bundle data, boolean flagAddStack){
         // Create new fragment and transaction
         android.support.v4.app.FragmentTransaction transaction = fragmentManager.beginTransaction();
 
@@ -294,7 +327,7 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
             fab.setVisibility(View.INVISIBLE);
         }
 
-        transaction.replace(content, FragmentFactory.CreateFragment(null, null, fragType));
+        transaction.replace(content, FragmentFactory.CreateFragment(getApplicationContext(), data, fragType));
         if (flagAddStack) {
             transaction.addToBackStack(Integer.toString(fragType));
             transaction.commit();
@@ -324,7 +357,7 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
             Intent intent = new Intent(getApplicationContext(),OfferingListActivity.class);
             startActivityForResult(intent, RESULT_OFFERING_ACTIVITY);
         }else{
-            setFragTransactionStack(id, R.id.content_frame, true);
+            setFragTransactionStack(id, R.id.content_frame, null, true);
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -339,13 +372,14 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
         switch (requestCode){
             case RESULT_OFFERING_ACTIVITY:
                 if (resultCode == Activity.RESULT_OK){
-                    //ArrayList<Remetente> array = (ArrayList<Remetente>) data.getSerializableExtra("remententList");
+                    Gson gson = new Gson();
+                    Bundle bundle = data.getExtras();
+                    for (int i = 0; i < bundle.size(); i++){
+                        Offering object = gson.fromJson(bundle.getString(Integer.toString(i)), Offering.class);
 
-                    //for (int i = 0; i < array.size(); i++) {
-                    //    Log.d("TCC", array.get(i).getDescription());
-                    //}
-                    Log.d("TCC", "Offering Activity Result ok");
-                    setFragTransactionStack(R.id.nav_class_schedule, R.id.content_frame, true);
+                        Log.d("TCC", object.getDescricao() + " - " + object.getProfessor());
+                    }
+                    setFragTransactionStack(R.id.nav_class_schedule, R.id.content_frame, bundle, true);
                 }
                 //String message=data.getStringExtra("MESSAGE");
                 //textView1.setText(message);

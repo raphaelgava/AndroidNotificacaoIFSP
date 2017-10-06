@@ -13,13 +13,13 @@ import java.util.List;
 
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.R;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.activity.MapsActivity;
-import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.Oferecimento;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.Offering;
 
 /*
-public class CustomGrid extends ArrayAdapter<Oferecimento> {
+public class CustomGrid extends ArrayAdapter<Offering> {
     private LayoutInflater inflador;
 
-    public CustomGrid(Activity tela, List<Oferecimento> listaOferecimentos) {
+    public CustomGrid(Activity tela, List<Offering> listaOferecimentos) {
         super(tela, R.layout.celula_grid, listaOferecimentos);
         inflador = (LayoutInflater) tela.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     }
@@ -39,7 +39,7 @@ public class CustomGrid extends ArrayAdapter<Oferecimento> {
         else {
             holder = (ViewHolder) convertView.getTag();
         }
-        Oferecimento offer = getItem(position);
+        Offering offer = getItem(position);
         holder.txtSigla.setText(offer.getSigla());
         holder.txtDate.setText(offer.getDataString());
         return convertView;
@@ -53,13 +53,13 @@ public class CustomGrid extends ArrayAdapter<Oferecimento> {
 
 public class CustomGrid extends RecyclerView.Adapter<CustomGrid.ItemViewHolder> {
 
-    private List<Oferecimento> mListaOferecimentos;
+    private List<Offering> mListaOferecimentos;
     private Point windowSize;
     private int position;
     private final double INDEX_COLUMN = 0.20;
 
 
-    public CustomGrid(List<Oferecimento> listaOferecimentos, Point size, int position) {
+    public CustomGrid(List<Offering> listaOferecimentos, Point size, int position) {
         this.mListaOferecimentos = listaOferecimentos;
         this.windowSize = size;
         this.position = position;
@@ -75,10 +75,10 @@ public class CustomGrid extends RecyclerView.Adapter<CustomGrid.ItemViewHolder> 
     @Override
     public void onBindViewHolder(ItemViewHolder holder, int position) {
         //Recuperar o objeto da lista
-        Oferecimento offer = mListaOferecimentos.get(position);
+        Offering offer = mListaOferecimentos.get(position);
 
         //Setar os valores conforme a grid faz scroll
-        holder.txtSigla.setText(offer.getSigla());
+        holder.txtSigla.setText(offer.getDescricao());
         holder.txtDate.setText(Integer.toString(offer.getAno()));
         holder.mLayoutPrincipal.setTag(position);
 
@@ -154,7 +154,7 @@ public class CustomGrid extends RecyclerView.Adapter<CustomGrid.ItemViewHolder> 
             mLayoutPrincipal.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Oferecimento offer = mListaOferecimentos.get((Integer) v.getTag());
+                    Offering offer = mListaOferecimentos.get((Integer) v.getTag());
 
                     Intent intent = new Intent(v.getContext(), MapsActivity.class);
                     intent.putExtra("oferecimento", offer);

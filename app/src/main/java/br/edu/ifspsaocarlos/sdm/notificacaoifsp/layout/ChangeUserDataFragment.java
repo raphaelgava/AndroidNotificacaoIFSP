@@ -80,12 +80,17 @@ public class ChangeUserDataFragment extends TemplateFragment{
 
     private final Realm realm = Realm.getDefaultInstance();
 
-    public ChangeUserDataFragment() {
+    public ChangeUserDataFragment(){
+
+    }
+
+    public ChangeUserDataFragment(Context cxt) {
         person = null;
 
         // Required empty public constructor
         //formatDate = new SimpleDateFormat(getString(R.string.mask_date));
-        formatDate = new SimpleDateFormat("yyyy-MM-dd");
+        String dateMask = cxt.getString(R.string.mask_date);
+        formatDate = new SimpleDateFormat(dateMask);
 
         c = Calendar.getInstance();
         c.add(Calendar.YEAR, -70);
@@ -105,7 +110,7 @@ public class ChangeUserDataFragment extends TemplateFragment{
     // TODO: Rename and change types and number of parameters
     // public static ChangeUserDataFragment newInstance(String param1, String param2) {
     public static ChangeUserDataFragment newInstance(Context context, Bundle args) {
-        ChangeUserDataFragment fragment = new ChangeUserDataFragment();
+        ChangeUserDataFragment fragment = new ChangeUserDataFragment(context);
 //        Bundle args = new Bundle();
 //        args.putString(ARG_PARAM1, param1);
 //        args.putString(ARG_PARAM2, param2);

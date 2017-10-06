@@ -28,19 +28,8 @@ public class RealmMigrations implements RealmMigration {
             oldVersion++;
         }
 
-        if (oldVersion == 2) { // TODO: 9/14/2017 esta com problema ao acessar esse migration
-            final RealmObjectSchema userSchema = schema.get("Person");
-            if (!userSchema.hasField("password")) {
-                userSchema.addField("password", String.class);
-            }
-            /*
-            final RealmObjectSchema userSchema = schema.get("UserLogin");
+        if (oldVersion == 2) { // TODO: 9/14/2017 esta com problema ao acessar esse migration a primeira vez
 
-            if (!userSchema.hasField("lastUpdate")){
-                userSchema.addField("lastUpdate", Date.class);
-            }
-*/
-            oldVersion++;
 
         }
     }

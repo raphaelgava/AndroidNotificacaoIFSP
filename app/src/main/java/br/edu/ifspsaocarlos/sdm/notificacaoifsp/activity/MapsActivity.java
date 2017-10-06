@@ -23,7 +23,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.R;
-import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.Oferecimento;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.Offering;
 
 public class MapsActivity extends FragmentActivity implements
         GoogleMap.OnMyLocationButtonClickListener,
@@ -33,7 +33,7 @@ public class MapsActivity extends FragmentActivity implements
     private GoogleMap mMap;
     private Button botao, btnGoMark;
     private TextView texto;
-    private Oferecimento offer;
+    private Offering offer;
     private LatLng position;
 
     @Override
@@ -50,12 +50,12 @@ public class MapsActivity extends FragmentActivity implements
         this.setFinishOnTouchOutside(false);
 
         position = new LatLng(-34, 151);
-        offer = (Oferecimento) getIntent().getSerializableExtra("oferecimento");
+        offer = (Offering) getIntent().getSerializableExtra("oferecimento");
 
         texto = (TextView) findViewById(R.id.txtParametro);
         texto.bringToFront();
         if (offer != null) {
-            texto.setText(offer.getSigla() + ": esse texto é apenas para eu saber como será distribuido na tela independente do tamanho pois o texto pode ser bem grande vindo do servidor. Ainda assim faltou texto por isso estou adicionando mais algumas palavras de teste. Parte 22309837542:esse texto é apenas para eu saber como será distribuido na tela independente do tamanho pois o texto pode ser bem grande vindo do servidor. Ainda assim faltou texto por isso estou adicionando mais algumas palavras de teste.");
+            texto.setText(offer.getDescricao() + ": esse texto é apenas para eu saber como será distribuido na tela independente do tamanho pois o texto pode ser bem grande vindo do servidor. Ainda assim faltou texto por isso estou adicionando mais algumas palavras de teste. Parte 22309837542:esse texto é apenas para eu saber como será distribuido na tela independente do tamanho pois o texto pode ser bem grande vindo do servidor. Ainda assim faltou texto por isso estou adicionando mais algumas palavras de teste.");
         }
 
         botao = (Button) findViewById(R.id.btnDialog);

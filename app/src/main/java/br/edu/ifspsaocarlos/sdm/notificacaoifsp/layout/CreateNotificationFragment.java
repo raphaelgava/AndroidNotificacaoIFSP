@@ -62,14 +62,19 @@ public class CreateNotificationFragment extends TemplateFragment {
     //// TODO: 3/27/2017 criar esquema de setar o local pelo marker (save the state of mapFragment - maps example)
 //    id_local = models.ForeignKey(Local, verbose_name="Local", blank=True, null=True)  # Field name made lowercase.
 
+    public CreateNotificationFragment(){
 
-    public CreateNotificationFragment() {
+    }
+
+    public CreateNotificationFragment(Context cxt) {
         // Required empty public constructor
         //c = Calendar.getInstance();
         //formatDate = new SimpleDateFormat("dd/MM/yyyy");
-        formatDate = new SimpleDateFormat(getString(R.string.mask_date));
+        String dateMask = cxt.getString(R.string.mask_date);
+        formatDate = new SimpleDateFormat(dateMask);
         //formatTime = new SimpleDateFormat("hh:mm");//12h
-        formatTime = new SimpleDateFormat(getString(R.string.mask_time));//24h
+        String timeMask = cxt.getString(R.string.mask_time);
+        formatTime = new SimpleDateFormat(timeMask);//24h
 
         c = Calendar.getInstance();
         mYear = c.get(Calendar.YEAR);
@@ -90,7 +95,7 @@ public class CreateNotificationFragment extends TemplateFragment {
     // TODO: Rename and change types and number of parameters
     //public static CreateNotificationFragment newInstance(String param1, String param2) {
     public static CreateNotificationFragment newInstance(Context context, Bundle args) {
-        CreateNotificationFragment fragment = new CreateNotificationFragment();
+        CreateNotificationFragment fragment = new CreateNotificationFragment(context);
         //Bundle args = new Bundle();
         //args.putString(ARG_PARAM1, param1);
         //args.putString(ARG_PARAM2, param2);

@@ -33,7 +33,7 @@ import br.edu.ifspsaocarlos.sdm.notificacaoifsp.util.ServiceState;
  */
 public class FetchJSONService extends Service implements Runnable {
     private boolean appAberta;
-    private boolean primeiraBusca;
+    private static boolean buscaOferta;
 
     private ServiceState machine;
     private RequestQueue queue;
@@ -50,7 +50,7 @@ public class FetchJSONService extends Service implements Runnable {
     public void onCreate() {
         super.onCreate();
         appAberta = true;
-        primeiraBusca = true;
+        buscaOferta = false;
         Log.e("", "onCreate");
         queue = Volley.newRequestQueue(FetchJSONService.this);
 
@@ -130,7 +130,6 @@ public class FetchJSONService extends Service implements Runnable {
         }
 
         if (flagOk == true) {
-            final EnumParser finalParser = parser;
             url += Integer.toString(MainActivity.getUserId());
             try {
 
@@ -138,7 +137,7 @@ public class FetchJSONService extends Service implements Runnable {
                         new Response.Listener<JSONObject>() {
                             @Override
                             public void onResponse(JSONObject s) {
-                                ParserJSON.getInstance().parserAndSave(s, finalParser);
+                                ParserJSON.getInstance().saveUser(s);
                                 //Toast.makeText(FetchJSONService.this, "Finalmente: " + s.toString(), Toast.LENGTH_SHORT).show();
                                 Log.d("TCC", "User: " + s.toString());
                                 
@@ -220,6 +219,7 @@ public class FetchJSONService extends Service implements Runnable {
         String url = getString(R.string.url_base);
 
         EnumParser parser = null;
+        buscaOferta = false;
         switch (MainActivity.getPeronType()){
             case ENUM_STUDENT:
             case ENUM_PROFESSOR:
@@ -235,9 +235,9 @@ public class FetchJSONService extends Service implements Runnable {
             try {
                 HashMap<String, String> params = new HashMap<String, String>();
                 Calendar cd = Calendar.getInstance();
-                final int year = cd.get(Calendar.YEAR);
+                int year = cd.get(Calendar.YEAR);
                 int month = cd.get(Calendar.MONTH);
-                final int semester;
+                int semester;
                 if (month <= 6){
                     semester = 1;
                 }
@@ -256,16 +256,20 @@ public class FetchJSONService extends Service implements Runnable {
                             JSONArray jsonArray = new JSONArray(s);
                             for(int i = 0; i < jsonArray.length(); i++) {
                                 JSONObject jsonObj = jsonArray.getJSONObject(i);
+                                ParserJSON.getInstance().saveOffering(jsonObj);
                             }
-                            Toast.makeText(FetchJSONService.this, "Finalmente: " + s, Toast.LENGTH_SHORT).show();
+                            //Toast.makeText(FetchJSONService.this, "Finalmente: " + s, Toast.LENGTH_SHORT).show();
+                            Log.d("TCC", "Response Offering");
                         } catch (JSONException e) {
                             Toast.makeText(FetchJSONService.this, "Erro na conversão " +
                                     "de objeto JSON!", Toast.LENGTH_SHORT).show();
                         }
+                        buscaOferta = true; //para não ficar travado caso de algum erro
                     }
                 }, new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
+                        buscaOferta = true; // para não deixar a página sem carregar nada caso de erro
                         Toast.makeText(FetchJSONService.this, "Erro na recuperação da offerta: " + error.toString(), Toast.LENGTH_SHORT).show();
                     }
                 }){
@@ -291,59 +295,7 @@ public class FetchJSONService extends Service implements Runnable {
                     }
                 };
 
-                //RequestQueue ExampleRequestQueue = Volley.newRequestQueue(this);
-                //ExampleRequestQueue.add(sr);
                 queue.add(sr);
-
-//                JsonArrayRequest jsonObjectRequest = new JsonArrayRequest(Request.Method.GET, url, null,
-//                        new Response.Listener<JSONArray>() {
-//                            @Override
-//                            public void onResponse(JSONArray s) {
-//                                //JSONArray jsonArray;
-//                                //jsonArray = s.getJSONArray("contatos");
-//                                try {
-//                                    for(int i = 0; i < s.length(); i++) {
-//                                        JSONObject jsonObj = s.getJSONObject(i);
-//                                    }
-//                                    Toast.makeText(FetchJSONService.this, "Finalmente: " + s.toString(), Toast.LENGTH_SHORT).show();
-//                                } catch (JSONException e) {
-//                                    Toast.makeText(FetchJSONService.this, "Erro na conversão " +
-//                                            "de objeto JSON!", Toast.LENGTH_SHORT).show();
-//                                }
-//                            }
-//                        },
-//                        new Response.ErrorListener() {
-//                            @Override
-//                            public void onErrorResponse(VolleyError volleyError) {
-//                                Toast.makeText(FetchJSONService.this, "Erro na recuperação do usuário: " + volleyError.toString(), Toast.LENGTH_SHORT).show();
-//                            }
-//                        }
-//                ){
-//                    @Override
-//                    public Map<String, String> getHeaders() throws AuthFailureError {
-//                        Map<String, String> headers = new HashMap<>();
-//                        // Basic Authentication
-//                        //String auth = "Basic " + Base64.encodeToString(CONSUMER_KEY_AND_SECRET.getBytes(), Base64.NO_WRAP);
-//
-//                        headers.put(getString(R.string.authorization), MainActivity.getAuth()); //Authorization Token ...
-//                        return headers;
-//                    }
-//
-//                    @Override
-//                    protected Map<String, String> getParams() {
-//                        // Posting parameters to login url
-//                        Map<String, String> params = new HashMap<String, String>();
-//
-//                        params.put("ano", Integer.toString(year));
-//                        params.put("semestre", Integer.toString(semester));
-//                        return params;
-//                    }
-//                }
-//
-//                ;
-//                jsonObjectRequest.setTag("MyTAG");
-//
-//                queue.add(jsonObjectRequest);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -390,6 +342,10 @@ public class FetchJSONService extends Service implements Runnable {
 
         appAberta = false;
         stopSelf();
+    }
+
+    public static boolean isBuscaOferta() {
+        return buscaOferta;
     }
 }
 

@@ -1,6 +1,7 @@
 package br.edu.ifspsaocarlos.sdm.notificacaoifsp.layout;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Point;
 import android.graphics.Rect;
@@ -17,14 +18,17 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.google.gson.Gson;
 
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.R;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.adapter.CustomGrid;
-import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.Oferecimento;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.AddedOffering;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.Offering;
+import io.realm.Realm;
 //todo inserir mapa no frame ade acezso ao item
 //todo estudar OnFragmentInteractionListener (verificar se cada fragmento tem que ter o seu e se o main tem que implementar todos)
 
@@ -41,6 +45,9 @@ import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.Oferecimento;
 public class GridNotificationsFragment extends TemplateFragment{
 
     public static final int NUMBER_COLUMN = 5; //Number of column = number of classes days
+    private static Bundle bundle;
+    private static Bundle actualBundle;
+    private static boolean flagSalvar;
 
     public GridNotificationsFragment() {
         // Required empty public constructor
@@ -77,8 +84,35 @@ public class GridNotificationsFragment extends TemplateFragment{
         //args.putString(ARG_PARAM1, param1);
         //args.putString(ARG_PARAM2, param2);
         fragment.setArguments(args);
+        //mainBundle();
 
+        flagSalvar = false;
+        if (args != null) {
+            bundle = args;
+            flagSalvar = true;
+        }
         return fragment;
+    }
+
+    private static void mainBundle() {
+        Realm realm = Realm.getDefaultInstance();
+        ArrayList<AddedOffering> list = new ArrayList(realm.where(AddedOffering.class).findAll());
+
+        Intent data = new Intent();
+
+        try {
+            Gson gson = new Gson();
+            for (int i = 0; i < list.size(); i++) {
+                Offering offer = list.get(i).getOffer();
+
+                String json = gson.toJson(realm.copyFromRealm(offer));
+                data.putExtra(Integer.toString(i), json);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        actualBundle = data.getExtras();
     }
 
     private RecyclerView mRecyclerView;
@@ -121,48 +155,107 @@ public class GridNotificationsFragment extends TemplateFragment{
         return rectWeek.bottom;
     }
 
+    private void runBundle(ArrayList<Offering> mListaOferecimentos, Bundle bundle, boolean checkMsg) {
+        if (bundle != null) {
+            // Cria o adaptador que preencherá as células da tela com o conteúdo da lista
+//            Adapter adaptador = new CustomGrid(this, mListaOferecimentos);
+//            setAdapter(adaptador);
+            boolean flagMsg = false;
+            Gson gson = new Gson();
+            for (int k = 0; k < bundle.size(); k++) {
+                final Offering object = gson.fromJson(bundle.getString(Integer.toString(k)), Offering.class);
+                final int total = 5;
+
+                int w = object.getWeek() - 1;
+                int t = object.getTime() - 1;
+                int inserido = 0;
+
+                boolean flagFirst = true;
+                int posicao = -1;
+                for (int i = 0; i < 5; i++) {
+                    if (w == i) {//encontrou a semana
+                        for (int j = 0; j < 5; j++) {
+                            if (t == j) {//encontrou o horário
+                                Offering offer = mListaOferecimentos.get(i + (j * total));
+                                if (offer.getDescricao().equals("---")) {
+                                    if (flagFirst == true) {
+                                        posicao = i + (j * total);
+                                        flagFirst = false;
+                                    }
+                                    inserido++;
+                                    if (inserido < object.getQtd()) {
+                                        t++;
+                                    }
+                                } else {
+                                    break;
+                                }
+                            }
+                        }
+                        break;
+                    }
+                }
+
+                if (inserido == object.getQtd()) {
+                    if (flagSalvar) {
+                        try {
+                            Realm realm = Realm.getDefaultInstance();
+                            realm.executeTransactionAsync(new Realm.Transaction() {
+                                @Override
+                                public void execute(Realm bgRealm) {
+                                    AddedOffering newObj = new AddedOffering(object);
+                                    bgRealm.copyToRealmOrUpdate(newObj);
+                                }
+                            }, new Realm.Transaction.OnSuccess() {
+                                @Override
+                                public void onSuccess() {
+                                    Log.d("TCC", "Offering inserted");
+                                }
+                            }, new Realm.Transaction.OnError() {
+                                @Override
+                                public void onError(Throwable error) {
+                                    Log.d("TCC", "Error to insert offering: " + error.toString());
+                                }
+                            });
+                        } catch (Exception e) {
+                            Log.d("TCC", "Error to insert Offering: " + e.toString());
+                        }
+                    }
+
+                    while (inserido > 0) {
+                        mListaOferecimentos.add(posicao, object);
+                        mListaOferecimentos.remove(posicao + 1);
+                        posicao += total;
+                        inserido--;
+                    }
+                } else {
+                    flagMsg = true;
+                }
+
+
+                Log.d("TCC", object.getDescricao() + " - " + object.getProfessor());
+            }
+
+            if (flagMsg & checkMsg) {
+                Toast.makeText(getContext(), "Any offering was not inserted because some other exists in same time", Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+
     private void configurarAdapter() {
-        ArrayList<Oferecimento> mListaOferecimentos = new ArrayList<Oferecimento>();
-        Date currentDate = Calendar.getInstance().getTime();
-//        java.text.SimpleDateFormat simpleDateFormat = new java.text.SimpleDateFormat("dd/MM/yyyy");
-//        String output = simpleDateFormat.format(currentDate);
-//        Log.d("TCC", output);
-        Calendar c = Calendar.getInstance();
-        c.setTime(currentDate); // Now use today date.
+        ArrayList<Offering> mListaOferecimentos = new ArrayList<Offering>();
 
         Point size = new Point();
         getActivity().getWindowManager().getDefaultDisplay().getSize(size);
 
         for (char i = 0; i < 25; i++) {
-            Oferecimento offer = new Oferecimento();
-
-            c.add(Calendar.DATE, i); // Adding days
-            offer.setAno(c.getTime().getYear());
-/*
-            switch (i % NUMBER_COLUMN){
-                case 0:
-                    offer.setSigla("SDM");
-                    break;
-                case 1:
-                    offer.setSigla("BTDS");
-                    break;
-                case 2:
-                    offer.setSigla("PRJ");
-                    break;
-                case 3:
-                    offer.setSigla("INT");
-                    break;
-                case 4:
-                    offer.setSigla("AUX");
-                    break;
-                default:
-                    Log.d("TCC", "conta inválida!!!");
-            }
-           */
-            offer.setSigla("Empty");
-            //offer.setSigla(String.valueOf(i));
+            Offering offer = new Offering();
+            offer.setDescricao("---");
             mListaOferecimentos.add(offer);
         }
+
+        mainBundle();
+        runBundle(mListaOferecimentos, actualBundle, false);
+        runBundle(mListaOferecimentos, bundle, true);
 
         int altura = configurarLegenda();
         Log.d("TCC", "Altura barras: " + altura);
@@ -189,10 +282,8 @@ public class GridNotificationsFragment extends TemplateFragment{
             mListaApdapter = new CustomGrid(mListaOferecimentos, size, altura);
             mRecyclerView.setAdapter(mListaApdapter);
 
-            /*
-            // Cria o adaptador que preencherá as células da tela com o conteúdo da lista
-            Adapter adaptador = new CustomGrid(this, mListaOferecimentos);
-            setAta(adaptador);*/
+            bundle = null;
+
             Log.d("TCC", "After set");
         }
     }
@@ -216,27 +307,5 @@ public class GridNotificationsFragment extends TemplateFragment{
         Log.d("TCC", "After onCreateView");
         return thisView;
     }
-/*
-    public void onActivityCreated(Bundle savedInstanceState){
-        super.onActivityCreated(savedInstanceState);
-        Log.d("TCC", "onActivityCreated");
-        //configurarAdapter();
-    }
 
-    public void onResume(){
-        super.onResume();
-        Log.d("TCC", "onResume");
-        week = (LinearLayout) thisView.findViewById(R.id.gridWeek);
-        week.post(new Runnable()
-        {
-            public void run()
-            {
-                Log.d("TCC", "RUNN!!!");
-                configurarAdapter();
-            }
-        });
-        Log.d("TCC", "onResume end");
-        //configurarAdapter();
-    }
-    */
 }

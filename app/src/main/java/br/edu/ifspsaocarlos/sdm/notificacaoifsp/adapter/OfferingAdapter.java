@@ -1,6 +1,7 @@
 package br.edu.ifspsaocarlos.sdm.notificacaoifsp.adapter;
 
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,10 +11,12 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.R;
-import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.Remetente;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.Offering;
+import io.realm.Realm;
 
 /**
  * Created by rapha on 3/15/2017.
@@ -21,13 +24,15 @@ import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.Remetente;
 
 public class OfferingAdapter extends RecyclerView.Adapter<OfferingAdapter.ItemViewHolder> {
 
-    private List<Remetente> mListaRemetentes;
-    private List<Remetente> allItems;
+    private List<Offering> mListaOffering;
+    private List<Offering> allItems;
+    private HashSet<Offering> mListChecked;
 
 
-    public OfferingAdapter(List<Remetente> listaRemententes) {
-        this.mListaRemetentes = listaRemententes;
-        this.allItems = listaRemententes;
+    public OfferingAdapter(List<Offering> listaOffering, HashSet<Offering> array) {
+        this.mListaOffering = listaOffering;
+        this.allItems = listaOffering;
+        this.mListChecked = array;
     }
 
     public Filter getFilter() {
@@ -41,22 +46,27 @@ public class OfferingAdapter extends RecyclerView.Adapter<OfferingAdapter.ItemVi
                     results.count = allItems.size();
                     results.values = allItems;
                 } else {
-                    mListaRemetentes = new ArrayList<Remetente>();
-                    //percorre toda lista verificando se contem a palavra do filtro na descricao do objeto.
-                    for (int i = 0; i < allItems.size(); i++) {
-                        Remetente data = allItems.get(i);
+                    try {
+                        mListaOffering = new ArrayList<Offering>();
+                        //percorre toda lista verificando se contem a palavra do filtro na descricao do objeto.
+                        for (int i = 0; i < allItems.size(); i++) {
+                            Offering data = allItems.get(i);
 
-                        filtro = filtro.toString().toLowerCase();
-                        String condicao = data.getDescription().toLowerCase();
+                            filtro = filtro.toString().toLowerCase();
+                            String desc = data.getDescricao();
+                            String condicao = desc.toLowerCase();
 
-                        if (condicao.contains(filtro)) {
-                            //se conter adiciona na lista de itens filtrados.
-                            mListaRemetentes.add(data);
+                            if (condicao.contains(filtro)) {
+                                //se conter adiciona na lista de itens filtrados.
+                                mListaOffering.add(data);
+                            }
                         }
+                        // Define o resultado do filtro na variavel FilterResults
+                        results.count = mListaOffering.size();
+                        results.values = mListaOffering;
+                    }catch (Exception e){
+                        Log.d("TCC", "Erro: " + e.toString());
                     }
-                    // Define o resultado do filtro na variavel FilterResults
-                    results.count = mListaRemetentes.size();
-                    results.values = mListaRemetentes;
                 }
                 return results;
             }
@@ -64,7 +74,7 @@ public class OfferingAdapter extends RecyclerView.Adapter<OfferingAdapter.ItemVi
             @SuppressWarnings("unchecked")
             @Override
             protected void publishResults(CharSequence constraint, FilterResults results) {
-                mListaRemetentes = (List<Remetente>) results.values; // Valores filtrados.
+                mListaOffering = (List<Offering>) results.values; // Valores filtrados.
                 notifyDataSetChanged();  // Notifica a lista de alteração
             }
 
@@ -74,7 +84,7 @@ public class OfferingAdapter extends RecyclerView.Adapter<OfferingAdapter.ItemVi
 
     @Override
     public ItemViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        final View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item_remetent, parent, false);
+        final View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item_offering, parent, false);
         return new ItemViewHolder(view);
         //return null;
     }
@@ -82,13 +92,13 @@ public class OfferingAdapter extends RecyclerView.Adapter<OfferingAdapter.ItemVi
     @Override
     public void onBindViewHolder(ItemViewHolder holder, int position) {
         //Recuperar o objeto da lista
-        Remetente remetente = mListaRemetentes.get(position);
+        Offering offering = mListaOffering.get(position);
 
-        if (remetente != null) {
+        if (offering != null) {
             //Setar os valores conforme a grid faz scroll
-            holder.txtCode.setText(Integer.toString((remetente.getCode())));
-            holder.txtDescription.setText(remetente.getDescription());
-            holder.ckbSelected.setChecked(remetente.isChecked());
+            holder.txtProf.setText(offering.getProfessor());
+            holder.txtDescription.setText(offering.getDescricao());
+            holder.ckbSelected.setChecked(offering.isChecked());
             //set position to identify which object was selected
             holder.ckbSelected.setTag(position);
             holder.mLayoutPrincipal.setTag(position);
@@ -97,22 +107,22 @@ public class OfferingAdapter extends RecyclerView.Adapter<OfferingAdapter.ItemVi
 
     @Override
     public int getItemCount() {
-        return mListaRemetentes.size();
+        return mListaOffering.size();
     }
 
     public class ItemViewHolder extends RecyclerView.ViewHolder {
 
         private RelativeLayout mLayoutPrincipal;
-        private TextView txtCode;
+        private TextView txtProf;
         private TextView txtDescription;
         private CheckBox ckbSelected;
 
         public ItemViewHolder(final View itemView) {
             super(itemView);
 
-            txtCode = (TextView) itemView.findViewById(R.id.txtRemetentCode);
-            txtDescription = (TextView) itemView.findViewById(R.id.txtRemetentDesc);
-            ckbSelected = (CheckBox) itemView.findViewById(R.id.ckbSelected);
+            txtProf = (TextView) itemView.findViewById(R.id.txtOfferingProf);
+            txtDescription = (TextView) itemView.findViewById(R.id.txtOfferingDesc);
+            ckbSelected = (CheckBox) itemView.findViewById(R.id.ckbSelectedOffering);
             ckbSelected.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -121,7 +131,7 @@ public class OfferingAdapter extends RecyclerView.Adapter<OfferingAdapter.ItemVi
                 }
             });
 
-            mLayoutPrincipal = (RelativeLayout) itemView.findViewById(R.id.llRemetentList);
+            mLayoutPrincipal = (RelativeLayout) itemView.findViewById(R.id.llOfferingList);
             mLayoutPrincipal.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -131,14 +141,20 @@ public class OfferingAdapter extends RecyclerView.Adapter<OfferingAdapter.ItemVi
         }
 
         private void selectItem(View v) {
-            Remetente remetente = mListaRemetentes.get((Integer) v.getTag());
-            if(remetente != null)
+            Offering offering = mListaOffering.get((Integer) v.getTag());
+            if(offering != null)
             {
-                if (remetente.isChecked() == ckbSelected.isChecked()) {
-                    //it means that layout was toched
-                    ckbSelected.setChecked(!ckbSelected.isChecked());
+                boolean flag = ckbSelected.isChecked();
+
+                if (v.getId() != R.id.ckbSelectedOffering){
+                    ckbSelected.setChecked(!flag);
                 }
-                remetente.setChecked(ckbSelected.isChecked());
+
+                Realm.getDefaultInstance().beginTransaction();
+                offering.setChecked(ckbSelected.isChecked());
+                if (ckbSelected.isChecked())
+                    mListChecked.add(offering);
+                Realm.getDefaultInstance().cancelTransaction();
             }
         }
     }

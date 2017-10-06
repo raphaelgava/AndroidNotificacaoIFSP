@@ -2,14 +2,23 @@ package br.edu.ifspsaocarlos.sdm.notificacaoifsp.model;
 
 import java.io.Serializable;
 
+import io.realm.RealmObject;
+import io.realm.annotations.PrimaryKey;
+import io.realm.annotations.RealmClass;
 /**
  * Created by rapha on 9/28/2016.
  */
-//OUTRA OPÇÃO PARA ENVIAR OBJETO PELO INTENT É O Parcelable!!!
-public class Oferecimento implements Serializable {
-    private static final long  serialVersionUID = 100L;
-    private String sigla;
 
+//@org.parceler.Parcel(implementations = { OfferingRealmProxy.class },
+//        value = org.parceler.Parcel.Serialization.BEAN,
+//        analyze = { Offering.class })
+//OUTRA OPÇÃO PARA ENVIAR OBJETO PELO INTENT É O Parcelable!!!
+@RealmClass
+public class Offering  extends RealmObject implements Serializable {
+//public class Offering  extends RealmObject{
+    private static final long  serialVersionUID = 100L;
+    @PrimaryKey
+    private int pk;
     private int semestre;
     private int week;
     private int time;
@@ -18,9 +27,14 @@ public class Oferecimento implements Serializable {
     private int qtd;
     private int id_professor;
     private int id_disciplina;
+    private boolean is_active;
     private String dataInicio;
+    private String descricao;
+    private boolean checked;
+    private String professor;
 
-    public Oferecimento(){
+    public Offering(){
+        pk = 0;
         semestre = 0;
         week = 0;
         time  = 0;
@@ -29,21 +43,11 @@ public class Oferecimento implements Serializable {
         qtd = 0;
         id_professor = 0;
         id_disciplina = 0;
+        is_active = false;
         dataInicio = "";
-
-        sigla = "";
-    }
-
-    public static long getSerialVersionUID() {
-        return serialVersionUID;
-    }
-
-    public String getSigla() {
-        return sigla;
-    }
-
-    public void setSigla(String sigla) {
-        this.sigla = sigla;
+        descricao = "";
+        checked = false;
+        professor = "";
     }
 
     public int getSemestre() {
@@ -117,4 +121,45 @@ public class Oferecimento implements Serializable {
     public void setId_disciplina(int id_disciplina) {
         this.id_disciplina = id_disciplina;
     }
+
+    public int getPk() {
+        return pk;
+    }
+
+    public void setPk(int pk) {
+        this.pk = pk;
+    }
+
+    public boolean getIs_active() {
+        return is_active;
+    }
+
+    public void setIs_active(boolean is_active) {
+        this.is_active = is_active;
+    }
+
+    public String getDescricao() {
+        return descricao;
+    }
+
+    public void setDescricao(String descricao) {
+        this.descricao = descricao;
+    }
+
+    public boolean isChecked() {
+        return checked;
+    }
+
+    public void setChecked(boolean checked) {
+        this.checked = checked;
+    }
+
+    public String getProfessor() {
+        return professor;
+    }
+
+    public void setProfessor(String professor) {
+        this.professor = professor;
+    }
+
 }
