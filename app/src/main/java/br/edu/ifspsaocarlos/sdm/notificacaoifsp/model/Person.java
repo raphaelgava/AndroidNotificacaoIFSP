@@ -39,6 +39,7 @@ public class Person extends RealmObject {
 
     //Student
     private String turma;
+    private int pkTurma;
 
     private String password;
 
@@ -53,6 +54,7 @@ public class Person extends RealmObject {
         formacao = "";
         tipo_formacao = "";
         turma = "";
+        pkTurma = 0;
         setPassword("");
         datanascimento = "0000-00-00";
     }
@@ -73,15 +75,23 @@ public class Person extends RealmObject {
         this.type = type;
     }
 
+    public int getPkTurma() {
+        return pkTurma;
+    }
 
-    public int getPk() {
-        return pk;
-    }
-/*
-    public void setPk(int pk) {
-        this.pk = pk;
-    }
-*/
+        public void setPkTurma(int pk) {
+            this.pkTurma = pk;
+        }
+
+
+        public int getPk() {
+            return pk;
+        }
+    /*
+        public void setPk(int pk) {
+            this.pk = pk;
+        }
+    */
     public String getUsername() {
         return username;
     }

@@ -155,7 +155,7 @@ public class OfferingListActivity extends AppCompatActivity {
             semester = 2;
         }
 
-        ArrayList<Offering> list = new ArrayList(realm.where(Offering.class).equalTo("ano", year).equalTo("semestre", semester).equalTo("is_active", true).findAll());
+        ArrayList<Offering> list = new ArrayList(realm.where(Offering.class).equalTo("ano", year).equalTo("semestre", semester).equalTo("is_active", true).equalTo("id_user", MainActivity.getUserId()).findAll());
         //ArrayList<Offering> list = new ArrayList(realm.where(Offering.class).findAll());
 
         offeringAdapter = new OfferingAdapter(list, array);

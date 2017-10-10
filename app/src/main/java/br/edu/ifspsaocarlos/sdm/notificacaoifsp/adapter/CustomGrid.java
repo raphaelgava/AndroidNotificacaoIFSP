@@ -1,8 +1,11 @@
 package br.edu.ifspsaocarlos.sdm.notificacaoifsp.adapter;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Point;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,43 +16,11 @@ import java.util.List;
 
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.R;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.activity.MapsActivity;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.layout.GridNotificationsFragment;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.AddedOffering;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.Offering;
+import io.realm.Realm;
 
-/*
-public class CustomGrid extends ArrayAdapter<Offering> {
-    private LayoutInflater inflador;
-
-    public CustomGrid(Activity tela, List<Offering> listaOferecimentos) {
-        super(tela, R.layout.celula_grid, listaOferecimentos);
-        inflador = (LayoutInflater) tela.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-    }
-
-    public View getView(int position, View convertView, ViewGroup parent) {
-        ViewHolder holder;
-        if ( convertView == null ) {
-// infla uma nova célula
-            convertView = inflador.inflate(R.layout.celula_grid, null);
-            holder = new ViewHolder();
-
-            holder.txtSigla = (TextView) convertView.findViewById(R.id.tv_sigla);
-            holder.txtDate = (TextView) convertView.findViewById(R.id.tv_data);
-            //mLayoutPrincipal = (LinearLayout) itemView.findViewById(R.id.cell_layout2);
-            convertView.setTag(holder);
-        }
-        else {
-            holder = (ViewHolder) convertView.getTag();
-        }
-        Offering offer = getItem(position);
-        holder.txtSigla.setText(offer.getSigla());
-        holder.txtDate.setText(offer.getDataString());
-        return convertView;
-    }
-    static class ViewHolder {
-        private TextView txtSigla;
-        private TextView txtDate;
-    }
-}
-*/
 
 public class CustomGrid extends RecyclerView.Adapter<CustomGrid.ItemViewHolder> {
 
@@ -57,12 +28,14 @@ public class CustomGrid extends RecyclerView.Adapter<CustomGrid.ItemViewHolder> 
     private Point windowSize;
     private int position;
     private final double INDEX_COLUMN = 0.20;
+    private GridNotificationsFragment frag;
 
 
-    public CustomGrid(List<Offering> listaOferecimentos, Point size, int position) {
+    public CustomGrid(List<Offering> listaOferecimentos, Point size, int position, GridNotificationsFragment grid) {
         this.mListaOferecimentos = listaOferecimentos;
         this.windowSize = size;
         this.position = position;
+        this.frag = grid;
     }
 
     @Override
@@ -78,8 +51,12 @@ public class CustomGrid extends RecyclerView.Adapter<CustomGrid.ItemViewHolder> 
         Offering offer = mListaOferecimentos.get(position);
 
         //Setar os valores conforme a grid faz scroll
-        holder.txtSigla.setText(offer.getDescricao());
-        holder.txtDate.setText(Integer.toString(offer.getAno()));
+        holder.txtSigla.setText(offer.getSigla());
+        String nome =  offer.getProfessor();
+        int endIndex = nome.indexOf(' ');
+        if (endIndex > 0)
+            nome = nome.substring(0, endIndex);
+        holder.txtProfessor.setText(nome);
         holder.mLayoutPrincipal.setTag(position);
 
         holder.mLayoutPrincipal.setBackgroundResource(R.drawable.shape_color);
@@ -122,7 +99,7 @@ public class CustomGrid extends RecyclerView.Adapter<CustomGrid.ItemViewHolder> 
 
         private LinearLayout mLayoutPrincipal;
         private TextView txtSigla;
-        private TextView txtDate;
+        private TextView txtProfessor;
         //private CardView card;
         private LinearLayout cell;
 
@@ -130,7 +107,7 @@ public class CustomGrid extends RecyclerView.Adapter<CustomGrid.ItemViewHolder> 
             super(itemView);
 
             txtSigla = (TextView) itemView.findViewById(R.id.tv_sigla);
-            txtDate = (TextView) itemView.findViewById(R.id.tv_data);
+            txtProfessor = (TextView) itemView.findViewById(R.id.tv_professor);
             mLayoutPrincipal = (LinearLayout) itemView.findViewById(R.id.cell_layout2);
 
             /* //PEGAR ALTURA DA VIEW
@@ -185,6 +162,43 @@ public class CustomGrid extends RecyclerView.Adapter<CustomGrid.ItemViewHolder> 
 //                        }
 //                    });
                 }
+            });
+
+            mLayoutPrincipal.setOnLongClickListener(new View.OnLongClickListener() {
+
+                @Override
+                public boolean onLongClick(View v) {
+                    final Offering offer = mListaOferecimentos.get((Integer) v.getTag());
+                    new AlertDialog.Builder(v.getContext())
+                            .setIcon(android.R.drawable.ic_dialog_alert)
+                            .setTitle("Removing Offering")
+                            .setMessage("Are you sure you want to remove?")
+                            .setPositiveButton("Yes", new DialogInterface.OnClickListener()
+                            {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    try {
+                                        final Realm realm = Realm.getDefaultInstance();
+                                        realm.beginTransaction();
+                                        AddedOffering deleteOffer = realm.where(AddedOffering.class).equalTo("pk", offer.getPk()).findFirst();
+                                        if (deleteOffer != null) {
+                                            deleteOffer.deleteFromRealm();
+                                            frag.configurarAdapter();
+                                        }
+                                        realm.commitTransaction();
+
+                                    } catch (Exception e) {
+                                        Log.d("TCC", "Error to insert Offering: " + e.toString());
+                                    }
+                                    //Toast.makeText(v.getContext(), "Long click!", Toast.LENGTH_SHORT).show();
+                                }
+
+                            })
+                            .setNegativeButton("No", null)
+                            .show();
+                    return true;
+                }
+
             });
         }
     }

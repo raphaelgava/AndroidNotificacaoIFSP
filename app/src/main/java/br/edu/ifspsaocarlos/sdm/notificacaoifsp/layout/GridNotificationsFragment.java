@@ -25,9 +25,12 @@ import com.google.gson.Gson;
 import java.util.ArrayList;
 
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.R;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.activity.MainActivity;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.adapter.CustomGrid;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.AddedOffering;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.Offering;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.service.FetchJSONService;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.util.ServiceState;
 import io.realm.Realm;
 //todo inserir mapa no frame ade acezso ao item
 //todo estudar OnFragmentInteractionListener (verificar se cada fragmento tem que ter o seu e se o main tem que implementar todos)
@@ -96,7 +99,7 @@ public class GridNotificationsFragment extends TemplateFragment{
 
     private static void mainBundle() {
         Realm realm = Realm.getDefaultInstance();
-        ArrayList<AddedOffering> list = new ArrayList(realm.where(AddedOffering.class).findAll());
+        ArrayList<AddedOffering> list = new ArrayList(realm.where(AddedOffering.class).equalTo("username", MainActivity.getUserId()).findAll());
 
         Intent data = new Intent();
 
@@ -203,11 +206,17 @@ public class GridNotificationsFragment extends TemplateFragment{
                                 @Override
                                 public void execute(Realm bgRealm) {
                                     AddedOffering newObj = new AddedOffering(object);
+
+                                    newObj.getOffer().addAluno(MainActivity.getUserId());
                                     bgRealm.copyToRealmOrUpdate(newObj);
+
+                                    FetchJSONService.setOffering(newObj);
+                                    ServiceState.getInstance().pushState(ServiceState.EnumServiceState.ENUM_INSERT_STUDENT_OFFERING);
                                 }
                             }, new Realm.Transaction.OnSuccess() {
                                 @Override
                                 public void onSuccess() {
+
                                     Log.d("TCC", "Offering inserted");
                                 }
                             }, new Realm.Transaction.OnError() {
@@ -241,7 +250,7 @@ public class GridNotificationsFragment extends TemplateFragment{
         }
     }
 
-    private void configurarAdapter() {
+    public void configurarAdapter() {
         ArrayList<Offering> mListaOferecimentos = new ArrayList<Offering>();
 
         Point size = new Point();
@@ -279,7 +288,7 @@ public class GridNotificationsFragment extends TemplateFragment{
 //                    });
             mRecyclerView.setLayoutManager(gridLayoutManager);
 
-            mListaApdapter = new CustomGrid(mListaOferecimentos, size, altura);
+            mListaApdapter = new CustomGrid(mListaOferecimentos, size, altura, this);
             mRecyclerView.setAdapter(mListaApdapter);
 
             bundle = null;

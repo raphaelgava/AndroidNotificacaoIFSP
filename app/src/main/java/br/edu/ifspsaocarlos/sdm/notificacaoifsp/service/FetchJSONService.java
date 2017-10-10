@@ -2,6 +2,7 @@ package br.edu.ifspsaocarlos.sdm.notificacaoifsp.service;
 
 import android.app.Service;
 import android.content.Intent;
+import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
@@ -14,19 +15,26 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.gson.Gson;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.UnsupportedEncodingException;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Stack;
 
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.R;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.activity.MainActivity;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.AddedOffering;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.Offering;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.Person;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.util.EnumParser;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.util.ServiceState;
+import io.realm.Realm;
 
 /**
  * Para funcionar tem que estar registrado no manifest!!
@@ -37,9 +45,17 @@ public class FetchJSONService extends Service implements Runnable {
 
     private ServiceState machine;
     private RequestQueue queue;
+    private static Stack<AddedOffering> stackOffering;
+    private final Realm realm = Realm.getDefaultInstance();
+    private Handler handler;
 
     public FetchJSONService() {
         machine = ServiceState.getInstance();
+        stackOffering = new Stack<AddedOffering>();
+    }
+
+    public static void setOffering(AddedOffering offer){
+        stackOffering.add(offer);
     }
 
     public IBinder onBind(Intent intent) {
@@ -54,6 +70,7 @@ public class FetchJSONService extends Service implements Runnable {
         Log.e("", "onCreate");
         queue = Volley.newRequestQueue(FetchJSONService.this);
 
+        handler = new Handler();
         new Thread(this).start();
     }
 
@@ -67,22 +84,28 @@ public class FetchJSONService extends Service implements Runnable {
         while (appAberta) {
             try {
                 Thread.sleep(getResources().getInteger(R.integer.tempo_inatividade_servico));
-                if (machine.hasItemEnabled() == true){
-                    ServiceState.EnumServiceState state = machine.popState();
-                    switch (state){
-                        case ENUM_NOTIFICATION:
-                            buscarNotificacao();
-                            break;
-                        case ENUM_USER:
-                            buscarUsuario();
-                            break;
-                        case ENUM_OFERECIMENTO:
-                            buscarOferecimento();
-                            break;
+                handler.post(new Runnable() {
+                    public void run() {
+                        if (machine.hasItemEnabled() == true) {
+                            ServiceState.EnumServiceState state = machine.popState();
+                            switch (state) {
+                                case ENUM_NOTIFICATION:
+                                    buscarNotificacao();
+                                    break;
+                                case ENUM_USER:
+                                    buscarUsuario();
+                                    break;
+                                case ENUM_OFERECIMENTO:
+                                    buscarOferecimento();
+                                    break;
+                                case ENUM_INSERT_STUDENT_OFFERING:
+                                    atualizarAlunoOferecimento();
+                                    break;
+                            }
+                            ServiceState.finishLastPop();
+                        }
                     }
-                }
-
-
+                });
 
 //                if (!primeiraBusca && novoNumeroContatos != ultimoNumeroContatos) {
 //                    NotificationManager nm = (NotificationManager)
@@ -110,6 +133,96 @@ public class FetchJSONService extends Service implements Runnable {
             catch (InterruptedException ie) {
                 Log.e("TCC", "Erro na thread de recuperação de contato");
             }
+        }
+    }
+
+    private void atualizarAlunoOferecimento() {
+        if (stackOffering.isEmpty() == false){
+            AddedOffering offer = stackOffering.pop();
+
+            boolean flagOk = true;
+
+            String url = getString(R.string.url_base);
+
+            buscaOferta = false;
+            switch (MainActivity.getPeronType()){
+                case ENUM_STUDENT:
+                    url += getString(R.string.url_oferecimento); break;
+                default:
+                    Log.e("TCC", "Tipo pessoa desconhecida");
+                    flagOk = false;
+            }
+            if (flagOk == true) {
+                url += Integer.toString(offer.getPk()) + "/"; //PUT to update is necessary this last slash!!!
+
+                try {
+                    Gson gson = new Gson();
+//                    Gson gson = MyGsonBuilder.getInstance().myGson();
+
+                    //Person managedModel = realm.copyFromRealm(person);
+//                    FATAL EXCEPTION: Thread-276  - PROBLEMA TRANSAÇÃO DO REALM
+//                    Process: br.edu.ifspsaocarlos.sdm.notificacaoifsp, PID: 31614
+//                    java.lang.IllegalArgumentException: Only valid managed objects can be copied from Realm.
+//
+//                    FATAL EXCEPTION: main - PROBLEMA DE REFERENCIA CIRCULAR (ADAPTER DO GSON)
+//                    Process: br.edu.ifspsaocarlos.sdm.notificacaoifsp, PID: 15165
+//                    java.lang.StackOverflowError
+//                    at java.lang.String._getChars(String.java:908)
+//
+//                    FATAL EXCEPTION: main - PROBLEMA DA STRING DO JSON
+//                    Process: br.edu.ifspsaocarlos.sdm.notificacaoifsp, PID: 16561
+//                    java.lang.IllegalStateException: Nesting problem.
+//                    at com.google.gson.stream.JsonWriter.beforeName(JsonWriter.java:616)
+
+                    Update removendo o aluno!
+
+                    realm.beginTransaction();
+                    Offering bla = realm.where(Offering.class).equalTo("pk", offer.getPk()).findFirst();
+
+                    String json = gson.toJson(realm.copyFromRealm(bla));
+                    JSONObject user = new JSONObject(json);
+
+                    try {
+                        RequestQueue queue = Volley.newRequestQueue(this.getApplicationContext());
+                        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, url, user,
+                                new Response.Listener<JSONObject>() {
+                                    public void onResponse(JSONObject s) {
+                                        realm.commitTransaction();
+                                        Log.e("TCC", "Updated offer." + s.toString());
+                                    }
+                                }, new Response.ErrorListener() {
+                            public void onErrorResponse(VolleyError volleyError) {
+                                stopTransaction();
+                                Log.e("TCC", "Error during update offer." + volleyError.toString());
+                            }
+                        }) {
+                            @Override
+                            public Map<String, String> getHeaders() throws AuthFailureError {
+                                Map<String, String> headers = new HashMap<>();
+                                // Basic Authentication
+                                //String auth = "Basic " + Base64.encodeToString(CONSUMER_KEY_AND_SECRET.getBytes(), Base64.NO_WRAP);
+                                headers.put("Content-Type", "application/json");
+                                headers.put(getString(R.string.authorization), MainActivity.getAuth()); //Authorization Token ...
+                                return headers;
+                            }
+                        };
+
+                        queue.add(jsonObjectRequest);
+                    } catch (Exception e) {
+                        stopTransaction();
+                        Log.e("TCC", "Erro na leitura de mensagens");
+                    }
+                } catch (JSONException e) {
+                    stopTransaction();
+                    Log.e("TCC", "ERROR: " + e.toString());
+                }
+            }
+        }
+    }
+
+    private void stopTransaction() {
+        if(realm.isInTransaction()) {
+            realm.cancelTransaction();
         }
     }
 
@@ -220,8 +333,11 @@ public class FetchJSONService extends Service implements Runnable {
 
         EnumParser parser = null;
         buscaOferta = false;
+        Person p = null;
         switch (MainActivity.getPeronType()){
             case ENUM_STUDENT:
+                Realm realm = Realm.getDefaultInstance();
+                p = realm.where(Person.class).equalTo("pk", MainActivity.getUserId()).findFirst();
             case ENUM_PROFESSOR:
                 url += getString(R.string.url_oferecimento); parser = EnumParser.ENUM_PROFESSOR; break;
             default:
@@ -245,14 +361,18 @@ public class FetchJSONService extends Service implements Runnable {
                     semester = 2;
                 }
 
-                url += "?ano=" + year + "&semestre=" + semester;
-
-                // TODO: 10/2/2017 continuar a implementação do oferecimento... fazer salvar no bd e verificar o que será feito: só abre a activity após receber os dados ou faz verificação na activity para saber o final 
+                if (p != null)
+                    url += "?ano=" + year + "&semestre=" + semester + "&turma=" + p.getPkTurma();
+                else
+                    url += "?ano=" + year + "&semestre=" + semester;
 
                 StringRequest sr = new StringRequest(Request.Method.GET, url , new Response.Listener<String>() {
                     @Override
                     public void onResponse(String s) {
                         try {
+                            byte[] u = s.toString().getBytes("ISO-8859-1");
+                            s = new String(u, "UTF-8");
+
                             JSONArray jsonArray = new JSONArray(s);
                             for(int i = 0; i < jsonArray.length(); i++) {
                                 JSONObject jsonObj = jsonArray.getJSONObject(i);
@@ -263,6 +383,8 @@ public class FetchJSONService extends Service implements Runnable {
                         } catch (JSONException e) {
                             Toast.makeText(FetchJSONService.this, "Erro na conversão " +
                                     "de objeto JSON!", Toast.LENGTH_SHORT).show();
+                        } catch (UnsupportedEncodingException e) {
+                            e.printStackTrace();
                         }
                         buscaOferta = true; //para não ficar travado caso de algum erro
                     }

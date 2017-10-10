@@ -96,14 +96,14 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
             public void onDrawerOpened(View drawerView) {
                 super.onDrawerOpened(drawerView);
                 //getActionBar().setTitle(mDrawerTitle);
-                if (actualUser != null) {
-                    if (getPeronType() == EnumUserType.ENUM_EMPLOYEE){
-                        Menu menu = navigationView.getMenu();
-
-                        MenuItem offering = menu.findItem(R.id.nav_offering);
-                        offering.setVisible(false);
-                    }
-                }
+//                if (actualUser != null) {
+//                    if (getPeronType() == EnumUserType.ENUM_EMPLOYEE){
+//                        Menu menu = navigationView.getMenu();
+//
+//                        MenuItem offering = menu.findItem(R.id.nav_offering);
+//                        offering.setVisible(false);
+//                    }
+//                }
             }
         };
         drawer.addDrawerListener(toggle);
@@ -112,11 +112,8 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
 //        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
 //        navigationView.setNavigationItemSelectedListener(this);
 
-
-
         fragmentManager = getSupportFragmentManager();
 
-        //MUDAR AQUI!!! TEM QUE CARREGAR DO REALM!!!!!!!!!!!!!
         setFragTransactionStack(R.id.nav_class_schedule, R.id.content_frame, null, true);
 
         /**
@@ -126,7 +123,6 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
 
         actualUser = checkUser(getIntent());
         if ( actualUser != null) {
-
             String toast = actualUser.getId() + " - " + actualUser.getGroup() + " - " + Boolean.toString(actualUser.getFlag());
             //Toast.makeText(MainActivity.this, toast,Toast.LENGTH_SHORT).show();
 
@@ -142,6 +138,8 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
             checkUserData(actualUser);
             //updateAdapter();
             //startMessagesService();
+
+            showFloatingActionButton();
         }
         else{
             goBackToLogin();
@@ -290,7 +288,35 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
+
         return true;
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        Menu menuNav=navigationView.getMenu();
+
+        MenuItem itemSend = menuNav.findItem(R.id.nav_send);
+        MenuItem itemNot = menuNav.findItem(R.id.nav_notification);
+        MenuItem offering = menuNav.findItem(R.id.nav_offering);
+
+        // show the button when some condition is true
+        if ((getPeronType() == EnumUserType.ENUM_EMPLOYEE) || (getPeronType() == EnumUserType.ENUM_PROFESSOR)) {
+            itemSend.setVisible(true);
+            itemNot.setVisible(true);
+            if (getPeronType() == EnumUserType.ENUM_EMPLOYEE){
+                offering.setVisible(false);
+            }
+        }
+        else {
+            itemSend.setVisible(false);
+            itemNot.setVisible(false);
+            offering.setVisible(true);
+        }
+
+        return super.onPrepareOptionsMenu(menu);
     }
 
     @Override
@@ -312,6 +338,13 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
         return super.onOptionsItemSelected(item);
     }
 
+    private void showFloatingActionButton(){
+        if ((getPeronType() != EnumUserType.ENUM_STUDENT) && (getPeronType() != EnumUserType.ENUM_NOTHING))
+            fab.setVisibility(View.VISIBLE);
+        else
+            fab.setVisibility(View.INVISIBLE);
+    }
+
     private void setFragTransactionStack(int fragType, int content, Bundle data, boolean flagAddStack){
         // Create new fragment and transaction
         android.support.v4.app.FragmentTransaction transaction = fragmentManager.beginTransaction();
@@ -321,7 +354,7 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
                 fragmentManager.popBackStackImmediate(0, FragmentManager.POP_BACK_STACK_INCLUSIVE);
             }
 
-            fab.setVisibility(View.VISIBLE);
+            showFloatingActionButton();
         }
         else{
             fab.setVisibility(View.INVISIBLE);

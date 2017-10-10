@@ -19,7 +19,8 @@
         <item
             android:id="@+id/nav_notification"
             android:icon="@drawable/ic_email_black"
-            android:title="Create Notification" />
+            android:title="Create Notification"
+            />
     </group>
 
     <item android:title="Communicate">

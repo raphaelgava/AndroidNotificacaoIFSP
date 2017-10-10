@@ -9,7 +9,7 @@ import java.util.Stack;
 public class ServiceState {
 
     private Stack<EnumServiceState> states;
-    private boolean flagStateEmpty; //@todo: verificar se a assincronia não vai gerar problema. se der problema então gerar uma flag working (só chama a proxima atividade se finalizou a última)
+    private static boolean flagStateEmpty; //@todo: verificar se a assincronia não vai gerar problema. se der problema então gerar uma flag working (só chama a proxima atividade se finalizou a última)
     private static ServiceState instance;
 
 
@@ -30,22 +30,23 @@ public class ServiceState {
     }
 
     public EnumServiceState popState(){
-        //flagStateEmpty = false;
+        flagStateEmpty = false;
         return states.pop();
     }
 
-    public void finishLastPop(){
+    public static void finishLastPop(){
         flagStateEmpty = true;
     }
 
     public boolean hasItemEnabled(){
-        //return (states.size() > 0) && (flagStateEmpty == true);
-        return (states.size() > 0);
+        return (states.size() > 0) && (flagStateEmpty == true);
+        //return (states.size() > 0);
     }
 
     public enum EnumServiceState {
         ENUM_USER, //User data
         ENUM_NOTIFICATION,
-        ENUM_OFERECIMENTO
+        ENUM_OFERECIMENTO,
+        ENUM_INSERT_STUDENT_OFFERING
     }
 }

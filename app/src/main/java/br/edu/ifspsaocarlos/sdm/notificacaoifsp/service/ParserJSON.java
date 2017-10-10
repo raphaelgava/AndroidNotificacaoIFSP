@@ -9,6 +9,7 @@ import org.json.JSONObject;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.activity.MainActivity;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.Offering;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.Person;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.util.MyGsonBuilder;
 import io.realm.Realm;
 import io.realm.RealmObject;
 
@@ -81,11 +82,14 @@ public class ParserJSON {
     }
 
     public boolean saveOffering(JSONObject json){
-        Gson gson = new Gson();
+        //Gson gson = new Gson();
         Realm realm = Realm.getDefaultInstance();
         Offering object = null;
 
+
+        Gson gson = MyGsonBuilder.getInstance().myGson();
         object = gson.fromJson(json.toString(), Offering.class);
+        object.setId_user(MainActivity.getUserId());//feito isso apenas pra trazer na busca das ofertas as ofertas relacionadas ao curso do usuario
 
         if (object != null){
             final RealmObject finalObject = object;

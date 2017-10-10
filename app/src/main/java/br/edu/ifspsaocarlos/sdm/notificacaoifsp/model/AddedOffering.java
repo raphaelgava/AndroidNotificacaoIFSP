@@ -12,6 +12,7 @@ public class AddedOffering extends RealmObject{
     @PrimaryKey
     private int pk;
     private Offering offer;
+    private int username;
     public AddedOffering(){
 
 
@@ -21,7 +22,12 @@ public class AddedOffering extends RealmObject{
         if (offer != null) {
             this.offer = offer;
             this.pk = offer.getPk();
+            this.username = offer.getId_user();
         }
+    }
+
+    public int getPk() {
+        return pk;
     }
 
     public Offering getOffer() {

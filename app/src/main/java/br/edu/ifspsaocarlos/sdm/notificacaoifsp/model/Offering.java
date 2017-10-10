@@ -1,7 +1,11 @@
 package br.edu.ifspsaocarlos.sdm.notificacaoifsp.model;
 
+import com.google.gson.annotations.JsonAdapter;
+
 import java.io.Serializable;
 
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.util.MyGsonBuilder;
+import io.realm.RealmList;
 import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
 import io.realm.annotations.RealmClass;
@@ -32,6 +36,11 @@ public class Offering  extends RealmObject implements Serializable {
     private String descricao;
     private boolean checked;
     private String professor;
+    private int id_curso;
+    private int id_user;
+    private String sigla;
+    @JsonAdapter(MyGsonBuilder.JsonAdapter.class)
+    private RealmList<RealmInteger> alunos;
 
     public Offering(){
         pk = 0;
@@ -48,6 +57,16 @@ public class Offering  extends RealmObject implements Serializable {
         descricao = "";
         checked = false;
         professor = "";
+        id_curso = 0;
+        id_user = 0;
+    }
+
+    public int getId_user() {
+        return id_user;
+    }
+
+    public void setId_user(int id_user) {
+        this.id_user = id_user;
     }
 
     public int getSemestre() {
@@ -162,4 +181,35 @@ public class Offering  extends RealmObject implements Serializable {
         this.professor = professor;
     }
 
+    public int getId_curso() {
+        return id_curso;
+    }
+
+    public void setId_curso(int id_curso) {
+        this.id_curso = id_curso;
+    }
+
+    public String getSigla() {
+        return sigla;
+    }
+
+    public void setSigla(String sigla) {
+        this.sigla = sigla;
+    }
+
+    public RealmList<RealmInteger> getAlunos() {
+        return alunos;
+    }
+
+    public void setAlunos(RealmList<RealmInteger> alunos) {
+        this.alunos = alunos;
+    }
+
+    public void addAluno(int valor){
+        if (alunos == null){
+            this.alunos = new RealmList<RealmInteger>();
+        }
+        RealmInteger val = new RealmInteger(valor);
+        this.alunos.add(val);
+    }
 }
