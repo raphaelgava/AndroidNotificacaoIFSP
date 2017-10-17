@@ -2,20 +2,29 @@ package br.edu.ifspsaocarlos.sdm.notificacaoifsp.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
+import com.google.gson.Gson;
+
 import java.util.ArrayList;
+import java.util.HashSet;
 
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.R;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.adapter.RemetentAdapter;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.Notification;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.RealmInteger;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.Remetente;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.service.FetchJSONService;
+import io.realm.Realm;
 
 public class RemetentListActivity extends AppCompatActivity {
 
@@ -23,11 +32,18 @@ public class RemetentListActivity extends AppCompatActivity {
     private RemetentAdapter remetentAdapter;
     private EditText edtResearch;
     private Button btnEndRemetent;
+    private final Realm realm = Realm.getDefaultInstance();
+    private HashSet<Remetente> array;
+    private boolean loadRemetent;
+    private Handler handler;
+    private Notification notificationObject;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lista_remetent);
+
+        array = new HashSet<Remetente>();
 
         LinearLayoutManager mLayoutManager = new LinearLayoutManager(this);
         recyclerView = (RecyclerView) findViewById(R.id.recyclerList);
@@ -61,118 +77,96 @@ public class RemetentListActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent data = new Intent();
-                data.putExtra("remententList", array);
-                setResult(RESULT_OK, data);
-                finish();            }
+                //Type listType = new TypeToken<ArrayList<Offering>>() {}.getType();
+                ArrayList<Remetente> end = new ArrayList<Remetente>(array);
+
+                try {
+                    Gson gson = new Gson();
+                    for (int i = 0; i < end.size(); i++) {
+                        String json = gson.toJson(realm.copyFromRealm(end.get(i)));
+                        data.putExtra(Integer.toString(i), json);
+                    }
+
+                    setResult(RESULT_OK, data);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    finish();
+                }
+            }
         });
 
-//        fetchUsers();
-//        startMessagesService();
-        createList();
-    }
-/*
-    @Override
-    protected void onPostCreate(Bundle savedInstanceState) {
-        super.onPostCreate(savedInstanceState);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);//to show the back button on the actionbar
 
+        loadRemetent = true;
+        handler = new Handler();
+
+        new Thread(){
+            public void run() {
+                while (loadRemetent) {
+                    try {
+                        Thread.sleep(getResources().getInteger(R.integer.tempo_inatividade_servico));
+                        if (FetchJSONService.isBuscandoDadosTerminou() == true){
+                            handler.post(new Runnable() {
+                                public void run() {
+                                    createList();
+                                }
+                            });
+
+                            loadRemetent = false;
+                        }
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }.start();
+
+
+        Intent i = getIntent();
+        Gson gson = new Gson();
+        Bundle bundle = i.getExtras();
+
+        notificationObject = gson.fromJson(bundle.getString("notificacao"), Notification.class);
     }
-*/
-    private ArrayList<Remetente> array;
+
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:// back button on action bar
+                // app icon in action bar clicked; goto parent activity.
+                setResult(RESULT_CANCELED, null);
+                this.finish();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
     private void createList(){
-        array = new ArrayList<Remetente>();
-        char my = 0x61;
-        for (int i = 0; i < 4; i++){
-            Remetente r = new Remetente();
-            r.setCode(i);
-            r.setDescription(my + "Item " + i);
-            my++;
-            array.add(r);
+
+        ArrayList<Remetente> list = new ArrayList(realm.where(Remetente.class).equalTo("is_active", true).findAll());
+        //ArrayList<Offering> list = new ArrayList(realm.where(Offering.class).findAll());
+
+        if (notificationObject != null){
+            if (notificationObject.getSize() > 0) {
+                Realm.getDefaultInstance().beginTransaction();
+                for (RealmInteger valor : notificationObject.getRemetente()) {
+                    if (valor != null) {
+                        for (Remetente remet : list) {
+                            if (valor.getPk() == remet.getPk()) {
+
+                                remet.setChecked(true);
+                                break;
+                            }
+                        }
+                    }
+                }
+                Realm.getDefaultInstance().commitTransaction();
+            }
         }
 
-        remetentAdapter = new RemetentAdapter(array);
+        remetentAdapter = new RemetentAdapter(list, array);
         recyclerView.setAdapter(remetentAdapter);
     }
 
-/*
-    private void fetchUsers() {
-        JsonObjectRequest request = new JsonObjectRequest
-                (Request.Method.GET, Constants.SERVER_URL + Constants.CONTATO_PATH, null, new Response.Listener<JSONObject>() {
-
-                    @Override
-                    public void onResponse(JSONObject json) {
-                        parseUserList(json);
-                    }
-                }, new Response.ErrorListener() {
-
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        Helpers.showDialog(MainActivity.this, R.string.dialog_content_error_fetching_user);
-                    }
-                });
-
-        VolleyHelper.getInstance(this).addToRequestQueue(request);
-    }
-
-    private void parseUserList(JSONObject jsonRoot) {
-        List<Contact> contactList = new ArrayList<>();
-
-        try {
-            JSONArray jsonArray = jsonRoot.getJSONArray("contatos");
-            Gson gson = new Gson();
-
-            for (int i = 0; i < jsonArray.length(); i++) {
-                Contact contact = gson.fromJson(jsonArray.getJSONObject(i).toString(), Contact.class);
-
-                if (!contact.getId().equals(Helpers.getUserId(this)))
-                    contactList.add(contact);
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        saveContacts(contactList);
-    }
-
-    private void saveContacts(final List<Contact> contactList) {
-        if (contactList != null) {
-            Realm realm = Realm.getDefaultInstance();
-            //        realm.executeTransaction(new Realm.Transaction() {
-            //            @Override
-            //            public void execute(Realm realm) {
-            //                realm.copyToRealmOrUpdate(contactList);
-            //            }
-            //        });
-            //        updateAdapter();
-
-            realm.executeTransactionAsync(new Realm.Transaction() {
-                @Override
-                public void execute(Realm bgRealm) {
-                    bgRealm.copyToRealmOrUpdate(contactList);
-//                    bgRealm.commitTransaction();
-                }
-            }, new Realm.Transaction.OnSuccess() {
-                @Override
-                public void onSuccess() {
-                    updateAdapter();
-                }
-            }, new Realm.Transaction.OnError() {
-                @Override
-                public void onError(Throwable error) {
-                    Log.d("SDM", "onError: " + error.toString());
-                    updateAdapter();
-                }
-            });
-        }
-    }
-
-    private void updateAdapter() {
-        Realm realm = Realm.getDefaultInstance();
-        RealmQuery<Contact> query = realm.where(Contact.class);
-        RealmResults<Contact> result = query.findAll();
-
-        contactAdapter = new ContactAdapter(result.subList(0, result.size()));
-        recyclerView.setAdapter(contactAdapter);
-    }
-    */
 }

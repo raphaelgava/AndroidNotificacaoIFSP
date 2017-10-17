@@ -30,7 +30,6 @@ import br.edu.ifspsaocarlos.sdm.notificacaoifsp.adapter.CustomGrid;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.AddedOffering;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.Offering;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.service.FetchJSONService;
-import br.edu.ifspsaocarlos.sdm.notificacaoifsp.util.ServiceState;
 import io.realm.Realm;
 //todo inserir mapa no frame ade acezso ao item
 //todo estudar OnFragmentInteractionListener (verificar se cada fragmento tem que ter o seu e se o main tem que implementar todos)
@@ -211,7 +210,7 @@ public class GridNotificationsFragment extends TemplateFragment{
                                     bgRealm.copyToRealmOrUpdate(newObj);
 
                                     FetchJSONService.setOffering(newObj);
-                                    ServiceState.getInstance().pushState(ServiceState.EnumServiceState.ENUM_INSERT_STUDENT_OFFERING);
+                                    //ServiceState.getInstance().pushState(ServiceState.EnumServiceState.ENUM_INSERT_STUDENT_OFFERING);
                                 }
                             }, new Realm.Transaction.OnSuccess() {
                                 @Override

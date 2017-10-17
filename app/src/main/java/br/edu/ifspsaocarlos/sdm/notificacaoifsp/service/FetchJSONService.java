@@ -12,6 +12,7 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
@@ -30,9 +31,11 @@ import java.util.Stack;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.R;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.activity.MainActivity;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.AddedOffering;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.Notification;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.Offering;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.Person;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.util.EnumParser;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.util.MyGsonBuilder;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.util.ServiceState;
 import io.realm.Realm;
 
@@ -41,21 +44,29 @@ import io.realm.Realm;
  */
 public class FetchJSONService extends Service implements Runnable {
     private boolean appAberta;
-    private static boolean buscaOferta;
+    private static boolean novoComandoLiberado;
 
     private ServiceState machine;
     private RequestQueue queue;
     private static Stack<AddedOffering> stackOffering;
     private final Realm realm = Realm.getDefaultInstance();
     private Handler handler;
+    private static Stack<Notification> stackNotification;
 
     public FetchJSONService() {
         machine = ServiceState.getInstance();
         stackOffering = new Stack<AddedOffering>();
+        stackNotification = new Stack<Notification>();
     }
 
     public static void setOffering(AddedOffering offer){
         stackOffering.add(offer);
+        ServiceState.getInstance().pushState(ServiceState.EnumServiceState.ENUM_INSERT_STUDENT_OFFERING);
+    }
+
+    public static void setNotification(Notification notification){
+        stackNotification.add(notification);
+        ServiceState.getInstance().pushState(ServiceState.EnumServiceState.ENUM_INSERT_NOTIFICATION);
     }
 
     public IBinder onBind(Intent intent) {
@@ -66,7 +77,7 @@ public class FetchJSONService extends Service implements Runnable {
     public void onCreate() {
         super.onCreate();
         appAberta = true;
-        buscaOferta = false;
+        novoComandoLiberado = false;
         Log.e("", "onCreate");
         queue = Volley.newRequestQueue(FetchJSONService.this);
 
@@ -79,8 +90,11 @@ public class FetchJSONService extends Service implements Runnable {
         return super.onStartCommand(intent, flags, startId);
     }
 
+    private int contTime;
+
     public void run() {
         Log.e("", "run");
+        contTime = 0;
         while (appAberta) {
             try {
                 Thread.sleep(getResources().getInteger(R.integer.tempo_inatividade_servico));
@@ -98,11 +112,38 @@ public class FetchJSONService extends Service implements Runnable {
                                 case ENUM_OFERECIMENTO:
                                     buscarOferecimento();
                                     break;
-                                case ENUM_INSERT_STUDENT_OFFERING:
-                                    atualizarAlunoOferecimento();
+                                case ENUM_REMETENTE:
+                                    buscarRemetente();
                                     break;
+                                case ENUM_REMOVE_STUDENT_OFFERING:
+                                    atualizarAlunoOferecimento(true);
+                                    break;
+                                case ENUM_INSERT_STUDENT_OFFERING:
+                                    atualizarAlunoOferecimento(false);
+                                    break;
+                                case ENUM_INSERT_NOTIFICATION:
+                                    atualizarNotificacao(false);
+                                    break;
+                                case ENUM_TIPO_NOTIFICACAO:
+                                    buscarTipoNotificacao();
+                                    break;
+                                case ENUM_LOCAL:
+                                    buscaLocal();
+                                    break;
+//                                default:
+
                             }
                             ServiceState.finishLastPop();
+                            contTime = 0;
+                        }
+                        else{
+                            if (isBuscandoDadosTerminou() == true) {
+                                contTime++;
+                                if (contTime == 5) {
+                                    contTime = 0;
+                                    machine.pushState(ServiceState.EnumServiceState.ENUM_NOTIFICATION);
+                                }
+                            }
                         }
                     }
                 });
@@ -136,15 +177,15 @@ public class FetchJSONService extends Service implements Runnable {
         }
     }
 
-    private void atualizarAlunoOferecimento() {
+    private void atualizarAlunoOferecimento(boolean flagRemove) {
         if (stackOffering.isEmpty() == false){
-            AddedOffering offer = stackOffering.pop();
+            final AddedOffering offer = stackOffering.pop();
 
             boolean flagOk = true;
 
             String url = getString(R.string.url_base);
 
-            buscaOferta = false;
+            novoComandoLiberado = false;
             switch (MainActivity.getPeronType()){
                 case ENUM_STUDENT:
                     url += getString(R.string.url_oferecimento); break;
@@ -174,20 +215,34 @@ public class FetchJSONService extends Service implements Runnable {
 //                    java.lang.IllegalStateException: Nesting problem.
 //                    at com.google.gson.stream.JsonWriter.beforeName(JsonWriter.java:616)
 
-                    Update removendo o aluno!
-
-                    realm.beginTransaction();
-                    Offering bla = realm.where(Offering.class).equalTo("pk", offer.getPk()).findFirst();
+                    //realm.beginTransaction();
+                    final Offering bla = realm.where(Offering.class).equalTo("pk", offer.getPk()).findFirst();
 
                     String json = gson.toJson(realm.copyFromRealm(bla));
                     JSONObject user = new JSONObject(json);
+
+                    if (flagRemove){
+                        realm.executeTransaction(new Realm.Transaction() {
+                            @Override
+                            public void execute(Realm realm) {
+                                try {
+                                    AddedOffering deletedObj = new AddedOffering(bla);
+                                    AddedOffering other = realm.copyToRealmOrUpdate(deletedObj);
+                                    other.deleteFromRealm();
+                                }catch (Exception e){
+                                    Log.d("TCC", "ERROR: " + e.toString());
+                                }
+                            }
+                        });
+                        MainActivity.setFragTransactionStack(R.id.nav_class_schedule, R.id.content_frame, null, true);
+                    }
 
                     try {
                         RequestQueue queue = Volley.newRequestQueue(this.getApplicationContext());
                         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, url, user,
                                 new Response.Listener<JSONObject>() {
                                     public void onResponse(JSONObject s) {
-                                        realm.commitTransaction();
+                                        //realm.commitTransaction();
                                         Log.e("TCC", "Updated offer." + s.toString());
                                     }
                                 }, new Response.ErrorListener() {
@@ -220,9 +275,182 @@ public class FetchJSONService extends Service implements Runnable {
         }
     }
 
+    private void atualizarNotificacao(boolean flagRemove) {
+        if (stackNotification.isEmpty() == false){
+            final Notification objeto = stackNotification.pop();
+
+            boolean flagOk = true;
+
+            String url = getString(R.string.url_base);
+
+            novoComandoLiberado = false;
+            switch (MainActivity.getPeronType()){
+                case ENUM_EMPLOYEE:
+                case ENUM_PROFESSOR:
+                    url += getString(R.string.url_notificacao); break;
+                default:
+                    Log.e("TCC", "Tipo pessoa desconhecida");
+                    flagOk = false;
+            }
+            if (flagOk == true) {
+                //url += Integer.toString(objeto.getPk()) + "/"; //PUT to update is necessary this last slash!!!
+
+                try {
+                    //Gson gson = new Gson();
+                    Gson gson = MyGsonBuilder.getInstance().myGson();
+
+                    final Notification bla = realm.where(Notification.class).equalTo("pk", objeto.getPk()).findFirst();
+
+                    String json = gson.toJson(realm.copyFromRealm(bla));
+                    JSONObject user = new JSONObject(json);
+                    Log.d("TCC", "JSON notification: " + user.toString());
+
+                    if (flagRemove){
+                        realm.executeTransaction(new Realm.Transaction() {
+                            @Override
+                            public void execute(Realm realm) {
+                                try {
+                                    Notification other = realm.copyToRealmOrUpdate(bla);
+                                    other.deleteFromRealm();
+                                }catch (Exception e){
+                                    Log.d("TCC", "ERROR: " + e.toString());
+                                }
+                            }
+                        });
+                        //MainActivity.setFragTransactionStack(R.id.nav_class_schedule, R.id.content_frame, null, true);
+                    }
+
+                    try {
+                        RequestQueue queue = Volley.newRequestQueue(this.getApplicationContext());
+                        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, url, user,
+                                new Response.Listener<JSONObject>() {
+                                    public void onResponse(JSONObject s) {
+                                        //realm.commitTransaction();
+                                        novoComandoLiberado = true; //para não ficar travado caso de algum erro
+                                        Log.e("TCC", "Updated notification." + s.toString());
+                                    }
+                                }, new Response.ErrorListener() {
+                            public void onErrorResponse(VolleyError volleyError) {
+                                stopTransaction();
+                                novoComandoLiberado = true; //para não ficar travado caso de algum erro
+                                Log.e("TCC", "Error during update notification." + volleyError.toString());
+                            }
+                        }) {
+                            @Override
+                            public Map<String, String> getHeaders() throws AuthFailureError {
+                                Map<String, String> headers = new HashMap<>();
+                                // Basic Authentication
+                                //String auth = "Basic " + Base64.encodeToString(CONSUMER_KEY_AND_SECRET.getBytes(), Base64.NO_WRAP);
+                                headers.put("Content-Type", "application/json");
+                                headers.put(getString(R.string.authorization), MainActivity.getAuth()); //Authorization Token ...
+                                return headers;
+                            }
+                        };
+
+                        queue.add(jsonObjectRequest);
+                    } catch (Exception e) {
+                        stopTransaction();
+                        Log.e("TCC", "Erro na leitura de mensagens");
+                        novoComandoLiberado = true; //para não ficar travado caso de algum erro
+                    }
+                } catch (JSONException e) {
+                    stopTransaction();
+                    Log.e("TCC", "ERROR: " + e.toString());
+                    novoComandoLiberado = true; //para não ficar travado caso de algum erro
+                }
+            }
+        }
+    }
+
     private void stopTransaction() {
         if(realm.isInTransaction()) {
             realm.cancelTransaction();
+        }
+    }
+
+    private void buscarTipoNotificacao() {
+
+        String url = getString(R.string.url_base) + getString(R.string.url_tipo_notificacao);
+
+        try {
+
+            JsonArrayRequest jsonObjectRequest = new JsonArrayRequest(Request.Method.GET, url, null,
+                    new Response.Listener<JSONArray>() {
+                        @Override
+                        public void onResponse(JSONArray s) {
+                            ParserJSON.getInstance().saveTipoNotificacao(s);
+                            //Toast.makeText(FetchJSONService.this, "Finalmente: " + s.toString(), Toast.LENGTH_SHORT).show();
+                            Log.d("TCC", "TipoNotificacao: " + s.toString());
+                            novoComandoLiberado = true; //para não ficar travado caso de algum erro
+                        }
+                    },
+                    new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError volleyError) {
+                            Toast.makeText(FetchJSONService.this, "Erro na recuperação do TipoNotificacao: " + volleyError.toString(), Toast.LENGTH_SHORT).show();
+                            novoComandoLiberado = true; //para não ficar travado caso de algum erro
+                        }
+                    }
+            ){
+                @Override
+                public Map<String, String> getHeaders() throws AuthFailureError {
+                    Map<String, String> headers = new HashMap<>();
+                    // Basic Authentication
+                    //String auth = "Basic " + Base64.encodeToString(CONSUMER_KEY_AND_SECRET.getBytes(), Base64.NO_WRAP);
+                    headers.put("Content-Type", "application/json");
+                    headers.put(getString(R.string.authorization), MainActivity.getAuth()); //Authorization Token ...
+                    return headers;
+                }
+            };
+            jsonObjectRequest.setTag("MyTAG");
+
+            queue.add(jsonObjectRequest);
+        } catch (Exception e) {
+            e.printStackTrace();
+            novoComandoLiberado = true; //para não ficar travado caso de algum erro
+        }
+    }
+
+    private void buscaLocal() {
+
+        String url = getString(R.string.url_base) + getString(R.string.url_local);
+
+        try {
+
+            JsonArrayRequest jsonObjectRequest = new JsonArrayRequest(Request.Method.GET, url, null,
+                    new Response.Listener<JSONArray>() {
+                        @Override
+                        public void onResponse(JSONArray s) {
+                            ParserJSON.getInstance().saveLocal(s);
+                            //Toast.makeText(FetchJSONService.this, "Finalmente: " + s.toString(), Toast.LENGTH_SHORT).show();
+                            Log.d("TCC", "Local: " + s.toString());
+                            novoComandoLiberado = true; //para não ficar travado caso de algum erro
+                        }
+                    },
+                    new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError volleyError) {
+                            Toast.makeText(FetchJSONService.this, "Erro na recuperação do Local: " + volleyError.toString(), Toast.LENGTH_SHORT).show();
+                            novoComandoLiberado = true; //para não ficar travado caso de algum erro
+                        }
+                    }
+            ){
+                @Override
+                public Map<String, String> getHeaders() throws AuthFailureError {
+                    Map<String, String> headers = new HashMap<>();
+                    // Basic Authentication
+                    //String auth = "Basic " + Base64.encodeToString(CONSUMER_KEY_AND_SECRET.getBytes(), Base64.NO_WRAP);
+                    headers.put("Content-Type", "application/json");
+                    headers.put(getString(R.string.authorization), MainActivity.getAuth()); //Authorization Token ...
+                    return headers;
+                }
+            };
+            jsonObjectRequest.setTag("MyTAG");
+
+            queue.add(jsonObjectRequest);
+        } catch (Exception e) {
+            e.printStackTrace();
+            novoComandoLiberado = true; //para não ficar travado caso de algum erro
         }
     }
 
@@ -243,6 +471,7 @@ public class FetchJSONService extends Service implements Runnable {
         }
 
         if (flagOk == true) {
+            novoComandoLiberado = false;
             url += Integer.toString(MainActivity.getUserId());
             try {
 
@@ -253,6 +482,7 @@ public class FetchJSONService extends Service implements Runnable {
                                 ParserJSON.getInstance().saveUser(s);
                                 //Toast.makeText(FetchJSONService.this, "Finalmente: " + s.toString(), Toast.LENGTH_SHORT).show();
                                 Log.d("TCC", "User: " + s.toString());
+                                novoComandoLiberado = true;
                                 
                                 /* // TODO: 9/12/2017 caso queira pegar um array de dentro do json!!! 
                                 JSONArray jsonArray;
@@ -271,6 +501,7 @@ public class FetchJSONService extends Service implements Runnable {
                             @Override
                             public void onErrorResponse(VolleyError volleyError) {
                                 Toast.makeText(FetchJSONService.this, "Erro na recuperação do usuário: " + volleyError.toString(), Toast.LENGTH_SHORT).show();
+                                novoComandoLiberado = true;
                             }
                         }
                 ){
@@ -322,6 +553,7 @@ public class FetchJSONService extends Service implements Runnable {
                 queue.add(jsonObjectRequest);
             } catch (Exception e) {
                 e.printStackTrace();
+                novoComandoLiberado = true; //para não ficar travado caso de algum erro
             }
         }
     }
@@ -331,22 +563,20 @@ public class FetchJSONService extends Service implements Runnable {
 
         String url = getString(R.string.url_base);
 
-        EnumParser parser = null;
-        buscaOferta = false;
         Person p = null;
         switch (MainActivity.getPeronType()){
             case ENUM_STUDENT:
                 Realm realm = Realm.getDefaultInstance();
                 p = realm.where(Person.class).equalTo("pk", MainActivity.getUserId()).findFirst();
             case ENUM_PROFESSOR:
-                url += getString(R.string.url_oferecimento); parser = EnumParser.ENUM_PROFESSOR; break;
+                url += getString(R.string.url_oferecimento); break;
             default:
                 Log.e("TCC", "Tipo pessoa desconhecida");
                 flagOk = false;
         }
 
         if (flagOk == true) {
-            final EnumParser finalParser = parser;
+            novoComandoLiberado = false;
             //url += Integer.toString(MainActivity.getUserId());
             try {
                 HashMap<String, String> params = new HashMap<String, String>();
@@ -386,12 +616,12 @@ public class FetchJSONService extends Service implements Runnable {
                         } catch (UnsupportedEncodingException e) {
                             e.printStackTrace();
                         }
-                        buscaOferta = true; //para não ficar travado caso de algum erro
+                        novoComandoLiberado = true; //para não ficar travado caso de algum erro
                     }
                 }, new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        buscaOferta = true; // para não deixar a página sem carregar nada caso de erro
+                        novoComandoLiberado = true; // para não deixar a página sem carregar nada caso de erro
                         Toast.makeText(FetchJSONService.this, "Erro na recuperação da offerta: " + error.toString(), Toast.LENGTH_SHORT).show();
                     }
                 }){
@@ -420,6 +650,76 @@ public class FetchJSONService extends Service implements Runnable {
                 queue.add(sr);
             } catch (Exception e) {
                 e.printStackTrace();
+                novoComandoLiberado = true; //para não ficar travado caso de algum erro
+            }
+        }
+    }
+
+    private void buscarRemetente() {
+        boolean flagOk = true;
+
+        String url = getString(R.string.url_base);
+
+        novoComandoLiberado = false;
+
+        if (flagOk == true) {
+            url += getString(R.string.url_remetente);
+            try {
+                StringRequest sr = new StringRequest(Request.Method.GET, url , new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String s) {
+                        try {
+                            byte[] u = s.toString().getBytes("ISO-8859-1");
+                            s = new String(u, "UTF-8");
+
+                            JSONArray jsonArray = new JSONArray(s);
+                            for(int i = 0; i < jsonArray.length(); i++) {
+                                JSONObject jsonObj = jsonArray.getJSONObject(i);
+                                ParserJSON.getInstance().saveRemetent(jsonObj);
+                            }
+                            //Toast.makeText(FetchJSONService.this, "Finalmente: " + s, Toast.LENGTH_SHORT).show();
+                            Log.d("TCC", "Response Remetent");
+                        } catch (JSONException e) {
+                            Toast.makeText(FetchJSONService.this, "Erro na conversão " +
+                                    "de objeto JSON!", Toast.LENGTH_SHORT).show();
+                        } catch (UnsupportedEncodingException e) {
+                            e.printStackTrace();
+                        }
+                        novoComandoLiberado = true; //para não ficar travado caso de algum erro
+                    }
+                }, new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        novoComandoLiberado = true; // para não deixar a página sem carregar nada caso de erro
+                        Toast.makeText(FetchJSONService.this, "Erro na recuperação do remetente: " + error.toString(), Toast.LENGTH_SHORT).show();
+                    }
+                }){
+//                    //Só funciona para POST
+//                    @Override
+//                    protected Map<String,String> getParams(){
+//                        // Posting parameters to login url
+//                        Map<String, String> params = new HashMap<String, String>();
+//
+//                        params.put("ano", Integer.toString(year));
+//                        params.put("semestre", Integer.toString(semester));
+//                        return params;
+//                    }
+
+                    @Override
+                    public Map<String, String> getHeaders() throws AuthFailureError {
+                        Map<String, String> headers = new HashMap<>();
+                        // Basic Authentication
+                        //String auth = "Basic " + Base64.encodeToString(CONSUMER_KEY_AND_SECRET.getBytes(), Base64.NO_WRAP);
+
+                        headers.put(getString(R.string.authorization), MainActivity.getAuth()); //Authorization Token ...
+                        return headers;
+                    }
+                };
+
+                queue.add(sr);
+            } catch (Exception e) {
+                e.printStackTrace();
+                novoComandoLiberado = true; //para não ficar travado caso de algum erro
             }
         }
     }
@@ -427,31 +727,101 @@ public class FetchJSONService extends Service implements Runnable {
 
     private void buscarNotificacao() {
         RequestQueue queue = Volley.newRequestQueue(FetchJSONService.this);
-        String url = getString(R.string.url_base) + "contato";
+        String url = getString(R.string.url_base) + getString(R.string.url_notificacao);
         try {
-            JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, url, null,
-                    new Response.Listener<JSONObject>() {
-                        public void onResponse(JSONObject s) {
-                            JSONArray jsonArray;
-                            try {
-                                jsonArray = s.getJSONArray("contatos");
-                            }
-                            catch (JSONException je) {
-                                Toast.makeText(FetchJSONService.this, "Erro na conversão " +
-                                        "de objeto JSON!", Toast.LENGTH_SHORT).show();
-                            }
+            novoComandoLiberado = false;
+
+            url += "?pk=" + MainActivity.getUserId() + "&user=" + MainActivity.getPeronType().ordinal();
+
+            Continar testando!
+
+            StringRequest sr = new StringRequest(Request.Method.GET, url , new Response.Listener<String>() {
+                @Override
+                public void onResponse(String s) {
+                    try {
+                        byte[] u = s.toString().getBytes("ISO-8859-1");
+                        s = new String(u, "UTF-8");
+
+                        JSONArray jsonArray = new JSONArray(s);
+                        for(int i = 0; i < jsonArray.length(); i++) {
+                            JSONObject jsonObj = jsonArray.getJSONObject(i);
+                            ParserJSON.getInstance().saveNotificacao(jsonObj);
                         }
-                    }, new Response.ErrorListener() {
-                public void onErrorResponse(VolleyError volleyError) {
-                    Toast.makeText(FetchJSONService.this, "Erro na recuperação do número " +
-                            "de contatos!", Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(FetchJSONService.this, "Finalmente: " + s, Toast.LENGTH_SHORT).show();
+                        Log.d("TCC", "Response Notification");
+                    } catch (JSONException e) {
+                        Toast.makeText(FetchJSONService.this, "Erro na conversão " +
+                                "de objeto JSON!", Toast.LENGTH_SHORT).show();
+                    } catch (UnsupportedEncodingException e) {
+                        e.printStackTrace();
+                    }
+                    novoComandoLiberado = true; //para não ficar travado caso de algum erro
                 }
-            });
-            queue.add(jsonObjectRequest);
+            }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    novoComandoLiberado = true; // para não deixar a página sem carregar nada caso de erro
+                    Toast.makeText(FetchJSONService.this, "Erro na recuperação da offerta: " + error.toString(), Toast.LENGTH_SHORT).show();
+                }
+            }){
+                @Override
+                public Map<String, String> getHeaders() throws AuthFailureError {
+                    Map<String, String> headers = new HashMap<>();
+                    // Basic Authentication
+                    //String auth = "Basic " + Base64.encodeToString(CONSUMER_KEY_AND_SECRET.getBytes(), Base64.NO_WRAP);
+
+                    headers.put(getString(R.string.authorization), MainActivity.getAuth()); //Authorization Token ...
+                    return headers;
+                }
+            };
+
+            queue.add(sr);
         } catch (Exception e) {
             e.printStackTrace();
+            novoComandoLiberado = true; //para não ficar travado caso de algum erro
         }
     }
+
+//    private void showNotification(List<Notification> messageList) {
+//        String currentMessagingUser = myApplication.getCurrentMessagingUser();
+//
+//        // check first use
+//        if (!isFirstUse) {
+//
+//            // verifica se o usuario esta conversando com o usuario da notificação
+//            if (!messageList.get(0).getOrigem_id().equals(currentMessagingUser)) {
+//
+//                Integer id = Integer.parseInt(messageList.get(0).getOrigem_id());
+//                NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+//                mNotificationManager.cancel(id);
+//
+//                Realm realm = Realm.getDefaultInstance();
+//                Contact contact = realm.where(Contact.class).equalTo("id", messageList.get(0).getOrigem_id()).findFirst();
+//
+//                if (contact != null) {
+//                    NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(getApplicationContext())
+//                            .setSmallIcon(R.drawable.ic_send_white_24dp)
+//                            .setWhen(System.currentTimeMillis())
+//                            .setAutoCancel(true)
+//                            .setContentTitle("Nova mensagem")
+//                            .setContentText(contact.getNome_completo());
+//
+//                    Intent resultIntent = new Intent(getApplicationContext(), MessageActivity.class);
+//                    resultIntent.putExtra(Constants.SENDER_USER_KEY, messageList.get(0).getOrigem_id());
+//
+//                    TaskStackBuilder stackBuilder = TaskStackBuilder.create(getApplicationContext());
+//                    stackBuilder.addParentStack(MessageActivity.class);
+//                    stackBuilder.addNextIntent(resultIntent);
+//
+//                    PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+//                    mBuilder.setContentIntent(resultPendingIntent);
+//
+//
+//                    mNotificationManager.notify(id, mBuilder.build());
+//                }
+//            }
+//        }
+//    }
 
 
 
@@ -466,8 +836,8 @@ public class FetchJSONService extends Service implements Runnable {
         stopSelf();
     }
 
-    public static boolean isBuscaOferta() {
-        return buscaOferta;
+    public static boolean isBuscandoDadosTerminou() {
+        return novoComandoLiberado;
     }
 }
 

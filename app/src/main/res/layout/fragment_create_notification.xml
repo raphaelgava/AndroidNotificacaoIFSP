@@ -44,24 +44,37 @@
                     android:hint="@string/description" />
             </android.support.design.widget.TextInputLayout>
 
-            <TextView
-                android:id="@+id/txtInDate"
+            <android.support.design.widget.TextInputLayout
+                android:id="@+id/txtDH"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:background="@drawable/shape_border"
-                android:textSize="32dp"
-                android:hint="@string/date" />
+                android:layout_height="wrap_content">
 
-            <TextView
-                android:id="@+id/txtInTime"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:background="@drawable/shape_border"
-                android:textSize="32dp"
-                android:hint="@string/time" />
-
+                <TextView
+                    android:id="@+id/txtDataHora"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/dateTime"
+                    />
+                <TextView
+                    android:id="@+id/txtInDate"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:background="@drawable/shape_border"
+                    android:textSize="32dp"
+                    android:hint="@string/date" />
+            <!--
+                <TextView
+                    android:id="@+id/txtInTime"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:background="@drawable/shape_border"
+                    android:textSize="32dp"
+                    android:hint="@string/time" />
+                    -->
+            </android.support.design.widget.TextInputLayout>
+            <!--
             <android.support.design.widget.TextInputLayout
                 android:id="@+id/txtTipoCor"
                 android:layout_width="match_parent"
@@ -76,6 +89,45 @@
                     android:gravity="center"
                     android:textSize="28dp"
                     android:hint="@string/notificationType" />
+            </android.support.design.widget.TextInputLayout>
+            -->
+
+            <Space
+                android:layout_weight=".2"
+                android:layout_width="match_parent"
+                android:layout_height="8dp" />
+
+            <android.support.design.widget.TextInputLayout
+                android:id="@+id/txtSpinnerCor"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/txtCor"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/notificationType"
+                     />
+                <Spinner
+                    android:id="@+id/spinnerCor"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+            </android.support.design.widget.TextInputLayout>
+
+            <android.support.design.widget.TextInputLayout
+                android:id="@+id/txtSpinner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/txtLocal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/place" />
+                <Spinner
+                    android:id="@+id/spinner"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
             </android.support.design.widget.TextInputLayout>
 <!--
             <ImageView

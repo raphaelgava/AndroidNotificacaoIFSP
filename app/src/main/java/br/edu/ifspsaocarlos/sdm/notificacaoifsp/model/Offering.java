@@ -212,4 +212,20 @@ public class Offering  extends RealmObject implements Serializable {
         RealmInteger val = new RealmInteger(valor);
         this.alunos.add(val);
     }
+
+    public void removeAluno(int valor){
+//        if (alunos == null){
+//            this.alunos = new RealmList<RealmInteger>();
+            RealmInteger val = new RealmInteger(valor);
+        RealmList<RealmInteger> list = getAlunos();
+        for (int i = 0; i < list.size(); i++){
+            RealmInteger a = list.get(i);
+            if (a.getPk() == val.getPk()){
+                list.remove(i);
+                if (i > 0)
+                    i--;
+            }
+        }
+//        }
+    }
 }

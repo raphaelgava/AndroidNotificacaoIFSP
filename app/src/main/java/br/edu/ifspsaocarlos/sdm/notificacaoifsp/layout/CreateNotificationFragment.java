@@ -2,11 +2,10 @@ package br.edu.ifspsaocarlos.sdm.notificacaoifsp.layout;
 
 import android.app.Activity;
 import android.app.DatePickerDialog;
-import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.design.widget.TextInputLayout;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -14,24 +13,34 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.TimePicker;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
+
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.List;
 
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.R;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.activity.MainActivity;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.activity.RemetentListActivity;
-import br.edu.ifspsaocarlos.sdm.notificacaoifsp.color.MyColorChosserDialog;
-import br.edu.ifspsaocarlos.sdm.notificacaoifsp.color.MyColorListener;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.Local;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.Notification;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.Remetente;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.TipoNotificacao;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.service.FetchJSONService;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.util.ServiceState;
+import io.realm.Realm;
+import io.realm.RealmObject;
+import io.realm.RealmResults;
 
 import static android.app.DatePickerDialog.OnDateSetListener;
 
@@ -47,16 +56,23 @@ public class CreateNotificationFragment extends TemplateFragment {
 
     private final int RESULT_REMETENT_ACTIVITY = 1;
 
-    private TextView tvDate, tvTime, tvType;
+//    private TextView tvDate, tvTime, tvType;
+    private TextView tvDate;
     private Button btnSave, btnRemetent;
-    private int mYear, mMonth, mDay, mHour, mMinute;
+    private int mYear, mMonth, mDay;
+//    private int mYear, mMonth, mDay, mHour, mMinute;
     private EditText edtDescription, edtTitle;
     private TextInputLayout txtTitle, txtDescription;
-    //private Spinner spCountries, spBusinessType;
+    private Spinner spLocal, spTipoNotificacao;
 
     private Calendar c;
     private SimpleDateFormat formatDate;
-    private SimpleDateFormat formatTime;
+//    private SimpleDateFormat formatTime;
+    private boolean loadRemetent;
+    private Handler handler;
+    private Thread local;
+
+    private Notification notificationObject = null;
 
     // TODO: 3/13/2017 FAZER CAMPOS
     //// TODO: 3/27/2017 criar esquema de setar o local pelo marker (save the state of mapFragment - maps example)
@@ -73,15 +89,17 @@ public class CreateNotificationFragment extends TemplateFragment {
         String dateMask = cxt.getString(R.string.mask_date);
         formatDate = new SimpleDateFormat(dateMask);
         //formatTime = new SimpleDateFormat("hh:mm");//12h
-        String timeMask = cxt.getString(R.string.mask_time);
-        formatTime = new SimpleDateFormat(timeMask);//24h
+//        String timeMask = cxt.getString(R.string.mask_time);
+//        formatTime = new SimpleDateFormat(timeMask);//24h
 
         c = Calendar.getInstance();
         mYear = c.get(Calendar.YEAR);
         mMonth = c.get(Calendar.MONTH);
         mDay = c.get(Calendar.DAY_OF_MONTH);
-        mHour = c.get(Calendar.HOUR_OF_DAY);
-        mMinute = c.get(Calendar.MINUTE);
+//        mHour = c.get(Calendar.HOUR_OF_DAY);
+//        mMinute = c.get(Calendar.MINUTE);
+
+        notificationObject = new Notification();
     }
 
     /**
@@ -111,13 +129,13 @@ public class CreateNotificationFragment extends TemplateFragment {
         if (view != null)
         {
             tvDate = (TextView) view.findViewById(R.id.txtInDate);
-            tvTime = (TextView) view.findViewById(R.id.txtInTime);
+//            tvTime = (TextView) view.findViewById(R.id.txtInTime);
             btnSave = (Button) view.findViewById(R.id.btnSendNotification);
-            tvType = (TextView) view.findViewById(R.id.txtCor);
+//            tvType = (TextView) view.findViewById(R.id.txtCor);
             btnRemetent = (Button) view.findViewById(R.id.btnRemetent);
 
             tvDate.setText(formatDate.format(c.getTime()));
-            tvTime.setText(formatTime.format(c.getTime()));
+//            tvTime.setText(formatTime.format(c.getTime()));
 
             tvDate.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -125,15 +143,18 @@ public class CreateNotificationFragment extends TemplateFragment {
                     onClickMethod(view);
                 }
             });
-            tvTime.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    onClickMethod(view);
-                }
-            });
+//            tvTime.setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View view) {
+//                    onClickMethod(view);
+//                }
+//            });
 
             txtDescription = (TextInputLayout) view.findViewById(R.id.txtDescription);
             txtTitle = (TextInputLayout) view.findViewById(R.id.txtTitle);
+
+            spLocal = (Spinner) view.findViewById(R.id.spinner);
+            spTipoNotificacao = (Spinner) view.findViewById(R.id.spinnerCor);
 
             edtDescription = (EditText) view.findViewById(R.id.edtDescription);
             edtDescription.setOnTouchListener(new View.OnTouchListener() {
@@ -179,15 +200,26 @@ public class CreateNotificationFragment extends TemplateFragment {
                 }
             });
             */
+
             btnRemetent.setOnClickListener(new View.OnClickListener(){
                 public void onClick(View view){
+                    ServiceState.getInstance().pushState(ServiceState.EnumServiceState.ENUM_REMETENTE);
+
                     Intent intent = new Intent(view.getContext(),RemetentListActivity.class);
+                    //intent.putExtra("notificacao", notificationObject);
+                    Gson gson = new Gson();
+                    Realm realm = Realm.getDefaultInstance();
+                    realm.beginTransaction();
+                    Notification object = realm.copyToRealmOrUpdate(notificationObject);
+                    String json = gson.toJson(realm.copyFromRealm(object));
+                    intent.putExtra("notificacao", json);
+                    Realm.getDefaultInstance().cancelTransaction();
                     startActivityForResult(intent, RESULT_REMETENT_ACTIVITY);
                 }
             });
             // TODO: 3/18/2017 pensar no esquema do servidor igual ao que o professor tinha feito de pegar dados a partir do ultimo item reccebido apenas
 
-
+/*
             //final ImageView shape =  (ImageView) view.findViewById(R.id.imvShape);
             final GradientDrawable bgDrawable = (GradientDrawable) tvType.getBackground();
 
@@ -256,15 +288,89 @@ public class CreateNotificationFragment extends TemplateFragment {
                 dialog.show();
                 }
             });
-
+*/
             btnSave.setOnClickListener(new View.OnClickListener(){
                 public void onClick(View view){
                     submitForm();
                 }
             });
+
+
+
+            handler = new Handler();
+            local = new Thread(){
+                public void run() {
+                    loadRemetent = true;
+                    while (loadRemetent) {
+                        try {
+                            Thread.sleep(getResources().getInteger(R.integer.tempo_inatividade_servico));
+                            if (FetchJSONService.isBuscandoDadosTerminou() == true){
+                                handler.post(new Runnable() {
+                                    public void run() {
+                                        Realm realm = Realm.getDefaultInstance();
+                                        RealmResults<Local> realmResults = realm.where(Local.class).findAll();
+                                        List<Local> documents = realm.copyFromRealm(realmResults);
+                                        Local obj = new Local();
+                                        obj.setDescricao("No place");
+                                        documents.add(0, obj);
+                                        ArrayAdapter<Local> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, documents);
+                                        spLocal.setAdapter(adapter);
+                                    }
+                                });
+
+                                loadRemetent = false;
+                            }
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            };
+
+            new Thread(){
+                public void run() {
+                    loadRemetent = true;
+                    while (loadRemetent) {
+                        try {
+                            Thread.sleep(getResources().getInteger(R.integer.tempo_inatividade_servico));
+                            if (FetchJSONService.isBuscandoDadosTerminou() == true){
+                                handler.post(new Runnable() {
+                                    public void run() {
+                                        Realm realm = Realm.getDefaultInstance();
+                                        RealmResults<TipoNotificacao> realmResults = realm.where(TipoNotificacao.class).findAll();
+                                        List<TipoNotificacao> documents = realm.copyFromRealm(realmResults);;
+                                        ArrayAdapter<TipoNotificacao> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, documents);
+                                        spTipoNotificacao.setAdapter(adapter);
+
+                                        local.start(); //Por conta da ordem que foi inserido na fila do service json
+                                    }
+                                });
+
+                                loadRemetent = false;
+                            }
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }.start();
         }
         return view;
     }
+
+//    public ArrayList<String> retrieve()
+//    {
+//        Realm realm = Realm.getDefaultInstance();
+//        RealmResults<Local> realmResults = realm.where(Local.class).findAll();
+//        //List<Local> documents = realm.copyFromRealm(realmResults);
+//
+//        ArrayList<String> spacecraftNames=new ArrayList<>();
+//        for(Local s: realmResults)
+//        {
+//            spacecraftNames.add(Integer.toString(s.getPk())+"-"+s.getDescricao());
+//        }
+//        return spacecraftNames;
+//    }
 
     public void onActivityResult(int requestCode, int resultCode, Intent data)
     {
@@ -273,14 +379,17 @@ public class CreateNotificationFragment extends TemplateFragment {
         switch (requestCode){
             case RESULT_REMETENT_ACTIVITY:
                 if (resultCode == Activity.RESULT_OK){
-                    ArrayList<Remetente> array = (ArrayList<Remetente>) data.getSerializableExtra("remententList");
+                    Gson gson = new Gson();
+                    Bundle bundle = data.getExtras();
+                    notificationObject.clear();
+                    for (int i = 0; i < bundle.size(); i++){
+                        Remetente object = gson.fromJson(bundle.getString(Integer.toString(i)), Remetente.class);
 
-                    for (int i = 0; i < array.size(); i++) {
-                        Log.d("TCC", array.get(i).getDescription());
+                        notificationObject.addRemetent(object.getPk());
+
+                        Log.d("TCC", object.getDescricao() + " - " + object.getTipo());
                     }
                 }
-                //String message=data.getStringExtra("MESSAGE");
-                //textView1.setText(message);
                 break;
             default:
                 Log.d("TCC", "Activity Result wrong");
@@ -294,8 +403,63 @@ public class CreateNotificationFragment extends TemplateFragment {
         if ((!validateTitle()) || (!validateDescription()) || (!validateRemetent())) {
             return;
         }
-        Toast.makeText(getActivity().getApplicationContext(), R.string.msg_send_notification, Toast.LENGTH_SHORT).show();
+
+        if (criarNotificao()) {
+            Toast.makeText(getActivity().getApplicationContext(), R.string.msg_send_notification, Toast.LENGTH_SHORT).show();
+        }
+        else{
+
+        }
         getActivity().getFragmentManager().popBackStack();
+    }
+
+    private boolean criarNotificao(){
+        Gson gson = new Gson();
+        Realm realm = Realm.getDefaultInstance();
+
+
+        //object = gson.fromJson(json.toString(), Person.class);
+        if (notificationObject != null){
+            notificationObject.setDescricao(edtDescription.getText().toString().trim());
+            notificationObject.setTitulo(edtTitle.getText().toString().trim());
+            notificationObject.setDatahora(tvDate.getText().toString());
+            notificationObject.setServidor(MainActivity.getUserId());
+
+            Local l = (Local )spLocal.getSelectedItem();
+            TipoNotificacao tn = (TipoNotificacao) spTipoNotificacao.getSelectedItem();
+
+            if (l != null && l.getPk() != 0) {
+                notificationObject.setId_local(l.getPk());
+            }
+
+            if (tn != null){
+                notificationObject.setId_tipo(tn.getPk());
+            }
+
+
+            final RealmObject finalObject = notificationObject;
+            realm.executeTransactionAsync(new Realm.Transaction() {
+                @Override
+                public void execute(Realm bgRealm) {
+                    bgRealm.copyToRealmOrUpdate(finalObject);
+
+                    FetchJSONService.setNotification((Notification) finalObject);
+                    //bgRealm.insertOrUpdate(finalObject);//faster than copyToRealmOrUpdate
+                }
+            }, new Realm.Transaction.OnSuccess() {
+                @Override
+                public void onSuccess() {
+                    Log.e("TCC", "User saved");
+                }
+            }, new Realm.Transaction.OnError() {
+                @Override
+                public void onError(Throwable error) {
+                    Log.e("TCC", "Erro: " + error.toString());
+                }
+            });
+            return true;
+        }
+        return false;
     }
 
     private boolean validateTitle(){
@@ -313,9 +477,9 @@ public class CreateNotificationFragment extends TemplateFragment {
     }
 
     private boolean validateDescription(){
-        String title = edtDescription.getText().toString().trim();
+        String desc = edtDescription.getText().toString().trim();
 
-        if (title.isEmpty()) {
+        if (desc.isEmpty()) {
             txtDescription.setError(getString(R.string.error_invalid_description));
             requestFocus(txtDescription);
             return false;
@@ -327,14 +491,10 @@ public class CreateNotificationFragment extends TemplateFragment {
     }
 
     private boolean validateRemetent(){
-        String title = edtDescription.getText().toString().trim();
-
-        if (title.isEmpty()) {
-            txtDescription.setError(getString(R.string.error_invalid_description));
-            requestFocus(txtDescription);
+        if (notificationObject.getSize() <= 0) {
+            Toast.makeText(getActivity().getApplicationContext(), R.string.error_invalid_remetent, Toast.LENGTH_SHORT).show();
+            requestFocus(btnRemetent);
             return false;
-        } else {
-            txtDescription.setErrorEnabled(false);
         }
 
         return true;
@@ -365,24 +525,24 @@ public class CreateNotificationFragment extends TemplateFragment {
             datePickerDialog.show();
         }
 
-        if (v == tvTime){
-            // Launch Time Picker Dialog
-            TimePickerDialog timePickerDialog = new TimePickerDialog(v.getContext(),
-                new TimePickerDialog.OnTimeSetListener() {
-                    @Override
-                    public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-                        if (((mYear == c.get(Calendar.YEAR)) && (mMonth == c.get(Calendar.MONTH)) && (mDay == c.get(Calendar.DAY_OF_MONTH))) &&
-                            ((hourOfDay < c.get(Calendar.HOUR_OF_DAY)) || ((hourOfDay == c.get(Calendar.HOUR_OF_DAY)) && (minute <= (c.get(Calendar.MINUTE) + 10))))) {
-                            Toast.makeText(view.getContext(), "Set time at least 10 minutes from now", Toast.LENGTH_LONG).show();
-                        } else {
-                            //tvTime.setText(hourOfDay + ":" + minute);
-                            c.set(Calendar.HOUR_OF_DAY, hourOfDay);
-                            c.set(Calendar.MINUTE, minute);
-                            tvTime.setText(formatTime.format(c.getTime()));
-                        }
-                    }
-                }, mHour, mMinute, true);
-            timePickerDialog.show();
-        }
+//        if (v == tvTime){
+//            // Launch Time Picker Dialog
+//            TimePickerDialog timePickerDialog = new TimePickerDialog(v.getContext(),
+//                new TimePickerDialog.OnTimeSetListener() {
+//                    @Override
+//                    public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+//                        if (((mYear == c.get(Calendar.YEAR)) && (mMonth == c.get(Calendar.MONTH)) && (mDay == c.get(Calendar.DAY_OF_MONTH))) &&
+//                            ((hourOfDay < c.get(Calendar.HOUR_OF_DAY)) || ((hourOfDay == c.get(Calendar.HOUR_OF_DAY)) && (minute <= (c.get(Calendar.MINUTE) + 10))))) {
+//                            Toast.makeText(view.getContext(), "Set time at least 10 minutes from now", Toast.LENGTH_LONG).show();
+//                        } else {
+//                            //tvTime.setText(hourOfDay + ":" + minute);
+//                            c.set(Calendar.HOUR_OF_DAY, hourOfDay);
+//                            c.set(Calendar.MINUTE, minute);
+//                            tvTime.setText(formatTime.format(c.getTime()));
+//                        }
+//                    }
+//                }, mHour, mMinute, true);
+//            timePickerDialog.show();
+//        }
     }
 }

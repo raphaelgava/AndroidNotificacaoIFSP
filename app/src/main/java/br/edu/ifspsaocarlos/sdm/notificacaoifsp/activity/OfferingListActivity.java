@@ -107,7 +107,7 @@ public class OfferingListActivity extends AppCompatActivity {
                 while (loadOffering) {
                     try {
                         Thread.sleep(getResources().getInteger(R.integer.tempo_inatividade_servico));
-                        if (FetchJSONService.isBuscaOferta() == true){
+                        if (FetchJSONService.isBuscandoDadosTerminou() == true){
                             handler.post(new Runnable() {
                                 public void run() {
                                 createList();

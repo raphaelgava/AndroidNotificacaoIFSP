@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.util.Log;
 
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.R;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.util.ServiceState;
 
 /**
  * Created by rapha on 7/2/2017.
@@ -22,6 +23,8 @@ public class FragmentFactory {
         } else if (fragType == R.id.nav_user_data) {
             return ChangeUserDataFragment.newInstance(context, args);
         } else if (fragType == R.id.nav_notification) {
+            ServiceState.getInstance().pushState(ServiceState.EnumServiceState.ENUM_TIPO_NOTIFICACAO);
+            ServiceState.getInstance().pushState(ServiceState.EnumServiceState.ENUM_LOCAL);
             return CreateNotificationFragment.newInstance(context, args);
         }
         Log.d("TCC", "Não foi encontrado o fragmento ao ser criado");

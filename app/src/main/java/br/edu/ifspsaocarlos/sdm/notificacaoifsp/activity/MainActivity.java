@@ -46,12 +46,12 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
     private static int userId;
     private static String auth;
 
-    private android.support.v4.app.FragmentManager fragmentManager;
+    private static android.support.v4.app.FragmentManager fragmentManager;
     private Intent serviceIntent;
 
-    private FloatingActionButton fab;
+    private static FloatingActionButton fab;
 
-    private final String TAG_FRAG_CREATE_NOTIFICATION = "tagNotification";
+    private static final String TAG_FRAG_CREATE_NOTIFICATION = "tagNotification";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -338,14 +338,14 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
         return super.onOptionsItemSelected(item);
     }
 
-    private void showFloatingActionButton(){
+    private static void showFloatingActionButton(){
         if ((getPeronType() != EnumUserType.ENUM_STUDENT) && (getPeronType() != EnumUserType.ENUM_NOTHING))
             fab.setVisibility(View.VISIBLE);
         else
             fab.setVisibility(View.INVISIBLE);
     }
 
-    private void setFragTransactionStack(int fragType, int content, Bundle data, boolean flagAddStack){
+    public static void setFragTransactionStack(int fragType, int content, Bundle data, boolean flagAddStack){
         // Create new fragment and transaction
         android.support.v4.app.FragmentTransaction transaction = fragmentManager.beginTransaction();
 
@@ -360,7 +360,14 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
             fab.setVisibility(View.INVISIBLE);
         }
 
-        transaction.replace(content, FragmentFactory.CreateFragment(getApplicationContext(), data, fragType));
+        if (fragType == R.id.nav_notification)
+        {
+            transaction.replace(content, FragmentFactory.CreateFragment(fab.getContext(), data, fragType), TAG_FRAG_CREATE_NOTIFICATION);
+        }
+        else {
+            transaction.replace(content, FragmentFactory.CreateFragment(fab.getContext(), data, fragType));
+        }
+
         if (flagAddStack) {
             transaction.addToBackStack(Integer.toString(fragType));
             transaction.commit();

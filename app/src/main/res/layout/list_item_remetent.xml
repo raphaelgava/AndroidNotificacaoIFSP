@@ -44,7 +44,7 @@
         android:textSize="18sp" />
 
     <TextView
-        android:id="@+id/txtRemetentCode"
+        android:id="@+id/txtRemetentType"
         style="@style/list_item_primary_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -62,7 +62,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Description"
-        android:layout_alignLeft="@+id/txtRemetentCode"
+        android:layout_alignLeft="@+id/txtRemetentType"
         android:layout_below="@+id/txtBase" />
 
     <CheckBox
@@ -70,7 +70,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignBottom="@+id/txtRemetentDesc"
-        android:layout_alignRight="@+id/txtRemetentCode"
+        android:layout_alignRight="@+id/txtRemetentType"
         android:layout_margin="5dp"/>
     <View
         style="@style/divider"

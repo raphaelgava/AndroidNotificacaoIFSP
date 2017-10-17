@@ -49,53 +49,18 @@ public class MyGsonBuilder {
                         return false;
                     }
                 })
-                //.registerTypeAdapter(new TypeToken<RealmList<RealmInteger>>() {}.getType(), new JsonAdapter<RealmInteger> ())
-                /*
-                .registerTypeAdapter(new TypeToken<RealmList<RealmInteger>>() {}.getType(), new TypeAdapter<RealmList<RealmInteger>>() {
-
-                    @Override
-                    public void write(JsonWriter out, RealmList<RealmInteger> value) throws IOException {
-                        // Ignore
-                        Log.d("TCC", "Antes: " + out.toString());
-
-                        try {
-                            if (value != null) {
-                                out.flush();
-                                //out.beginObject();
-//                                out.name("alunos");
-                                out.beginArray();
-                                for (RealmInteger inter : value){
-                                    out.value(inter.getPk());
-                                }
-                                out.endArray();
-                                //out.endObject();
-                            }
-                            else{
-                                out.nullValue();
-                            }
-                        } catch (java.io.IOException e) {
-                            e.printStackTrace();
-                        }
-                        Log.d("TCC", "Depois: " + out.toString());
-                    }
-
-                    @Override
-                    public RealmList<RealmInteger> read(JsonReader in) throws IOException {
-                        RealmList<RealmInteger> list = new RealmList<RealmInteger>();
-                        try {
-                            in.beginArray();
-
-                            while (in.hasNext()) {
-                                int valor = in.nextInt();
-                                list.add(new RealmInteger(valor));
-                            }
-                            in.endArray();
-                        } catch (java.io.IOException e) {
-                            e.printStackTrace();
-                        }
-                        return list;
-                    }
-                })*/
+                //para excluir um campo na hora de serializar!
+//                .addSerializationExclusionStrategy(new ExclusionStrategy() {
+//                    @Override
+//                    public boolean shouldSkipField(FieldAttributes f) {
+//                        return f.getName().toLowerCase().contains("id_local");
+//                    }
+//
+//                    @Override
+//                    public boolean shouldSkipClass(Class<?> aClass) {
+//                        return false;
+//                    }
+//                })
                 .create();
             return gson;
     }
@@ -109,15 +74,11 @@ public class MyGsonBuilder {
 
             try {
                 if (value != null) {
-//                    out.flush();
-                    //out.beginObject();
-//                                out.name("alunos");
                     out.beginArray();
                     for (RealmInteger inter : value){
                         out.value(inter.getPk());
                     }
                     out.endArray();
-                    //out.endObject();
                 }
                 else{
                     out.nullValue();

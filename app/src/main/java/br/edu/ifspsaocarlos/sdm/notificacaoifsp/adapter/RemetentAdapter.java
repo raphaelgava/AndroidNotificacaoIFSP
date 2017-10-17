@@ -10,10 +10,12 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.R;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.Remetente;
+import io.realm.Realm;
 
 /**
  * Created by rapha on 3/15/2017.
@@ -23,11 +25,13 @@ public class RemetentAdapter extends RecyclerView.Adapter<RemetentAdapter.ItemVi
 
     private List<Remetente> mListaRemetentes;
     private List<Remetente> allItems;
+    private HashSet<Remetente> mListChecked;
 
 
-    public RemetentAdapter(List<Remetente> listaRemententes) {
+    public RemetentAdapter(List<Remetente> listaRemententes, HashSet<Remetente> array) {
         this.mListaRemetentes = listaRemententes;
         this.allItems = listaRemententes;
+        this.mListChecked = array;
     }
 
     public Filter getFilter() {
@@ -47,7 +51,7 @@ public class RemetentAdapter extends RecyclerView.Adapter<RemetentAdapter.ItemVi
                         Remetente data = allItems.get(i);
 
                         filtro = filtro.toString().toLowerCase();
-                        String condicao = data.getDescription().toLowerCase();
+                        String condicao = data.getDescricao().toLowerCase();
 
                         if (condicao.contains(filtro)) {
                             //se conter adiciona na lista de itens filtrados.
@@ -86,8 +90,8 @@ public class RemetentAdapter extends RecyclerView.Adapter<RemetentAdapter.ItemVi
 
         if (remetente != null) {
             //Setar os valores conforme a grid faz scroll
-            holder.txtCode.setText(Integer.toString((remetente.getCode())));
-            holder.txtDescription.setText(remetente.getDescription());
+            holder.txtType.setText(remetente.getTipo());
+            holder.txtDescription.setText(remetente.getDescricao());
             holder.ckbSelected.setChecked(remetente.isChecked());
             //set position to identify which object was selected
             holder.ckbSelected.setTag(position);
@@ -103,14 +107,14 @@ public class RemetentAdapter extends RecyclerView.Adapter<RemetentAdapter.ItemVi
     public class ItemViewHolder extends RecyclerView.ViewHolder {
 
         private RelativeLayout mLayoutPrincipal;
-        private TextView txtCode;
+        private TextView txtType;
         private TextView txtDescription;
         private CheckBox ckbSelected;
 
         public ItemViewHolder(final View itemView) {
             super(itemView);
 
-            txtCode = (TextView) itemView.findViewById(R.id.txtRemetentCode);
+            txtType = (TextView) itemView.findViewById(R.id.txtRemetentType);
             txtDescription = (TextView) itemView.findViewById(R.id.txtRemetentDesc);
             ckbSelected = (CheckBox) itemView.findViewById(R.id.ckbSelected);
             ckbSelected.setOnClickListener(new View.OnClickListener() {
@@ -131,14 +135,29 @@ public class RemetentAdapter extends RecyclerView.Adapter<RemetentAdapter.ItemVi
         }
 
         private void selectItem(View v) {
-            Remetente remetente = mListaRemetentes.get((Integer) v.getTag());
-            if(remetente != null)
+//            Remetente remetente = mListaRemetentes.get((Integer) v.getTag());
+//            if(remetente != null)
+//            {
+//                if (remetente.isChecked() == ckbSelected.isChecked()) {
+//                    //it means that layout was toched
+//                    ckbSelected.setChecked(!ckbSelected.isChecked());
+//                }
+//                remetente.setChecked(ckbSelected.isChecked());
+//            }
+            Remetente object = mListaRemetentes.get((Integer) v.getTag());
+            if(object != null)
             {
-                if (remetente.isChecked() == ckbSelected.isChecked()) {
-                    //it means that layout was toched
-                    ckbSelected.setChecked(!ckbSelected.isChecked());
+                boolean flag = ckbSelected.isChecked();
+
+                if (v.getId() != R.id.ckbSelected){
+                    ckbSelected.setChecked(!flag);
                 }
-                remetente.setChecked(ckbSelected.isChecked());
+
+                Realm.getDefaultInstance().beginTransaction();
+                object.setChecked(ckbSelected.isChecked());
+                if (ckbSelected.isChecked())
+                    mListChecked.add(object);
+                Realm.getDefaultInstance().cancelTransaction();
             }
         }
     }
