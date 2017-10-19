@@ -30,6 +30,7 @@ import br.edu.ifspsaocarlos.sdm.notificacaoifsp.adapter.CustomGrid;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.AddedOffering;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.Offering;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.service.FetchJSONService;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.util.EnumUserType;
 import io.realm.Realm;
 //todo inserir mapa no frame ade acezso ao item
 //todo estudar OnFragmentInteractionListener (verificar se cada fragmento tem que ter o seu e se o main tem que implementar todos)
@@ -250,49 +251,50 @@ public class GridNotificationsFragment extends TemplateFragment{
     }
 
     public void configurarAdapter() {
-        ArrayList<Offering> mListaOferecimentos = new ArrayList<Offering>();
+        if (MainActivity.getPeronType() == EnumUserType.ENUM_STUDENT) {
+            ArrayList<Offering> mListaOferecimentos = new ArrayList<Offering>();
 
-        Point size = new Point();
-        getActivity().getWindowManager().getDefaultDisplay().getSize(size);
+            Point size = new Point();
+            getActivity().getWindowManager().getDefaultDisplay().getSize(size);
 
-        for (char i = 0; i < 25; i++) {
-            Offering offer = new Offering();
-            offer.setDescricao("---");
-            mListaOferecimentos.add(offer);
-        }
+            for (char i = 0; i < 25; i++) {
+                Offering offer = new Offering();
+                offer.setDescricao("---");
+                mListaOferecimentos.add(offer);
+            }
 
-        mainBundle();
-        runBundle(mListaOferecimentos, actualBundle, false);
-        runBundle(mListaOferecimentos, bundle, true);
+            mainBundle();
+            runBundle(mListaOferecimentos, actualBundle, false);
+            runBundle(mListaOferecimentos, bundle, true);
 
-        int altura = configurarLegenda();
-        Log.d("TCC", "Altura barras: " + altura);
+            int altura = configurarLegenda();
+            Log.d("TCC", "Altura barras: " + altura);
 
-        if (mListaOferecimentos != null) {
+            if (mListaOferecimentos != null) {
+                Log.d("TCC", thisView.getClass().getName());
+                mRecyclerView = (RecyclerView) thisView.findViewById(R.id.recycler_view);
+                mRecyclerView.setHasFixedSize(true);
+                //mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+                GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(), NUMBER_COLUMN, GridLayoutManager.VERTICAL, false);
+                //merge of colums
+                //            gridLayoutManager.setSpanSizeLookup(
+                //                    new GridLayoutManager.SpanSizeLookup() {
+                //                        @Override
+                //                        public int getSpanSize(int position) {
+                //                                //Stagger every other row
+                //                            return (position == 7 ? 2 : 1);
+                //                            //return (position % 2 == 0 ? 3 : 2); //merge de 3 se não merge de 2
+                //                        }
+                //                    });
+                mRecyclerView.setLayoutManager(gridLayoutManager);
 
-            Log.d("TCC", thisView.getClass().getName());
-            mRecyclerView = (RecyclerView) thisView.findViewById(R.id.recycler_view);
-            mRecyclerView.setHasFixedSize(true);
-            //mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-            GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(), NUMBER_COLUMN, GridLayoutManager.VERTICAL, false);
-            //merge of colums
-//            gridLayoutManager.setSpanSizeLookup(
-//                    new GridLayoutManager.SpanSizeLookup() {
-//                        @Override
-//                        public int getSpanSize(int position) {
-//                                //Stagger every other row
-//                            return (position == 7 ? 2 : 1);
-//                            //return (position % 2 == 0 ? 3 : 2); //merge de 3 se não merge de 2
-//                        }
-//                    });
-            mRecyclerView.setLayoutManager(gridLayoutManager);
+                mListaApdapter = new CustomGrid(mListaOferecimentos, size, altura, this);
+                mRecyclerView.setAdapter(mListaApdapter);
 
-            mListaApdapter = new CustomGrid(mListaOferecimentos, size, altura, this);
-            mRecyclerView.setAdapter(mListaApdapter);
+                bundle = null;
 
-            bundle = null;
-
-            Log.d("TCC", "After set");
+                Log.d("TCC", "After set");
+            }
         }
     }
 
@@ -303,6 +305,12 @@ public class GridNotificationsFragment extends TemplateFragment{
         // Inflate the layout for this fragment
         //thisView = inflater.inflate(R.layout.fragment_grid_notifications, container, false);
         thisView = inflater.inflate(R.layout.fragment_grid_notifications, null);
+
+
+        if (MainActivity.getPeronType() == EnumUserType.ENUM_STUDENT) {
+            TextView txt = (TextView) thisView.findViewById(R.id.txtWelcome);
+            txt.setVisibility(View.GONE);
+        }
         week = (LinearLayout) thisView.findViewById(R.id.gridWeek);
         week.post(new Runnable()
         {

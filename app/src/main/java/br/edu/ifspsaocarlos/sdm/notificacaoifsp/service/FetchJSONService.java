@@ -558,6 +558,8 @@ public class FetchJSONService extends Service implements Runnable {
         }
     }
 
+    // TODO: 10/19/2017 Buscar oferecimento pois se o professor retirar o aluno/inserir aluno não será atualizado na grade
+    // TODO: 10/19/2017 Buscar oferecimento para exibir a grade do professor!
     private void buscarOferecimento() {
         boolean flagOk = true;
 
@@ -592,7 +594,7 @@ public class FetchJSONService extends Service implements Runnable {
                 }
 
                 if (p != null)
-                    url += "?ano=" + year + "&semestre=" + semester + "&turma=" + p.getPkTurma();
+                    url += "?ano=" + year + "&semestre=" + semester + "&turma=" + p.getPkTurma() + "&pk=" + p.getPk();
                 else
                     url += "?ano=" + year + "&semestre=" + semester;
 
@@ -733,8 +735,6 @@ public class FetchJSONService extends Service implements Runnable {
 
             url += "?pk=" + MainActivity.getUserId() + "&user=" + MainActivity.getPeronType().ordinal();
 
-            Continar testando!
-
             StringRequest sr = new StringRequest(Request.Method.GET, url , new Response.Listener<String>() {
                 @Override
                 public void onResponse(String s) {
@@ -781,6 +781,8 @@ public class FetchJSONService extends Service implements Runnable {
             novoComandoLiberado = true; //para não ficar travado caso de algum erro
         }
     }
+
+    CRIAR NOTIFICAÇÃO QUANDO!!! NOTIFICAÇÃO ESTA SENDO RECEBIDA!!!
 
 //    private void showNotification(List<Notification> messageList) {
 //        String currentMessagingUser = myApplication.getCurrentMessagingUser();

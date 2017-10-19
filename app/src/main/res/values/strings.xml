@@ -103,4 +103,7 @@
     <!-- Masks -->
     <string name="mask_date">yyyy-MM-dd</string>
     <string name="mask_time">kk:mm</string>
+
+    <!-- Grid -->
+    <string name="welcome">Welcome to notification application!</string>
 </resources>
