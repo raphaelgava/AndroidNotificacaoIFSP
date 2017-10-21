@@ -74,7 +74,6 @@ public class CreateNotificationFragment extends TemplateFragment {
 
     private Notification notificationObject = null;
 
-    // TODO: 3/13/2017 FAZER CAMPOS
     //// TODO: 3/27/2017 criar esquema de setar o local pelo marker (save the state of mapFragment - maps example)
 //    id_local = models.ForeignKey(Local, verbose_name="Local", blank=True, null=True)  # Field name made lowercase.
 
@@ -159,7 +158,6 @@ public class CreateNotificationFragment extends TemplateFragment {
             edtDescription = (EditText) view.findViewById(R.id.edtDescription);
             edtDescription.setOnTouchListener(new View.OnTouchListener() {
                 public boolean onTouch(View view, MotionEvent event) {
-                    // TODO Auto-generated method stub
                     if (view.getId() == R.id.edtDescription) {
                         view.getParent().requestDisallowInterceptTouchEvent(true);
                         switch (event.getAction()&MotionEvent.ACTION_MASK){
@@ -381,13 +379,19 @@ public class CreateNotificationFragment extends TemplateFragment {
                 if (resultCode == Activity.RESULT_OK){
                     Gson gson = new Gson();
                     Bundle bundle = data.getExtras();
-                    notificationObject.clear();
-                    for (int i = 0; i < bundle.size(); i++){
-                        Remetente object = gson.fromJson(bundle.getString(Integer.toString(i)), Remetente.class);
+                    if (notificationObject != null) {
+                        notificationObject.clearRemetent();
+                        //notificationObject.clear();
+                        for (int i = 0; i < bundle.size(); i++) {
+                            Remetente object = gson.fromJson(bundle.getString(Integer.toString(i)), Remetente.class);
 
-                        notificationObject.addRemetent(object.getPk());
+                            notificationObject.addRemetent(object.getPk());
 
-                        Log.d("TCC", object.getDescricao() + " - " + object.getTipo());
+                            Log.d("TCC", object.getDescricao() + " - " + object.getTipo());
+                        }
+                    }
+                    else{
+                        Log.d("TCC", "notification is null! Please check!");
                     }
                 }
                 break;

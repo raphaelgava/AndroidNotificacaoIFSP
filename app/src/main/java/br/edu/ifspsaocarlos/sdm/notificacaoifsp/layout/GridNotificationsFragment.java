@@ -32,7 +32,7 @@ import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.Offering;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.service.FetchJSONService;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.util.EnumUserType;
 import io.realm.Realm;
-//todo inserir mapa no frame ade acezso ao item
+
 //todo estudar OnFragmentInteractionListener (verificar se cada fragmento tem que ter o seu e se o main tem que implementar todos)
 
 

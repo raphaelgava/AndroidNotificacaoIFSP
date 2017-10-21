@@ -46,6 +46,7 @@ public class ServiceState {
     public enum EnumServiceState {
         ENUM_USER, //User data
         ENUM_NOTIFICATION,
+        ENUM_SHOW_NOTIFICATION,
         ENUM_OFERECIMENTO,
         ENUM_REMETENTE,
         ENUM_INSERT_STUDENT_OFFERING,

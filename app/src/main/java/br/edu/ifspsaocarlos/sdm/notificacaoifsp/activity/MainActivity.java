@@ -258,8 +258,6 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
         super.onDestroy();
     }
 
-    // TODO: 6/29/2017 ACERTAR TAG PARA DESCOBRIR SE E DA GRID PARA PODER DEIXAR VSIBLE O BOTAO DE NOTIFICACAO!!!!
-
     @Override
     public void onBackPressed() {
         int lastFragEntry = fragmentManager.getBackStackEntryCount();
@@ -269,7 +267,8 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
             //Toast.makeText(this.getApplicationContext(), lastFragTag, Toast.LENGTH_LONG).show();
             fragmentManager.popBackStack();
             if (lastFragTag.isEmpty() || lastFragTag.equals(Integer.toString(R.id.nav_class_schedule))){
-                fab.setVisibility(View.VISIBLE);
+                showFloatingActionButton();
+                //fab.setVisibility(View.VISIBLE);
             }
         } else {
             moveTaskToBack(true); // faz com que não volte para a tela de login!!!!

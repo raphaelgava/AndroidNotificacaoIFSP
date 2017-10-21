@@ -1,9 +1,15 @@
 package br.edu.ifspsaocarlos.sdm.notificacaoifsp.service;
 
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.IBinder;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -25,11 +31,13 @@ import org.json.JSONObject;
 import java.io.UnsupportedEncodingException;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.R;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.activity.MainActivity;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.activity.MapsActivity;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.AddedOffering;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.Notification;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.Offering;
@@ -38,6 +46,7 @@ import br.edu.ifspsaocarlos.sdm.notificacaoifsp.util.EnumParser;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.util.MyGsonBuilder;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.util.ServiceState;
 import io.realm.Realm;
+import io.realm.RealmResults;
 
 /**
  * Para funcionar tem que estar registrado no manifest!!
@@ -52,11 +61,14 @@ public class FetchJSONService extends Service implements Runnable {
     private final Realm realm = Realm.getDefaultInstance();
     private Handler handler;
     private static Stack<Notification> stackNotification;
+    private NotificationManager manager;
+    private boolean flagLocalNotification;
 
     public FetchJSONService() {
         machine = ServiceState.getInstance();
         stackOffering = new Stack<AddedOffering>();
         stackNotification = new Stack<Notification>();
+        flagLocalNotification = false;
     }
 
     public static void setOffering(AddedOffering offer){
@@ -80,6 +92,9 @@ public class FetchJSONService extends Service implements Runnable {
         novoComandoLiberado = false;
         Log.e("", "onCreate");
         queue = Volley.newRequestQueue(FetchJSONService.this);
+
+        // Add as notification
+        manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
         handler = new Handler();
         new Thread(this).start();
@@ -105,6 +120,11 @@ public class FetchJSONService extends Service implements Runnable {
                             switch (state) {
                                 case ENUM_NOTIFICATION:
                                     buscarNotificacao();
+                                    machine.pushState(ServiceState.EnumServiceState.ENUM_LOCAL);
+                                    flagLocalNotification = true;
+                                    break;
+                                case ENUM_SHOW_NOTIFICATION:
+                                    showNotification();
                                     break;
                                 case ENUM_USER:
                                     buscarUsuario();
@@ -129,6 +149,10 @@ public class FetchJSONService extends Service implements Runnable {
                                     break;
                                 case ENUM_LOCAL:
                                     buscaLocal();
+                                    if (flagLocalNotification == true) {
+                                        machine.pushState(ServiceState.EnumServiceState.ENUM_SHOW_NOTIFICATION);
+                                        flagLocalNotification = false;
+                                    }
                                     break;
 //                                default:
 
@@ -782,48 +806,126 @@ public class FetchJSONService extends Service implements Runnable {
         }
     }
 
-    CRIAR NOTIFICAÇÃO QUANDO!!! NOTIFICAÇÃO ESTA SENDO RECEBIDA!!!
 
-//    private void showNotification(List<Notification> messageList) {
-//        String currentMessagingUser = myApplication.getCurrentMessagingUser();
-//
-//        // check first use
-//        if (!isFirstUse) {
-//
-//            // verifica se o usuario esta conversando com o usuario da notificação
-//            if (!messageList.get(0).getOrigem_id().equals(currentMessagingUser)) {
-//
-//                Integer id = Integer.parseInt(messageList.get(0).getOrigem_id());
-//                NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-//                mNotificationManager.cancel(id);
-//
-//                Realm realm = Realm.getDefaultInstance();
-//                Contact contact = realm.where(Contact.class).equalTo("id", messageList.get(0).getOrigem_id()).findFirst();
-//
-//                if (contact != null) {
-//                    NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(getApplicationContext())
-//                            .setSmallIcon(R.drawable.ic_send_white_24dp)
-//                            .setWhen(System.currentTimeMillis())
-//                            .setAutoCancel(true)
-//                            .setContentTitle("Nova mensagem")
-//                            .setContentText(contact.getNome_completo());
-//
-//                    Intent resultIntent = new Intent(getApplicationContext(), MessageActivity.class);
-//                    resultIntent.putExtra(Constants.SENDER_USER_KEY, messageList.get(0).getOrigem_id());
-//
-//                    TaskStackBuilder stackBuilder = TaskStackBuilder.create(getApplicationContext());
-//                    stackBuilder.addParentStack(MessageActivity.class);
-//                    stackBuilder.addNextIntent(resultIntent);
-//
-//                    PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
-//                    mBuilder.setContentIntent(resultPendingIntent);
-//
-//
-//                    mNotificationManager.notify(id, mBuilder.build());
+    //private void showNotification(List<Notification> messageList) {
+    private void showNotification() {
+//        Setting date in gson
+//        Gson gson = new GsonBuilder()
+//                .setDateFormat("yyyy-MM-dd")
+//                .create();
+//        String dateMask = getString(R.string.mask_date);
+//        SimpleDateFormat formatDate = new SimpleDateFormat(dateMask);
+        Calendar c = Calendar.getInstance();
+
+        RealmResults<Notification> stepEntryResults = realm.where(Notification.class).equalTo("id_user", MainActivity.getUserId()).findAll();
+        List<Notification> messageList = realm.copyFromRealm(stepEntryResults);
+
+//        StatusBarNotification status[] = new StatusBarNotification[0];
+//        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+//            status = manager.getActiveNotifications();
+//        }
+//        boolean flagNotificar;
+
+        for (Notification noti : messageList) {
+//            flagNotificar = true;
+//            for (int i = 0; i < status.length; i++ ){
+//                if (status[i].getId() == noti.getPk()){
+//                    flagNotificar = false;
+//                    break;
 //                }
 //            }
-//        }
-//    }
+//            if (flagNotificar == true)
+            {
+                //            NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(getApplicationContext())
+                //                    .setSmallIcon(R.drawable.ic_email_black)
+                //                    //.setWhen(System.currentTimeMillis())
+                //                    //.setAutoCancel(true)
+                //                    .setContentTitle("New notification")
+                //                    .setContentText("TESTING NOTIFICATION");
+                long[] v = {500,1000}; //vibrate
+                Uri uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);//sound
+                NotificationCompat.Builder builder =
+                        new NotificationCompat.Builder(this)
+                                .setWhen(System.currentTimeMillis())
+                                .setSmallIcon(R.drawable.ic_email_black)
+                                .setAutoCancel(true)
+                                .setVibrate(v)
+                                .setSound(uri)
+                                .setContentTitle(noti.getTitulo())
+                                .setContentText(noti.getDescricao());
+
+                //            Intent resultIntent = new Intent(getApplicationContext(), MainActivity.class);
+                //            //resultIntent.putExtra("", messageList.get(0).getPk());
+                //
+                //            TaskStackBuilder stackBuilder = TaskStackBuilder.create(getApplicationContext());
+                //            stackBuilder.addParentStack(MainActivity.class);
+                //            //stackBuilder.addParentStack(MessageActivity.class);
+                //            stackBuilder.addNextIntent(resultIntent);
+                //
+                //            PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+                //            mBuilder.setContentIntent(resultPendingIntent);
+                //
+                //
+                //            mNotificationManager.notify(id, mBuilder.build());
+
+                Intent notificationIntent = new Intent(this, MapsActivity.class);
+
+                Gson gson = new Gson();
+                Realm realm = Realm.getDefaultInstance();
+                realm.beginTransaction();
+                Notification object = realm.copyToRealmOrUpdate(noti);
+                String json = gson.toJson(realm.copyFromRealm(object));
+                notificationIntent.putExtra("notificacao", json);
+                Realm.getDefaultInstance().cancelTransaction();
+
+                PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent,
+                        PendingIntent.FLAG_UPDATE_CURRENT);
+                builder.setContentIntent(contentIntent);
+
+                //            // Add as notification
+                //            NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+                //manager.notify(0, builder.build());// 0  para setar tudo na mesma notificação
+                manager.notify(noti.getPk(), builder.build());
+            }
+        }
+
+
+        /*
+        // check first use
+        //if (!isFirstUse)
+        {
+            Integer id = messageList.get(0).getPk();
+            NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+            mNotificationManager.cancel(id);
+
+            Realm realm = Realm.getDefaultInstance();
+
+            //if (contact != null)
+            {
+                NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(getApplicationContext())
+                        .setSmallIcon(R.drawable.ic_email_black)
+                        //.setWhen(System.currentTimeMillis())
+                        //.setAutoCancel(true)
+                        .setContentTitle("New notification")
+                        .setContentText("TESTING NOTIFICATION");
+
+                Intent resultIntent = new Intent(getApplicationContext(), MainActivity.class);
+                //resultIntent.putExtra("", messageList.get(0).getPk());
+
+                TaskStackBuilder stackBuilder = TaskStackBuilder.create(getApplicationContext());
+                stackBuilder.addParentStack(MainActivity.class);
+                //stackBuilder.addParentStack(MessageActivity.class);
+                stackBuilder.addNextIntent(resultIntent);
+
+                PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+                mBuilder.setContentIntent(resultPendingIntent);
+
+
+                mNotificationManager.notify(id, mBuilder.build());
+            }
+        }
+        */
+    }
 
 
 

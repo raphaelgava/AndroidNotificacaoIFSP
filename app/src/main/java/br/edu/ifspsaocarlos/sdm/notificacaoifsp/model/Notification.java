@@ -1,8 +1,12 @@
 package br.edu.ifspsaocarlos.sdm.notificacaoifsp.model;
 
+import android.util.Log;
+
 import com.google.gson.annotations.JsonAdapter;
 
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.util.MyGsonBuilder;
 import io.realm.RealmList;
@@ -58,8 +62,16 @@ public class Notification extends RealmObject implements Serializable {
         this.pk = pk;
     }
 
-    public String getDatahora() {
-        return datahora;
+    public Date getDatahora() {
+        SimpleDateFormat formatDate = new SimpleDateFormat("yyyy-MM-dd");
+        Date d = null;
+        try{
+            d = formatDate.parse(datahora);
+        }catch (Exception e){
+            Log.d("TCC", "Error to parse date: " + e.toString());
+        }
+        return d;
+        //return datahora;
     }
 
     public void setDatahora(String datahora) {
@@ -74,7 +86,7 @@ public class Notification extends RealmObject implements Serializable {
         this.id_tipo = id_tipo;
     }
 
-    public int getId_local() {
+    public Integer getId_local() {
         return id_local;
     }
 
@@ -120,6 +132,13 @@ public class Notification extends RealmObject implements Serializable {
         }
         RealmInteger val = new RealmInteger(valor);
         this.remetente.add(val);
+    }
+
+    public void clearRemetent(){
+        RealmList<RealmInteger> list = getRemetente();
+        if (list != null){
+            list.clear();
+        }
     }
 
     public void removeRemetent(int valor){

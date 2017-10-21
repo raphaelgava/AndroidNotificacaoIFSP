@@ -1,5 +1,6 @@
 package br.edu.ifspsaocarlos.sdm.notificacaoifsp.activity;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -19,11 +20,15 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.gson.Gson;
 
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.R;
-import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.Offering;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.Local;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.Notification;
+import io.realm.Realm;
 
 public class MapsActivity extends FragmentActivity implements
         GoogleMap.OnMyLocationButtonClickListener,
@@ -33,50 +38,112 @@ public class MapsActivity extends FragmentActivity implements
     private GoogleMap mMap;
     private Button botao, btnGoMark;
     private TextView texto;
-    private Offering offer;
+    //    private Offering offer;
     private LatLng position;
+
+    private Notification obj;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        //setTheme(android.R.style.Theme_Holo_Light_Dialog);
-        setContentView(R.layout.layout_dialog);
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
+        Intent i = getIntent();
+        Gson gson = new Gson();
+        Bundle bundle = i.getExtras();
+        obj = gson.fromJson(bundle.getString("notificacao"), Notification.class);
+        if (obj != null) {
+            Log.d("TCC", obj.toString());
 
-        this.setFinishOnTouchOutside(false);
+            this.setTitle(obj.getTitulo());
 
-        position = new LatLng(-34, 151);
-        offer = (Offering) getIntent().getSerializableExtra("oferecimento");
+            //setTheme(android.R.style.Theme_Holo_Light_Dialog);
+            setContentView(R.layout.layout_dialog);
+            // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+            SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                    .findFragmentById(R.id.map);
+            mapFragment.getMapAsync(this);
 
-        texto = (TextView) findViewById(R.id.txtParametro);
-        texto.bringToFront();
-        if (offer != null) {
-            texto.setText(offer.getDescricao() + ": esse texto é apenas para eu saber como será distribuido na tela independente do tamanho pois o texto pode ser bem grande vindo do servidor. Ainda assim faltou texto por isso estou adicionando mais algumas palavras de teste. Parte 22309837542:esse texto é apenas para eu saber como será distribuido na tela independente do tamanho pois o texto pode ser bem grande vindo do servidor. Ainda assim faltou texto por isso estou adicionando mais algumas palavras de teste.");
-        }
+            this.setFinishOnTouchOutside(false);
 
-        botao = (Button) findViewById(R.id.btnDialog);
-        botao.bringToFront();
-        botao.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish();
-            }
-        });
-        //enableMyLocation();
-
-        btnGoMark = (Button) findViewById(R.id.btnGoMark);
-        btnGoMark.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mMap != null){
-                    mMap.moveCamera(CameraUpdateFactory.newLatLng(position));
+            position = new LatLng(-21.969539, -47.878139); //IFSP
+            if (obj.getId_local() != null) {
+                Realm realm = Realm.getDefaultInstance();
+                Local local = realm.where(Local.class).equalTo("pk", obj.getId_local()).findFirst();
+                if (local != null) {
+                    if (!local.getPosition().isEmpty()) {
+                        String[] latlong = local.getPosition().split(",");
+                        position = new LatLng(Double.parseDouble(latlong[0]), Double.parseDouble(latlong[1]));
+                    }
                 }
             }
-        });
+
+            btnGoMark = (Button) findViewById(R.id.btnGoMark);
+            btnGoMark.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (mMap != null) {
+                        //mMap.moveCamera(CameraUpdateFactory.newLatLng(position));
+                        //mMap.animateCamera(CameraUpdateFactory.zoomBy(10));
+
+                        //CameraUpdate yourLocation = CameraUpdateFactory.newLatLngZoom(position, 16);
+                        //mMap.animateCamera(yourLocation);
+                        CameraPosition yourLocation = new CameraPosition.Builder()
+                                .target(position)      // Sets the center of the map to Mountain View
+                                .zoom(ZOOM)                   // Sets the zoom
+                                .bearing(BEARING)                // Sets the orientation of the camera to east
+                                .tilt(TILT)                   // Sets the tilt of the camera to 30 degrees
+                                .build();                   // Creates a CameraPosition from the builder
+                        mMap.animateCamera(CameraUpdateFactory.newCameraPosition(yourLocation));
+                    }
+                }
+            });
+
+            texto = (TextView) findViewById(R.id.txtParametro);
+            texto.bringToFront();
+            texto.setText(obj.getDescricao());
+
+            botao = (Button) findViewById(R.id.btnDialog);
+            botao.bringToFront();
+            botao.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    finish();
+                }
+            });
+
+
+/*
+            //setTheme(android.R.style.Theme_Holo_Light_Dialog);
+            setContentView(R.layout.layout_dialog);
+            // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+            SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                    .findFragmentById(R.id.map);
+            mapFragment.getMapAsync(this);
+
+            this.setFinishOnTouchOutside(false);
+
+            position = new LatLng(-34, 151);
+            offer = (Offering) getIntent().getSerializableExtra("oferecimento");
+
+            texto = (TextView) findViewById(R.id.txtParametro);
+            texto.bringToFront();
+            if (offer != null) {
+                texto.setText(offer.getDescricao() + ": esse texto é apenas para eu saber como será distribuido na tela independente do tamanho pois o texto pode ser bem grande vindo do servidor. Ainda assim faltou texto por isso estou adicionando mais algumas palavras de teste. Parte 22309837542:esse texto é apenas para eu saber como será distribuido na tela independente do tamanho pois o texto pode ser bem grande vindo do servidor. Ainda assim faltou texto por isso estou adicionando mais algumas palavras de teste.");
+            }
+
+            botao = (Button) findViewById(R.id.btnDialog);
+            botao.bringToFront();
+            botao.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    finish();
+                }
+            });
+            //enableMyLocation();
+*/
+        } else {
+            finish();
+        }
     }
 
 
@@ -90,13 +157,24 @@ public class MapsActivity extends FragmentActivity implements
      * installed Google Play services and returned to the app.
      */
 
+    private final int ZOOM  = 15; // Sets the zoom
+    private final int BEARING = 0; // Sets the orientation of the camera to east
+    private final int TILT = 30; // Sets the tilt of the camera to 30 degrees
+
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
         // Add a marker in Sydney and move the camera
-        mMap.addMarker(new MarkerOptions().position(position).title("Marker in Sydney"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(position));
+        mMap.addMarker(new MarkerOptions().position(position).title("Marker"));
+        //mMap.moveCamera(CameraUpdateFactory.newLatLng(position));
+        CameraPosition yourLocation = new CameraPosition.Builder()
+                .target(position)      // Sets the center of the map to Mountain View
+                .zoom(ZOOM)                   // Sets the zoom
+                .bearing(BEARING)                // Sets the orientation of the camera to east
+                .tilt(TILT)                   // Sets the tilt of the camera to 30 degrees
+                .build();                   // Creates a CameraPosition from the builder
+        mMap.animateCamera(CameraUpdateFactory.newCameraPosition(yourLocation));
 
         mMap.setOnMyLocationButtonClickListener(this);
 
@@ -173,11 +251,20 @@ public class MapsActivity extends FragmentActivity implements
         //Snackbar.make(getCurrentFocus(), "Checking GPS", Snackbar.LENGTH_LONG).setAction("Action", null).show();
         LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
 
-        if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)){
+        if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
             //Toast.makeText(this, "GPS is Enabled in your devide", Toast.LENGTH_SHORT).show();
             Log.d("TCC", "GPS is enabled in your devide");
             if (mMap != null) {
                 // Access to the location has been granted to the app.
+                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    //    ActivityCompat#requestPermissions
+                    // here to request the missing permissions, and then overriding
+                    //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                    //                                          int[] grantResults)
+                    // to handle the case where the user grants the permission. See the documentation
+                    // for ActivityCompat#requestPermissions for more details.
+                    return;
+                }
                 mMap.setMyLocationEnabled(true);
                 mMap.getUiSettings().setMyLocationButtonEnabled(true);
                 //Toast.makeText(this, "MyLocations", Toast.LENGTH_SHORT).show();

@@ -12,6 +12,14 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.google.gson.Gson;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.R;
@@ -19,10 +27,15 @@ import br.edu.ifspsaocarlos.sdm.notificacaoifsp.activity.MainActivity;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.activity.MapsActivity;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.layout.GridNotificationsFragment;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.AddedOffering;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.Notification;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.Offering;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.RealmInteger;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.service.FetchJSONService;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.util.MyGsonBuilder;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.util.ServiceState;
 import io.realm.Realm;
+import io.realm.RealmList;
+import io.realm.RealmResults;
 
 
 public class CustomGrid extends RecyclerView.Adapter<CustomGrid.ItemViewHolder> {
@@ -135,12 +148,66 @@ public class CustomGrid extends RecyclerView.Adapter<CustomGrid.ItemViewHolder> 
                 @Override
                 public void onClick(View v) {
                     Offering offer = mListaOferecimentos.get((Integer) v.getTag());
+                    if ((offer != null) && (offer.getPk() > 0)){
 
-                    Intent intent = new Intent(v.getContext(), MapsActivity.class);
-                    intent.putExtra("oferecimento", offer);
-                    //Não pode inserir essa opção aqui pois se cancelar o pedido de GPS vai fechar a app!!!
-                    //intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                    v.getContext().startActivity(intent);
+                        Gson gson = MyGsonBuilder.getInstance().myGson();;
+                        SimpleDateFormat formatDate = new SimpleDateFormat("yyyy-MM-dd");
+                        Date d = Calendar.getInstance().getTime();
+                        Realm realm = Realm.getDefaultInstance();
+                        //RealmResults<Notification> object = realm.where(Notification.class).equalTo("pk", offer.getPk()).findAllSorted("datahora", Sort.DESCENDING);
+                        RealmResults<Notification> stepEntryResults = realm.where(Notification.class).
+                                equalTo("id_user", MainActivity.getUserId()).findAll();
+                        List<Notification> messageList = realm.copyFromRealm(stepEntryResults);
+                        List<Notification> finalList = new ArrayList<Notification>();
+
+                        for (Notification noti : messageList){
+                            if (d.after(noti.getDatahora())){
+                                RealmList<RealmInteger> list = noti.getRemetente();
+                                for (RealmInteger integer : list){
+                                    if (integer.getPk() == offer.getPk()) {
+                                        finalList.add(noti);
+                                        break;
+
+                                    }
+                                }
+                            }
+                        }
+
+                        if (finalList.size() > 0) {
+                            Collections.sort(finalList, new Comparator<Notification>(){
+                                public int compare(Notification obj1, Notification obj2) {
+                                    // ## Ascending order
+                                    // return obj1.firstName.compareToIgnoreCase(obj2.firstName);  // To compare date values
+                                    // return Integer.valueOf(obj1.empId).compareTo(obj2.empId); // To compare integer values
+
+                                    // ## Descending order
+                                    // return obj2.firstName.compareToIgnoreCase(obj1.firstName); // To compare string values
+                                    // return Integer.valueOf(obj2.empId).compareTo(obj1.empId); // To compare integer values
+
+                                    return obj2.getDatahora().compareTo(obj1.getDatahora()); // To compare date values
+                                }
+                            });
+
+                            String json = gson.toJson(finalList.get(0));
+
+                            Intent intent = new Intent(v.getContext(), MapsActivity.class);
+                            intent.putExtra("notificacao", json);
+
+                            //Não pode inserir essa opção aqui pois se cancelar o pedido de GPS vai fechar a app!!!
+                            //intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                            v.getContext().startActivity(intent);
+                        }
+
+                    }
+
+
+//                    Intent intent = new Intent(v.getContext(), MapsActivity.class);
+//                    intent.putExtra("oferecimento", offer);
+//                    //Não pode inserir essa opção aqui pois se cancelar o pedido de GPS vai fechar a app!!!
+//                    //intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+//                    v.getContext().startActivity(intent);
+
+
 
 //                    Oferecimento offer = mListaOferecimentos.get((Integer) v.getTag());
 //
