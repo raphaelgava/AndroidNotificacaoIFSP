@@ -22,7 +22,7 @@ public class FragmentFactory {
             return GridNotificationsFragment.newInstance(context, args);
         } else if (fragType == R.id.nav_user_data) {
             return ChangeUserDataFragment.newInstance(context, args);
-        } else if (fragType == R.id.nav_notification) {
+        } else if (fragType == R.id.nav_create_notification) {
             ServiceState.getInstance().pushState(ServiceState.EnumServiceState.ENUM_TIPO_NOTIFICACAO);
             ServiceState.getInstance().pushState(ServiceState.EnumServiceState.ENUM_LOCAL);
             return CreateNotificationFragment.newInstance(context, args);

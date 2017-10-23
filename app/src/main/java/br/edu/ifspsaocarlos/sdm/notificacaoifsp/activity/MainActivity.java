@@ -40,6 +40,7 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
         TemplateFragment.OnFragmentInteractionListener{
 
     private final int RESULT_OFFERING_ACTIVITY = 100;
+    private final int RESULT_NOTIFICATION_ACTIVITY = 101;
 
     private static UserLogin actualUser;
     private static EnumUserType type;
@@ -70,7 +71,7 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
             public void onClick(View view) {
                 //Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                 //        .setAction("Action", null).show();
-               setFragTransactionStack(R.id.nav_notification, R.id.content_frame, null, true);
+               setFragTransactionStack(R.id.nav_create_notification, R.id.content_frame, null, true);
 
                 DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
                 drawer.closeDrawer(GravityCompat.START);
@@ -298,7 +299,7 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
         Menu menuNav=navigationView.getMenu();
 
         MenuItem itemSend = menuNav.findItem(R.id.nav_send);
-        MenuItem itemNot = menuNav.findItem(R.id.nav_notification);
+        MenuItem itemNot = menuNav.findItem(R.id.nav_create_notification);
         MenuItem offering = menuNav.findItem(R.id.nav_offering);
 
         // show the button when some condition is true
@@ -359,7 +360,7 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
             fab.setVisibility(View.INVISIBLE);
         }
 
-        if (fragType == R.id.nav_notification)
+        if (fragType == R.id.nav_create_notification)
         {
             transaction.replace(content, FragmentFactory.CreateFragment(fab.getContext(), data, fragType), TAG_FRAG_CREATE_NOTIFICATION);
         }
@@ -376,31 +377,42 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
-        // Handle navigation view item clicks here.
-        int id = item.getItemId();
+        try {
+            // Handle navigation view item clicks here.
+            int id = item.getItemId();
 
-        //https://developer.android.com/studio/write/vector-asset-studio.html#running -> mudar ícones
-        if (id == R.id.nav_send) {
-            CreateNotificationFragment myFragment = (CreateNotificationFragment) fragmentManager.findFragmentByTag(TAG_FRAG_CREATE_NOTIFICATION);
-            if (myFragment != null && myFragment.isVisible()) {
-                myFragment.submitForm();
+            //https://developer.android.com/studio/write/vector-asset-studio.html#running -> mudar ícones
+            if (id == R.id.nav_send) {
+                CreateNotificationFragment myFragment = (CreateNotificationFragment) fragmentManager.findFragmentByTag(TAG_FRAG_CREATE_NOTIFICATION);
+                if (myFragment != null && myFragment.isVisible()) {
+                    myFragment.submitForm();
+                }else{
+                    Toast.makeText(getApplicationContext(), R.string.msg_not_creating_notification, Toast.LENGTH_SHORT).show();
+                }
+            } else if (id == R.id.nav_quit) {
+                goBackToLogin();
+            } else if (id == R.id.nav_offering) {
+                Log.d("TCC", "Sending json get person data");
+                ServiceState.getInstance().pushState(ServiceState.EnumServiceState.ENUM_OFERECIMENTO);
+
+                Intent intent = new Intent(getApplicationContext(), OfferingListActivity.class);
+                startActivityForResult(intent, RESULT_OFFERING_ACTIVITY);
+            }else if (id == R.id.nav_notifications){
+                ServiceState.getInstance().pushState(ServiceState.EnumServiceState.ENUM_NOTIFICATION);
+
+                Intent intent = new Intent(getApplicationContext(), NotificationListActivity.class);
+                startActivityForResult(intent, RESULT_NOTIFICATION_ACTIVITY);
+
             }else{
-                Toast.makeText(getApplicationContext(), R.string.msg_not_creating_notification, Toast.LENGTH_SHORT).show();
+                setFragTransactionStack(id, R.id.content_frame, null, true);
             }
-        } else if (id == R.id.nav_quit) {
-            goBackToLogin();
-        } else if (id == R.id.nav_offering){
-            Log.d("TCC", "Sending json get person data");
-            ServiceState.getInstance().pushState(ServiceState.EnumServiceState.ENUM_OFERECIMENTO);
 
-            Intent intent = new Intent(getApplicationContext(),OfferingListActivity.class);
-            startActivityForResult(intent, RESULT_OFFERING_ACTIVITY);
-        }else{
-            setFragTransactionStack(id, R.id.content_frame, null, true);
+            DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+            drawer.closeDrawer(GravityCompat.START);
+        }catch(Exception e){
+            Log.d("TCC", "ERROR: " + e.toString());
+            return false;
         }
-
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        drawer.closeDrawer(GravityCompat.START);
         return true;
     }
 

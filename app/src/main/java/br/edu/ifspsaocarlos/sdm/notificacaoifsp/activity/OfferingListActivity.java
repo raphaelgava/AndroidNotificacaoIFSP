@@ -12,6 +12,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import com.google.gson.Gson;
 
@@ -38,6 +39,7 @@ public class OfferingListActivity extends AppCompatActivity {
     private final Realm realm = Realm.getDefaultInstance();
     private Handler handler;
     private HashSet<Offering> array;
+    private TextView txtEmpty;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +47,8 @@ public class OfferingListActivity extends AppCompatActivity {
         setContentView(R.layout.activity_list_offers);
 
         array = new HashSet<Offering>();
+
+        txtEmpty = (TextView) findViewById(R.id.txtOfferingEmpty);
 
         LinearLayoutManager mLayoutManager = new LinearLayoutManager(this);
         recyclerView = (RecyclerView) findViewById(R.id.recyclerListOffering);
@@ -56,6 +60,7 @@ public class OfferingListActivity extends AppCompatActivity {
         recyclerView.setHasFixedSize(false);
 
         edtResearch = (EditText) findViewById(R.id.edtFindOffering);
+        edtResearch.setEnabled(false);
         edtResearch.addTextChangedListener(new TextWatcher() {
 
             public void afterTextChanged(Editable arg0) {
@@ -110,7 +115,8 @@ public class OfferingListActivity extends AppCompatActivity {
                         if (FetchJSONService.isBuscandoDadosTerminou() == true){
                             handler.post(new Runnable() {
                                 public void run() {
-                                createList();
+                                    createList();
+                                    edtResearch.setEnabled(true);
                                 }
                             });
 
@@ -157,6 +163,10 @@ public class OfferingListActivity extends AppCompatActivity {
 
         ArrayList<Offering> list = new ArrayList(realm.where(Offering.class).equalTo("ano", year).equalTo("semestre", semester).equalTo("is_active", true).equalTo("id_user", MainActivity.getUserId()).findAll());
         //ArrayList<Offering> list = new ArrayList(realm.where(Offering.class).findAll());
+
+        if (list.size() > 0){
+            txtEmpty.setVisibility(View.GONE);
+        }
 
         offeringAdapter = new OfferingAdapter(list, array);
         recyclerView.setAdapter(offeringAdapter);

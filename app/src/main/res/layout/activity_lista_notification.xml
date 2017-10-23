@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/coordinator_layout"
+    android:id="@+id/coordinator_layout_notification"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
 
     <android.support.design.widget.TextInputLayout
-        android:id="@+id/txtFind"
+        android:id="@+id/txtFindNotification"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
         <EditText
-            android:id="@+id/edtFind"
+            android:id="@+id/edtFindNotification"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:scrollbars="vertical"
@@ -20,12 +20,12 @@
     </android.support.design.widget.TextInputLayout>
 
     <TextView
-        android:id="@+id/txtRemetentEmpty"
+        android:id="@+id/txtNotificationEmpty"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="@string/nothingRemetent"
+        android:hint="@string/nothingNotification"
         android:lineSpacingExtra="12sp"
-        android:text="@string/nothingRemetent"
+        android:text="@string/nothingNotification"
         android:textAlignment="center"
         android:textAllCaps="true"
         android:textSize="24sp"
@@ -39,17 +39,16 @@
         android:orientation="vertical">
 
         <android.support.v7.widget.RecyclerView
-            android:id="@+id/recyclerList"
+            android:id="@+id/recyclerListNotification"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:scrollbars="vertical"
             android:layout_weight="9"/>
 
-
         <Button
-            android:id="@+id/btnEndRemetent"
+            android:id="@+id/btnEndNotification"
             android:layout_width="match_parent"
-            android:text="Set Remetent"
+            android:text="Go back"
             android:layout_weight="1"
             android:layout_height="wrap_content" />
 

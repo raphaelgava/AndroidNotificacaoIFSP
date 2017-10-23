@@ -1,5 +1,7 @@
+
 package br.edu.ifspsaocarlos.sdm.notificacaoifsp.adapter;
 
+import android.os.Handler;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,6 +16,7 @@ import java.util.HashSet;
 import java.util.List;
 
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.R;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.activity.RemetentListActivity;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.Remetente;
 import io.realm.Realm;
 
@@ -26,16 +29,24 @@ public class RemetentAdapter extends RecyclerView.Adapter<RemetentAdapter.ItemVi
     private List<Remetente> mListaRemetentes;
     private List<Remetente> allItems;
     private HashSet<Remetente> mListChecked;
+    private RemetentListActivity activity;
 
 
-    public RemetentAdapter(List<Remetente> listaRemententes, HashSet<Remetente> array) {
+    public RemetentAdapter(List<Remetente> listaRemententes, HashSet<Remetente> array, RemetentListActivity activity) {
         this.mListaRemetentes = listaRemententes;
         this.allItems = listaRemententes;
         this.mListChecked = array;
+        this.activity = activity;
     }
 
+
+    private Filter filter;
+    boolean running;
     public Filter getFilter() {
-        Filter filter = new Filter() {
+        final Handler handler = new Handler();
+        running = true;
+
+        filter = new Filter() {
 
             @Override
             protected Filter.FilterResults performFiltering(CharSequence filtro) {
@@ -45,19 +56,44 @@ public class RemetentAdapter extends RecyclerView.Adapter<RemetentAdapter.ItemVi
                     results.count = allItems.size();
                     results.values = allItems;
                 } else {
-                    mListaRemetentes = new ArrayList<Remetente>();
-                    //percorre toda lista verificando se contem a palavra do filtro na descricao do objeto.
-                    for (int i = 0; i < allItems.size(); i++) {
-                        Remetente data = allItems.get(i);
+                    final CharSequence finalFiltro = filtro.toString().toLowerCase();
+                    new Thread(){
+                        public void run() {
+                            while (running) {
+                                try {
+                                    Thread.sleep(10);
+                                    handler.post(new Runnable() {
+                                        public void run() {
+                                            mListaRemetentes = new ArrayList<Remetente>();
+                                            for (int i = 0; i < allItems.size(); i++) {
+                                                Remetente data = allItems.get(i);
 
-                        filtro = filtro.toString().toLowerCase();
-                        String condicao = data.getDescricao().toLowerCase();
+                                                String condicao = data.getDescricao().toLowerCase();
 
-                        if (condicao.contains(filtro)) {
-                            //se conter adiciona na lista de itens filtrados.
-                            mListaRemetentes.add(data);
+                                                if (condicao.contains(finalFiltro)) {
+                                                    //se conter adiciona na lista de itens filtrados.
+                                                    mListaRemetentes.add(data);
+                                                }
+                                            }
+                                            running = false;
+                                        }
+                                    });
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+
+                        }
+                    }.start();
+
+                    while (running){
+                        try {
+                            Thread.sleep(10);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
                         }
                     }
+
                     // Define o resultado do filtro na variavel FilterResults
                     results.count = mListaRemetentes.size();
                     results.values = mListaRemetentes;
@@ -74,6 +110,43 @@ public class RemetentAdapter extends RecyclerView.Adapter<RemetentAdapter.ItemVi
 
         };
         return filter;
+//        Filter filter = new Filter() {
+//
+//            @Override
+//            protected Filter.FilterResults performFiltering(CharSequence filtro) {
+//                FilterResults results = new FilterResults();
+//                //se não foi realizado nenhum filtro insere todos os itens.
+//                if (filtro == null || filtro.length() == 0) {
+//                    results.count = allItems.size();
+//                    results.values = allItems;
+//                } else {
+//                    for (int i = 0; i < allItems.size(); i++) {
+//                        Remetente data = allItems.get(i);
+//
+//                        filtro = filtro.toString().toLowerCase();
+//                        String condicao = data.getDescricao().toLowerCase();
+//
+//                        if (condicao.contains(filtro)) {
+//                            //se conter adiciona na lista de itens filtrados.
+//                            mListaRemetentes.add(data);
+//                        }
+//                    }
+//                    // Define o resultado do filtro na variavel FilterResults
+//                    results.count = mListaRemetentes.size();
+//                    results.values = mListaRemetentes;
+//                }
+//                return results;
+//            }
+//
+//            @SuppressWarnings("unchecked")
+//            @Override
+//            protected void publishResults(CharSequence constraint, Filter.FilterResults results) {
+//                mListaRemetentes = (List<Remetente>) results.values; // Valores filtrados.
+//                notifyDataSetChanged();  // Notifica a lista de alteração
+//            }
+//
+//        };
+//        return filter;
     }
 
     @Override
@@ -157,7 +230,7 @@ public class RemetentAdapter extends RecyclerView.Adapter<RemetentAdapter.ItemVi
                 object.setChecked(ckbSelected.isChecked());
                 if (ckbSelected.isChecked())
                     mListChecked.add(object);
-                Realm.getDefaultInstance().cancelTransaction();
+                Realm.getDefaultInstance().commitTransaction();
             }
         }
     }

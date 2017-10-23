@@ -29,7 +29,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,6 +55,7 @@ import io.realm.RealmResults;
  */
 public class FetchJSONService extends Service implements Runnable {
     private boolean appAberta;
+    private boolean firsShowtTime;
     private static boolean novoComandoLiberado;
 
     private ServiceState machine;
@@ -69,6 +72,7 @@ public class FetchJSONService extends Service implements Runnable {
         stackOffering = new Stack<AddedOffering>();
         stackNotification = new Stack<Notification>();
         flagLocalNotification = false;
+        firsShowtTime = true;
     }
 
     public static void setOffering(AddedOffering offer){
@@ -268,11 +272,13 @@ public class FetchJSONService extends Service implements Runnable {
                                     public void onResponse(JSONObject s) {
                                         //realm.commitTransaction();
                                         Log.e("TCC", "Updated offer." + s.toString());
+                                        novoComandoLiberado = true; //para não ficar travado caso de algum erro
                                     }
                                 }, new Response.ErrorListener() {
                             public void onErrorResponse(VolleyError volleyError) {
                                 stopTransaction();
                                 Log.e("TCC", "Error during update offer." + volleyError.toString());
+                                novoComandoLiberado = true; //para não ficar travado caso de algum erro
                             }
                         }) {
                             @Override
@@ -290,10 +296,12 @@ public class FetchJSONService extends Service implements Runnable {
                     } catch (Exception e) {
                         stopTransaction();
                         Log.e("TCC", "Erro na leitura de mensagens");
+                        novoComandoLiberado = true; //para não ficar travado caso de algum erro
                     }
                 } catch (JSONException e) {
                     stopTransaction();
                     Log.e("TCC", "ERROR: " + e.toString());
+                    novoComandoLiberado = true; //para não ficar travado caso de algum erro
                 }
             }
         }
@@ -806,16 +814,16 @@ public class FetchJSONService extends Service implements Runnable {
         }
     }
 
-
-    //private void showNotification(List<Notification> messageList) {
     private void showNotification() {
-//        Setting date in gson
-//        Gson gson = new GsonBuilder()
-//                .setDateFormat("yyyy-MM-dd")
-//                .create();
-//        String dateMask = getString(R.string.mask_date);
-//        SimpleDateFormat formatDate = new SimpleDateFormat(dateMask);
+        String dateMask = getString(R.string.mask_date);
+        SimpleDateFormat formatDate = new SimpleDateFormat(dateMask);
         Calendar c = Calendar.getInstance();
+        Date today = c.getTime();
+        try {
+            today = formatDate.parse(formatDate.format(c.getTime()));
+        }catch (Exception e){
+            Log.d("TCC", "Erro to convert date: " + e.toString());
+        }
 
         RealmResults<Notification> stepEntryResults = realm.where(Notification.class).equalTo("id_user", MainActivity.getUserId()).findAll();
         List<Notification> messageList = realm.copyFromRealm(stepEntryResults);
@@ -827,21 +835,9 @@ public class FetchJSONService extends Service implements Runnable {
 //        boolean flagNotificar;
 
         for (Notification noti : messageList) {
-//            flagNotificar = true;
-//            for (int i = 0; i < status.length; i++ ){
-//                if (status[i].getId() == noti.getPk()){
-//                    flagNotificar = false;
-//                    break;
-//                }
-//            }
-//            if (flagNotificar == true)
+            Date last = noti.getLastShow();
+            if ((last == null) || (firsShowtTime == true) || (last.compareTo(today) < 0))
             {
-                //            NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(getApplicationContext())
-                //                    .setSmallIcon(R.drawable.ic_email_black)
-                //                    //.setWhen(System.currentTimeMillis())
-                //                    //.setAutoCancel(true)
-                //                    .setContentTitle("New notification")
-                //                    .setContentText("TESTING NOTIFICATION");
                 long[] v = {500,1000}; //vibrate
                 Uri uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);//sound
                 NotificationCompat.Builder builder =
@@ -873,22 +869,21 @@ public class FetchJSONService extends Service implements Runnable {
                 Gson gson = new Gson();
                 Realm realm = Realm.getDefaultInstance();
                 realm.beginTransaction();
+                noti.setLastShow(today);
                 Notification object = realm.copyToRealmOrUpdate(noti);
                 String json = gson.toJson(realm.copyFromRealm(object));
                 notificationIntent.putExtra("notificacao", json);
-                Realm.getDefaultInstance().cancelTransaction();
+                Realm.getDefaultInstance().commitTransaction();
 
                 PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent,
                         PendingIntent.FLAG_UPDATE_CURRENT);
                 builder.setContentIntent(contentIntent);
 
-                //            // Add as notification
-                //            NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
                 //manager.notify(0, builder.build());// 0  para setar tudo na mesma notificação
                 manager.notify(noti.getPk(), builder.build());
             }
         }
-
+        firsShowtTime = false;
 
         /*
         // check first use

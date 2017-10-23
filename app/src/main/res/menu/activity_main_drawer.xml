@@ -17,9 +17,14 @@
             android:icon="@drawable/ic_menu_user_data"
             android:title="User Data" />
         <item
-            android:id="@+id/nav_notification"
+            android:id="@+id/nav_create_notification"
             android:icon="@drawable/ic_email_black"
             android:title="Create Notification"
+            />
+        <item
+            android:id="@+id/nav_notifications"
+            android:icon="@drawable/ic_menu_notification"
+            android:title="Notifications"
             />
     </group>
 

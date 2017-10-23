@@ -1,38 +1,38 @@
 package br.edu.ifspsaocarlos.sdm.notificacaoifsp.adapter;
 
+import android.content.Intent;
 import android.os.Handler;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CheckBox;
 import android.widget.Filter;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.google.gson.Gson;
+
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.R;
-import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.Offering;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.activity.MapsActivity;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.Notification;
 import io.realm.Realm;
 
 /**
  * Created by rapha on 3/15/2017.
  */
 
-public class OfferingAdapter extends RecyclerView.Adapter<OfferingAdapter.ItemViewHolder> {
+public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapter.ItemViewHolder> {
 
-    private List<Offering> mListaOffering;
-    private List<Offering> allItems;
-    private HashSet<Offering> mListChecked;
+    private List<Notification> mListaNotifications;
+    private List<Notification> allItems;
 
 
-    public OfferingAdapter(List<Offering> listaOffering, HashSet<Offering> array) {
-        this.mListaOffering = listaOffering;
-        this.allItems = listaOffering;
-        this.mListChecked = array;
+    public NotificationAdapter(List<Notification> listaNotifiations) {
+        this.mListaNotifications = listaNotifiations;
+        this.allItems = listaNotifiations;
     }
 
     private Filter filter;
@@ -59,15 +59,15 @@ public class OfferingAdapter extends RecyclerView.Adapter<OfferingAdapter.ItemVi
                                     Thread.sleep(10);
                                     handler.post(new Runnable() {
                                         public void run() {
-                                            mListaOffering = new ArrayList<Offering>();
+                                            mListaNotifications = new ArrayList<Notification>();
                                             for (int i = 0; i < allItems.size(); i++) {
-                                                Offering data = allItems.get(i);
+                                                Notification data = allItems.get(i);
 
                                                 String condicao = data.getDescricao().toLowerCase();
 
                                                 if (condicao.contains(finalFiltro)) {
                                                     //se conter adiciona na lista de itens filtrados.
-                                                    mListaOffering.add(data);
+                                                    mListaNotifications.add(data);
                                                 }
                                             }
                                             running = false;
@@ -90,8 +90,8 @@ public class OfferingAdapter extends RecyclerView.Adapter<OfferingAdapter.ItemVi
                     }
 
                     // Define o resultado do filtro na variavel FilterResults
-                    results.count = mListaOffering.size();
-                    results.values = mListaOffering;
+                    results.count = mListaNotifications.size();
+                    results.values = mListaNotifications;
                 }
                 return results;
             }
@@ -99,7 +99,7 @@ public class OfferingAdapter extends RecyclerView.Adapter<OfferingAdapter.ItemVi
             @SuppressWarnings("unchecked")
             @Override
             protected void publishResults(CharSequence constraint, Filter.FilterResults results) {
-                mListaOffering = (List<Offering>) results.values; // Valores filtrados.
+                mListaNotifications = (List<Notification>) results.values; // Valores filtrados.
                 notifyDataSetChanged();  // Notifica a lista de alteração
             }
 
@@ -118,30 +118,22 @@ public class OfferingAdapter extends RecyclerView.Adapter<OfferingAdapter.ItemVi
 //                    results.count = allItems.size();
 //                    results.values = allItems;
 //                } else {
-//                    try {
-//                        mListaOffering = new ArrayList<Offering>();
-//                        final String endFilter = filtro.toString().toLowerCase();
+//                    mListaNotifications = new ArrayList<Notification>();
+//                    //percorre toda lista verificando se contem a palavra do filtro na descricao do objeto.
+//                    for (int i = 0; i < allItems.size(); i++) {
+//                        Notification data = allItems.get(i);
 //
-//                        //percorre toda lista verificando se contem a palavra do filtro na descricao do objeto.
-//                        for (int i = 0; i < allItems.size(); i++) {
-//                            Offering data = allItems.get(i);
+//                        filtro = filtro.toString().toLowerCase();
+//                        String condicao = data.getDescricao().toLowerCase();
 //
-//                            filtro = filtro.toString().toLowerCase();
-//                            String desc = data.getDescricao();
-//                            String condicao = desc.toLowerCase();
-//
-//                            if (condicao.contains(filtro)) {
-//                                //se conter adiciona na lista de itens filtrados.
-//                                mListaOffering.add(data);
-//                            }
+//                        if (condicao.contains(filtro)) {
+//                            //se conter adiciona na lista de itens filtrados.
+//                            mListaNotifications.add(data);
 //                        }
-//
-//                        // Define o resultado do filtro na variavel FilterResults
-//                        results.count = mListaOffering.size();
-//                        results.values = mListaOffering;
-//                    }catch (Exception e){
-//                        Log.d("TCC", "Erro: " + e.toString());
 //                    }
+//                    // Define o resultado do filtro na variavel FilterResults
+//                    results.count = mListaNotifications.size();
+//                    results.values = mListaNotifications;
 //                }
 //                return results;
 //            }
@@ -149,7 +141,7 @@ public class OfferingAdapter extends RecyclerView.Adapter<OfferingAdapter.ItemVi
 //            @SuppressWarnings("unchecked")
 //            @Override
 //            protected void publishResults(CharSequence constraint, FilterResults results) {
-//                mListaOffering = (List<Offering>) results.values; // Valores filtrados.
+//                mListaNotifications = (List<Notification>) results.values; // Valores filtrados.
 //                notifyDataSetChanged();  // Notifica a lista de alteração
 //            }
 //
@@ -159,7 +151,7 @@ public class OfferingAdapter extends RecyclerView.Adapter<OfferingAdapter.ItemVi
 
     @Override
     public ItemViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        final View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item_offering, parent, false);
+        final View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item_notification, parent, false);
         return new ItemViewHolder(view);
         //return null;
     }
@@ -167,46 +159,35 @@ public class OfferingAdapter extends RecyclerView.Adapter<OfferingAdapter.ItemVi
     @Override
     public void onBindViewHolder(ItemViewHolder holder, int position) {
         //Recuperar o objeto da lista
-        Offering offering = mListaOffering.get(position);
+        Notification notification = mListaNotifications.get(position);
 
-        if (offering != null) {
+        if (notification != null) {
             //Setar os valores conforme a grid faz scroll
-            holder.txtProf.setText(offering.getProfessor());
-            holder.txtDescription.setText(offering.getDescricao());
-            holder.ckbSelected.setChecked(offering.isChecked());
+            holder.txtType.setText(notification.getTitulo());
+            holder.txtDescription.setText(notification.getDescricao());
             //set position to identify which object was selected
-            holder.ckbSelected.setTag(position);
             holder.mLayoutPrincipal.setTag(position);
         }
     }
 
     @Override
     public int getItemCount() {
-        return mListaOffering.size();
+        return mListaNotifications.size();
     }
 
     public class ItemViewHolder extends RecyclerView.ViewHolder {
 
         private RelativeLayout mLayoutPrincipal;
-        private TextView txtProf;
+        private TextView txtType;
         private TextView txtDescription;
-        private CheckBox ckbSelected;
 
         public ItemViewHolder(final View itemView) {
             super(itemView);
 
-            txtProf = (TextView) itemView.findViewById(R.id.txtOfferingProf);
-            txtDescription = (TextView) itemView.findViewById(R.id.txtOfferingDesc);
-            ckbSelected = (CheckBox) itemView.findViewById(R.id.ckbSelectedOffering);
-            ckbSelected.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    //It was used onClick instead of onCheckedChanged because it is making problem when setChecked
-                    selectItem(v);
-                }
-            });
+            txtType = (TextView) itemView.findViewById(R.id.txtNotificationType);
+            txtDescription = (TextView) itemView.findViewById(R.id.txtNotificaitonDesc);
 
-            mLayoutPrincipal = (RelativeLayout) itemView.findViewById(R.id.llOfferingList);
+            mLayoutPrincipal = (RelativeLayout) itemView.findViewById(R.id.llNotificationList);
             mLayoutPrincipal.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -216,20 +197,22 @@ public class OfferingAdapter extends RecyclerView.Adapter<OfferingAdapter.ItemVi
         }
 
         private void selectItem(View v) {
-            Offering offering = mListaOffering.get((Integer) v.getTag());
-            if(offering != null)
+            Notification object = mListaNotifications.get((Integer) v.getTag());
+            if(object != null)
             {
-                boolean flag = ckbSelected.isChecked();
+                Intent notificationIntent = new Intent(v.getContext(), MapsActivity.class);
 
-                if (v.getId() != R.id.ckbSelectedOffering){
-                    ckbSelected.setChecked(!flag);
-                }
+                Gson gson = new Gson();
+                Realm realm = Realm.getDefaultInstance();
+                realm.beginTransaction();
+                Notification newObject = realm.copyToRealmOrUpdate(object);
+                String json = gson.toJson(realm.copyFromRealm(newObject));
+                notificationIntent.putExtra("notificacao", json);
+                realm.cancelTransaction();
 
-                Realm.getDefaultInstance().beginTransaction();
-                offering.setChecked(ckbSelected.isChecked());
-                if (ckbSelected.isChecked())
-                    mListChecked.add(offering);
-                Realm.getDefaultInstance().commitTransaction();
+                //Não pode inserir essa opção aqui pois se cancelar o pedido de GPS vai fechar a app!!!
+                //intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                v.getContext().startActivity(notificationIntent);
             }
         }
     }

@@ -409,12 +409,10 @@ public class CreateNotificationFragment extends TemplateFragment {
         }
 
         if (criarNotificao()) {
+            //getActivity().getFragmentManager().popBackStack();
             Toast.makeText(getActivity().getApplicationContext(), R.string.msg_send_notification, Toast.LENGTH_SHORT).show();
+            getActivity().onBackPressed();
         }
-        else{
-
-        }
-        getActivity().getFragmentManager().popBackStack();
     }
 
     private boolean criarNotificao(){

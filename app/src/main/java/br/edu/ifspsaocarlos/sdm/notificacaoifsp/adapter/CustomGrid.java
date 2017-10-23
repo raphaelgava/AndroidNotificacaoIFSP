@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 
@@ -148,8 +149,8 @@ public class CustomGrid extends RecyclerView.Adapter<CustomGrid.ItemViewHolder> 
                 @Override
                 public void onClick(View v) {
                     Offering offer = mListaOferecimentos.get((Integer) v.getTag());
-                    if ((offer != null) && (offer.getPk() > 0)){
 
+                    if ((offer != null) && (offer.getPk() > 0)){
                         Gson gson = MyGsonBuilder.getInstance().myGson();;
                         SimpleDateFormat formatDate = new SimpleDateFormat("yyyy-MM-dd");
                         Date d = Calendar.getInstance().getTime();
@@ -161,13 +162,12 @@ public class CustomGrid extends RecyclerView.Adapter<CustomGrid.ItemViewHolder> 
                         List<Notification> finalList = new ArrayList<Notification>();
 
                         for (Notification noti : messageList){
-                            if (d.after(noti.getDatahora())){
+                            if (d.before(noti.getDatahora())){
                                 RealmList<RealmInteger> list = noti.getRemetente();
                                 for (RealmInteger integer : list){
                                     if (integer.getPk() == offer.getPk()) {
                                         finalList.add(noti);
                                         break;
-
                                     }
                                 }
                             }
@@ -184,7 +184,7 @@ public class CustomGrid extends RecyclerView.Adapter<CustomGrid.ItemViewHolder> 
                                     // return obj2.firstName.compareToIgnoreCase(obj1.firstName); // To compare string values
                                     // return Integer.valueOf(obj2.empId).compareTo(obj1.empId); // To compare integer values
 
-                                    return obj2.getDatahora().compareTo(obj1.getDatahora()); // To compare date values
+                                    return obj1.getDatahora().compareTo(obj2.getDatahora()); // To compare date values
                                 }
                             });
 
@@ -196,6 +196,10 @@ public class CustomGrid extends RecyclerView.Adapter<CustomGrid.ItemViewHolder> 
                             //Não pode inserir essa opção aqui pois se cancelar o pedido de GPS vai fechar a app!!!
                             //intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                             v.getContext().startActivity(intent);
+                        }
+                        else{
+                            Toast.makeText(v.getContext(), "There is no notification related to this offering",
+                                    Toast.LENGTH_SHORT).show();
                         }
 
                     }

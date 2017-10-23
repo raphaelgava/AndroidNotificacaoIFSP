@@ -30,6 +30,8 @@ public class Notification extends RealmObject implements Serializable {
     private String titulo;
     private int servidor;
     private int id_user;
+    private Date lastShow;
+    private Date eventDate;
     @JsonAdapter(MyGsonBuilder.JsonAdapter.class)
     private RealmList<RealmInteger> remetente;
 
@@ -40,6 +42,8 @@ public class Notification extends RealmObject implements Serializable {
         titulo = "";
         servidor = 0;
         id_local = null;
+        lastShow = null;
+        eventDate = null;
     }
 
     public int getId_user() {
@@ -74,8 +78,18 @@ public class Notification extends RealmObject implements Serializable {
         //return datahora;
     }
 
+    public String getDataHoraString(){
+        return this.datahora;
+    }
+
     public void setDatahora(String datahora) {
         this.datahora = datahora;
+        SimpleDateFormat formatDate = new SimpleDateFormat("yyyy-MM-dd");
+        try{
+            this.eventDate = formatDate.parse(datahora);
+        }catch (Exception e){
+            Log.d("TCC", "Error to parse date: " + e.toString());
+        }
     }
 
     public int getId_tipo() {
@@ -165,5 +179,21 @@ public class Notification extends RealmObject implements Serializable {
         if (remetente != null){
             remetente.clear();
         }
+    }
+
+    public Date getLastShow() {
+        return lastShow;
+    }
+
+    public void setLastShow(Date lastShow) {
+        this.lastShow = lastShow;
+    }
+
+    public Date getEventDate() {
+        return eventDate;
+    }
+
+    public void setEventDate(Date eventDate) {
+        this.eventDate = eventDate;
     }
 }

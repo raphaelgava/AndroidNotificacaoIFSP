@@ -1,6 +1,5 @@
 package br.edu.ifspsaocarlos.sdm.notificacaoifsp.activity;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
@@ -8,49 +7,44 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.google.gson.Gson;
-
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Calendar;
+import java.util.Date;
 
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.R;
-import br.edu.ifspsaocarlos.sdm.notificacaoifsp.adapter.RemetentAdapter;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.adapter.NotificationAdapter;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.Notification;
-import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.RealmInteger;
-import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.Remetente;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.service.FetchJSONService;
 import io.realm.Realm;
 
-public class RemetentListActivity extends AppCompatActivity {
+public class NotificationListActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
-    private RemetentAdapter remetentAdapter;
+    private NotificationAdapter notificationAdapter;
     private EditText edtResearch;
-    private Button btnEndRemetent;
+    private Button btnEndNotification;
     private final Realm realm = Realm.getDefaultInstance();
-    private HashSet<Remetente> array;
-    private boolean loadRemetent;
+    private boolean loadNotification;
     private Handler handler;
-    private Notification notificationObject;
     private TextView txtEmpty;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_lista_remetent);
+        setContentView(R.layout.activity_lista_notification);
 
-        array = new HashSet<Remetente>();
-
-        txtEmpty = (TextView) findViewById(R.id.txtRemetentEmpty);
+        txtEmpty = (TextView) findViewById(R.id.txtNotificationEmpty);
 
         LinearLayoutManager mLayoutManager = new LinearLayoutManager(this);
-        recyclerView = (RecyclerView) findViewById(R.id.recyclerList);
+        recyclerView = (RecyclerView) findViewById(R.id.recyclerListNotification);
         /*
           O erro: No adapter attached; skipping layout. Acontece pois não esta setando o adapter
           antes do layoutmanager.
@@ -58,7 +52,7 @@ public class RemetentListActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(mLayoutManager);
         recyclerView.setHasFixedSize(false);
 
-        edtResearch = (EditText) findViewById(R.id.edtFind);
+        edtResearch = (EditText) findViewById(R.id.edtFindNotification);
         edtResearch.setEnabled(false);
         edtResearch.addTextChangedListener(new TextWatcher() {
 
@@ -73,42 +67,26 @@ public class RemetentListActivity extends AppCompatActivity {
 
             public void onTextChanged(CharSequence arg0, int arg1, int arg2,
                                       int arg3) {
-                remetentAdapter.getFilter().filter(arg0.toString());
+                notificationAdapter.getFilter().filter(arg0.toString());
             }
         });
 
-        btnEndRemetent = (Button) findViewById(R.id.btnEndRemetent) ;
-        btnEndRemetent.setOnClickListener(new View.OnClickListener() {
+        btnEndNotification = (Button) findViewById(R.id.btnEndNotification) ;
+        btnEndNotification.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent data = new Intent();
-                //Type listType = new TypeToken<ArrayList<Offering>>() {}.getType();
-                ArrayList<Remetente> end = new ArrayList<Remetente>(array);
-
-                try {
-                    Gson gson = new Gson();
-                    for (int i = 0; i < end.size(); i++) {
-                        String json = gson.toJson(realm.copyFromRealm(end.get(i)));
-                        data.putExtra(Integer.toString(i), json);
-                    }
-
-                    setResult(RESULT_OK, data);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                } finally {
-                    finish();
-                }
+                finish();
             }
         });
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);//to show the back button on the actionbar
 
-        loadRemetent = true;
+        loadNotification = true;
         handler = new Handler();
 
         new Thread(){
             public void run() {
-                while (loadRemetent) {
+                while (loadNotification) {
                     try {
                         Thread.sleep(getResources().getInteger(R.integer.tempo_inatividade_servico));
                         if (FetchJSONService.isBuscandoDadosTerminou() == true){
@@ -119,7 +97,7 @@ public class RemetentListActivity extends AppCompatActivity {
                                 }
                             });
 
-                            loadRemetent = false;
+                            loadNotification = false;
                         }
                     } catch (InterruptedException e) {
                         e.printStackTrace();
@@ -127,13 +105,6 @@ public class RemetentListActivity extends AppCompatActivity {
                 }
             }
         }.start();
-
-
-        Intent i = getIntent();
-        Gson gson = new Gson();
-        Bundle bundle = i.getExtras();
-
-        notificationObject = gson.fromJson(bundle.getString("notificacao"), Notification.class);
     }
 
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -149,35 +120,23 @@ public class RemetentListActivity extends AppCompatActivity {
     }
 
     private void createList(){
+        String dateMask = getString(R.string.mask_date);
+        SimpleDateFormat formatDate = new SimpleDateFormat(dateMask);
+        Calendar c = Calendar.getInstance();
+        Date today;
+        try {
+            today = formatDate.parse(formatDate.format(c.getTime()));
 
+            ArrayList<Notification> list = new ArrayList(realm.where(Notification.class).greaterThanOrEqualTo("eventDate", today).findAll());
 
-        ArrayList<Remetente> list = new ArrayList(realm.where(Remetente.class).equalTo("is_active", true).findAll());
-        //ArrayList<Offering> list = new ArrayList(realm.where(Offering.class).findAll());
-
-        if (list.size() > 0){
-            txtEmpty.setVisibility(View.GONE);
-        }
-
-        if (notificationObject != null){
-            if (notificationObject.getSize() > 0) {
-                Realm.getDefaultInstance().beginTransaction();
-                for (RealmInteger valor : notificationObject.getRemetente()) {
-                    if (valor != null) {
-                        for (Remetente remet : list) {
-                            if (valor.getPk() == remet.getPk()) {
-
-                                remet.setChecked(true);
-                                break;
-                            }
-                        }
-                    }
-                }
-                Realm.getDefaultInstance().commitTransaction();
+            if (list.size() > 0) {
+                txtEmpty.setVisibility(View.GONE);
+                notificationAdapter = new NotificationAdapter(list);
+                recyclerView.setAdapter(notificationAdapter);
             }
+        }catch (Exception e){
+            Log.d("TCC", "Error: " + e.toString());
         }
-
-        remetentAdapter = new RemetentAdapter(list, array, this);
-        recyclerView.setAdapter(remetentAdapter);
     }
 
 }

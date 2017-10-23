@@ -405,7 +405,8 @@ public class ChangeUserDataFragment extends TemplateFragment{
                                                 realm.commitTransaction();
                                                 Toast.makeText(getContext(), R.string.msg_changed,
                                                         Toast.LENGTH_SHORT).show();
-                                                getActivity().getFragmentManager().popBackStack();
+                                                //getActivity().getFragmentManager().popBackStack();
+                                                getActivity().onBackPressed();
                                             }
                                         }, new Response.ErrorListener() {
                                     public void onErrorResponse(VolleyError volleyError) {
@@ -442,6 +443,12 @@ public class ChangeUserDataFragment extends TemplateFragment{
                             Log.e("TCC", "ERROR: " + e.toString());
                         }
                     }
+                    else{
+                        stopTransaction();
+                    }
+                }
+                else{
+                    stopTransaction();
                 }
             }
         }else{

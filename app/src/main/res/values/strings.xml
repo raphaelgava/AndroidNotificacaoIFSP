@@ -106,4 +106,9 @@
 
     <!-- Grid -->
     <string name="welcome">Welcome to notification application!</string>
+
+    <!-- Activities -->
+    <string name="nothingNotification">There is no notifications so far! Wait a moment or contact the Administrator.</string>
+    <string name="nothingOffering">There is no offerings so far! Wait a moment or contact the Administrator.</string>
+    <string name="nothingRemetent">There is no remetents so far! Wait a moment or contact the Administrator.</string>
 </resources>

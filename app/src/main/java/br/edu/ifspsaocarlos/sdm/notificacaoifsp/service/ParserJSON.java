@@ -208,6 +208,11 @@ public class ParserJSON {
         object.setId_user(MainActivity.getUserId());//feito isso apenas pra trazer na busca das ofertas as ofertas relacionadas ao curso do usuario
 
         if (object != null){
+            Notification old = realm.where(Notification.class).equalTo("pk", object.getPk()).findFirst();
+            if (old != null)
+                object.setLastShow(old.getLastShow());
+            object.setDatahora(object.getDataHoraString());
+
             final RealmObject finalObject = object;
             realm.executeTransactionAsync(new Realm.Transaction() {
                 @Override

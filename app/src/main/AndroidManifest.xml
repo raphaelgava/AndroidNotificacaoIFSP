@@ -82,6 +82,9 @@
             android:name=".activity.OfferingListActivity"
             android:configChanges="orientation|screenSize" />
         <activity
+            android:name=".activity.NotificationListActivity"
+            android:configChanges="orientation|screenSize" />
+        <activity
             android:name=".activity.AboutActivity"
             android:configChanges="orientation|screenSize" />
 
