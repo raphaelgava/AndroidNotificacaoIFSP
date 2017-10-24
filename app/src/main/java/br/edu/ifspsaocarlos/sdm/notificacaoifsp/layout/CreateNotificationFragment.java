@@ -70,7 +70,7 @@ public class CreateNotificationFragment extends TemplateFragment {
 //    private SimpleDateFormat formatTime;
     private boolean loadRemetent;
     private Handler handler;
-    private Thread local;
+    private Thread secontThread;
 
     private Notification notificationObject = null;
 
@@ -154,6 +154,8 @@ public class CreateNotificationFragment extends TemplateFragment {
 
             spLocal = (Spinner) view.findViewById(R.id.spinner);
             spTipoNotificacao = (Spinner) view.findViewById(R.id.spinnerCor);
+            spLocal.setEnabled(false);
+            spTipoNotificacao.setEnabled(false);
 
             edtDescription = (EditText) view.findViewById(R.id.edtDescription);
             edtDescription.setOnTouchListener(new View.OnTouchListener() {
@@ -293,54 +295,25 @@ public class CreateNotificationFragment extends TemplateFragment {
                 }
             });
 
-
-
             handler = new Handler();
-            local = new Thread(){
-                public void run() {
-                    loadRemetent = true;
-                    while (loadRemetent) {
-                        try {
-                            Thread.sleep(getResources().getInteger(R.integer.tempo_inatividade_servico));
-                            if (FetchJSONService.isBuscandoDadosTerminou() == true){
-                                handler.post(new Runnable() {
-                                    public void run() {
-                                        Realm realm = Realm.getDefaultInstance();
-                                        RealmResults<Local> realmResults = realm.where(Local.class).findAll();
-                                        List<Local> documents = realm.copyFromRealm(realmResults);
-                                        Local obj = new Local();
-                                        obj.setDescricao("No place");
-                                        documents.add(0, obj);
-                                        ArrayAdapter<Local> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, documents);
-                                        spLocal.setAdapter(adapter);
-                                    }
-                                });
-
-                                loadRemetent = false;
-                            }
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            };
-
             new Thread(){
                 public void run() {
                     loadRemetent = true;
                     while (loadRemetent) {
                         try {
                             Thread.sleep(getResources().getInteger(R.integer.tempo_inatividade_servico));
-                            if (FetchJSONService.isBuscandoDadosTerminou() == true){
+                            if ((FetchJSONService.isBuscandoDadosTerminou() == true) &&
+                                    (FetchJSONService.isLocalTerminou() == true)){
                                 handler.post(new Runnable() {
                                     public void run() {
                                         Realm realm = Realm.getDefaultInstance();
-                                        RealmResults<TipoNotificacao> realmResults = realm.where(TipoNotificacao.class).findAll();
+                                        RealmResults<TipoNotificacao> realmResults = realm.where(TipoNotificacao.class).findAll().sort("pk");
                                         List<TipoNotificacao> documents = realm.copyFromRealm(realmResults);;
                                         ArrayAdapter<TipoNotificacao> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, documents);
                                         spTipoNotificacao.setAdapter(adapter);
+                                        spTipoNotificacao.setEnabled(true);
 
-                                        local.start(); //Por conta da ordem que foi inserido na fila do service json
+                                        secontThread.start(); //Por conta da ordem que foi inserido na fila do service json
                                     }
                                 });
 
@@ -352,6 +325,39 @@ public class CreateNotificationFragment extends TemplateFragment {
                     }
                 }
             }.start();
+
+            secontThread = new Thread(){
+                public void run() {
+                    loadRemetent = true;
+                    while (loadRemetent) {
+                        try {
+                            Thread.sleep(getResources().getInteger(R.integer.tempo_inatividade_servico));
+                            if ((FetchJSONService.isBuscandoDadosTerminou() == true) &&
+                                    (FetchJSONService.isLocalTerminou())){
+                                handler.post(new Runnable() {
+                                    public void run() {
+                                        Realm realm = Realm.getDefaultInstance();
+                                        RealmResults<Local> realmResults = realm.where(Local.class).findAll().sort("pk");
+                                        List<Local> documents = realm.copyFromRealm(realmResults);
+                                        Local obj = new Local();
+                                        obj.setDescricao("No place");
+                                        documents.add(0, obj);
+                                        ArrayAdapter<Local> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, documents);
+                                        spLocal.setAdapter(adapter);
+                                        spLocal.setEnabled(true);
+
+                                        //secontThread.start(); //Por conta da ordem que foi inserido na fila do service json
+                                    }
+                                });
+
+                                loadRemetent = false;
+                            }
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            };
         }
         return view;
     }

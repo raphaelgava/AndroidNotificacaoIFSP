@@ -66,6 +66,8 @@ public class FetchJSONService extends Service implements Runnable {
     private static Stack<Notification> stackNotification;
     private NotificationManager manager;
     private boolean flagLocalNotification;
+    private static boolean cmdLocalLiberado;
+    private static boolean cmdTipoNotificacaoLiberado;
 
     public FetchJSONService() {
         machine = ServiceState.getInstance();
@@ -73,6 +75,8 @@ public class FetchJSONService extends Service implements Runnable {
         stackNotification = new Stack<Notification>();
         flagLocalNotification = false;
         firsShowtTime = true;
+        cmdLocalLiberado = false;
+        cmdTipoNotificacaoLiberado = false;
     }
 
     public static void setOffering(AddedOffering offer){
@@ -149,6 +153,8 @@ public class FetchJSONService extends Service implements Runnable {
                                     atualizarNotificacao(false);
                                     break;
                                 case ENUM_TIPO_NOTIFICACAO:
+                                    cmdLocalLiberado = false;
+                                    cmdTipoNotificacaoLiberado = false;
                                     buscarTipoNotificacao();
                                     break;
                                 case ENUM_LOCAL:
@@ -414,6 +420,7 @@ public class FetchJSONService extends Service implements Runnable {
                             //Toast.makeText(FetchJSONService.this, "Finalmente: " + s.toString(), Toast.LENGTH_SHORT).show();
                             Log.d("TCC", "TipoNotificacao: " + s.toString());
                             novoComandoLiberado = true; //para não ficar travado caso de algum erro
+                            cmdTipoNotificacaoLiberado = true;
                         }
                     },
                     new Response.ErrorListener() {
@@ -421,6 +428,7 @@ public class FetchJSONService extends Service implements Runnable {
                         public void onErrorResponse(VolleyError volleyError) {
                             Toast.makeText(FetchJSONService.this, "Erro na recuperação do TipoNotificacao: " + volleyError.toString(), Toast.LENGTH_SHORT).show();
                             novoComandoLiberado = true; //para não ficar travado caso de algum erro
+                            cmdTipoNotificacaoLiberado = true;
                         }
                     }
             ){
@@ -440,6 +448,7 @@ public class FetchJSONService extends Service implements Runnable {
         } catch (Exception e) {
             e.printStackTrace();
             novoComandoLiberado = true; //para não ficar travado caso de algum erro
+            cmdTipoNotificacaoLiberado = true;
         }
     }
 
@@ -457,6 +466,7 @@ public class FetchJSONService extends Service implements Runnable {
                             //Toast.makeText(FetchJSONService.this, "Finalmente: " + s.toString(), Toast.LENGTH_SHORT).show();
                             Log.d("TCC", "Local: " + s.toString());
                             novoComandoLiberado = true; //para não ficar travado caso de algum erro
+                            cmdLocalLiberado = cmdTipoNotificacaoLiberado;
                         }
                     },
                     new Response.ErrorListener() {
@@ -464,6 +474,7 @@ public class FetchJSONService extends Service implements Runnable {
                         public void onErrorResponse(VolleyError volleyError) {
                             Toast.makeText(FetchJSONService.this, "Erro na recuperação do Local: " + volleyError.toString(), Toast.LENGTH_SHORT).show();
                             novoComandoLiberado = true; //para não ficar travado caso de algum erro
+                            cmdLocalLiberado = cmdTipoNotificacaoLiberado;
                         }
                     }
             ){
@@ -483,6 +494,7 @@ public class FetchJSONService extends Service implements Runnable {
         } catch (Exception e) {
             e.printStackTrace();
             novoComandoLiberado = true; //para não ficar travado caso de algum erro
+            cmdLocalLiberado = cmdTipoNotificacaoLiberado;
         }
     }
 
@@ -937,6 +949,14 @@ public class FetchJSONService extends Service implements Runnable {
 
     public static boolean isBuscandoDadosTerminou() {
         return novoComandoLiberado;
+    }
+
+    public static boolean isLocalTerminou(){
+        return cmdLocalLiberado;
+    }
+
+    public static boolean isTipoNotificacaoTerminou(){
+        return cmdTipoNotificacaoLiberado;
     }
 }
 

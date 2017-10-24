@@ -1,6 +1,6 @@
 package br.edu.ifspsaocarlos.sdm.notificacaoifsp.util;
 
-import java.util.Stack;
+import java.util.PriorityQueue;
 
 /**
  * Created by rapha on 7/11/2017.
@@ -8,7 +8,7 @@ import java.util.Stack;
 
 public class ServiceState {
 
-    private Stack<EnumServiceState> states;
+    private PriorityQueue<EnumServiceState> states;
     private static boolean flagStateEmpty; //@todo: verificar se a assincronia não vai gerar problema. se der problema então gerar uma flag working (só chama a proxima atividade se finalizou a última)
     private static ServiceState instance;
 
@@ -21,17 +21,17 @@ public class ServiceState {
     }
 
     private ServiceState(){
-        states = new Stack<>();
+        states = new PriorityQueue<EnumServiceState>();
         flagStateEmpty = true;
     }
 
     public void pushState(EnumServiceState state){
-        states.push(state);
+        states.add(state);
     }
 
     public EnumServiceState popState(){
         flagStateEmpty = false;
-        return states.pop();
+        return states.poll();
     }
 
     public static void finishLastPop(){

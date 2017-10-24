@@ -60,6 +60,7 @@ public class RemetentListActivity extends AppCompatActivity {
 
         edtResearch = (EditText) findViewById(R.id.edtFind);
         edtResearch.setEnabled(false);
+        edtResearch.clearFocus();
         edtResearch.addTextChangedListener(new TextWatcher() {
 
             public void afterTextChanged(Editable arg0) {
@@ -78,6 +79,7 @@ public class RemetentListActivity extends AppCompatActivity {
         });
 
         btnEndRemetent = (Button) findViewById(R.id.btnEndRemetent) ;
+        btnEndRemetent.requestFocus();
         btnEndRemetent.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -151,7 +153,7 @@ public class RemetentListActivity extends AppCompatActivity {
     private void createList(){
 
 
-        ArrayList<Remetente> list = new ArrayList(realm.where(Remetente.class).equalTo("is_active", true).findAll());
+        ArrayList<Remetente> list = new ArrayList(realm.where(Remetente.class).equalTo("is_active", true).findAll().sort("tipo"));
         //ArrayList<Offering> list = new ArrayList(realm.where(Offering.class).findAll());
 
         if (list.size() > 0){

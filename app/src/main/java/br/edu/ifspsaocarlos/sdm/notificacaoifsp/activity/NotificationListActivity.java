@@ -54,6 +54,7 @@ public class NotificationListActivity extends AppCompatActivity {
 
         edtResearch = (EditText) findViewById(R.id.edtFindNotification);
         edtResearch.setEnabled(false);
+        edtResearch.clearFocus();
         edtResearch.addTextChangedListener(new TextWatcher() {
 
             public void afterTextChanged(Editable arg0) {
@@ -72,6 +73,7 @@ public class NotificationListActivity extends AppCompatActivity {
         });
 
         btnEndNotification = (Button) findViewById(R.id.btnEndNotification) ;
+        btnEndNotification.requestFocus();
         btnEndNotification.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

@@ -427,7 +427,7 @@ public class ChangeUserDataFragment extends TemplateFragment{
                                     }
                                 };
 
-//                                VERIFICAR ERRO!!!!! --> problema variaveis do backend!!!
+//                                problema variaveis do backend!!!
 //                                09-21 05:11:25.233 11000-11477/br.edu.ifspsaocarlos.sdm.notificacaoifsp E/Volley: [237] BasicNetwork.performRequest: Unexpected response code 400 for http://192.168.0.16:8000/professor_json/5/
 //                                09-21 05:11:25.261 11000-11000/br.edu.ifspsaocarlos.sdm.notificacaoifsp E/TCC: Error during update user.com.android.volley.ServerError
 
