@@ -27,6 +27,7 @@ public class Person extends RealmObject {
     //private Date datanascimento;
     private String datanascimento;
     private int id_instituto;
+    private String cpf;
 
     private int type;
 
@@ -57,6 +58,7 @@ public class Person extends RealmObject {
         pkTurma = 0;
         setPassword("");
         datanascimento = "0000-00-00";
+        cpf = "";
     }
 
     public int getType() {
@@ -195,6 +197,14 @@ public class Person extends RealmObject {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getCpf() {
+        return cpf;
+    }
+
+    public void setCpf(String cpf) {
+        this.cpf = cpf;
     }
 /*
     public void setTurma(String turma) {

@@ -151,7 +151,7 @@ public class CustomGrid extends RecyclerView.Adapter<CustomGrid.ItemViewHolder> 
                     Offering offer = mListaOferecimentos.get((Integer) v.getTag());
 
                     if ((offer != null) && (offer.getPk() > 0)){
-                        Gson gson = MyGsonBuilder.getInstance().myGson();;
+                        Gson gson = MyGsonBuilder.getInstance().myGson();
                         SimpleDateFormat formatDate = new SimpleDateFormat("yyyy-MM-dd");
                         Date d = Calendar.getInstance().getTime();
                         Realm realm = Realm.getDefaultInstance();

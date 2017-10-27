@@ -24,6 +24,7 @@
                     android:id="@+id/edtTitle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:maxLength="45"
                     android:hint="@string/title" />
             </android.support.design.widget.TextInputLayout>
 
@@ -40,6 +41,7 @@
                     android:overScrollMode="always"
                     android:scrollbarStyle="insideInset"
                     android:lines="4"
+                    android:maxLength="255"
                     android:inputType="textMultiLine|textCapSentences"
                     android:hint="@string/description" />
             </android.support.design.widget.TextInputLayout>

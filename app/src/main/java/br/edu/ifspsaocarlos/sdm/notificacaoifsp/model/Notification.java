@@ -31,6 +31,7 @@ public class Notification extends RealmObject implements Serializable {
     private int servidor;
     private int id_user;
     private Date lastShow;
+    private boolean checked;
     private Date eventDate;
     @JsonAdapter(MyGsonBuilder.JsonAdapter.class)
     private RealmList<RealmInteger> remetente;
@@ -44,6 +45,7 @@ public class Notification extends RealmObject implements Serializable {
         id_local = null;
         lastShow = null;
         eventDate = null;
+        checked = false;
     }
 
     public int getId_user() {
@@ -195,5 +197,13 @@ public class Notification extends RealmObject implements Serializable {
 
     public void setEventDate(Date eventDate) {
         this.eventDate = eventDate;
+    }
+
+    public boolean isChecked() {
+        return checked;
+    }
+
+    public void setChecked(boolean checked) {
+        this.checked = checked;
     }
 }

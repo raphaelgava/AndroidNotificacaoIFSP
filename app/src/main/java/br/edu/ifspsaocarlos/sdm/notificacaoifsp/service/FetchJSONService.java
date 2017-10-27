@@ -150,7 +150,8 @@ public class FetchJSONService extends Service implements Runnable {
                                     atualizarAlunoOferecimento(false);
                                     break;
                                 case ENUM_INSERT_NOTIFICATION:
-                                    atualizarNotificacao(false);
+                                    //Removendo para não duplicar registro já que ao ser criado ele é salvo para poder ser acessado pelo fetch
+                                    atualizarNotificacao(true);
                                     break;
                                 case ENUM_TIPO_NOTIFICACAO:
                                     cmdLocalLiberado = false;
@@ -646,7 +647,7 @@ public class FetchJSONService extends Service implements Runnable {
                     @Override
                     public void onResponse(String s) {
                         try {
-                            byte[] u = s.toString().getBytes("ISO-8859-1");
+                            byte[] u = s.getBytes("ISO-8859-1");
                             s = new String(u, "UTF-8");
 
                             JSONArray jsonArray = new JSONArray(s);
@@ -715,7 +716,7 @@ public class FetchJSONService extends Service implements Runnable {
                     @Override
                     public void onResponse(String s) {
                         try {
-                            byte[] u = s.toString().getBytes("ISO-8859-1");
+                            byte[] u = s.getBytes("ISO-8859-1");
                             s = new String(u, "UTF-8");
 
                             JSONArray jsonArray = new JSONArray(s);
@@ -783,7 +784,7 @@ public class FetchJSONService extends Service implements Runnable {
                 @Override
                 public void onResponse(String s) {
                     try {
-                        byte[] u = s.toString().getBytes("ISO-8859-1");
+                        byte[] u = s.getBytes("ISO-8859-1");
                         s = new String(u, "UTF-8");
 
                         JSONArray jsonArray = new JSONArray(s);
@@ -847,52 +848,53 @@ public class FetchJSONService extends Service implements Runnable {
 //        boolean flagNotificar;
 
         for (Notification noti : messageList) {
-            Date last = noti.getLastShow();
-            if ((last == null) || (firsShowtTime == true) || (last.compareTo(today) < 0))
-            {
-                long[] v = {500,1000}; //vibrate
-                Uri uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);//sound
-                NotificationCompat.Builder builder =
-                        new NotificationCompat.Builder(this)
-                                .setWhen(System.currentTimeMillis())
-                                .setSmallIcon(R.drawable.ic_email_black)
-                                .setAutoCancel(true)
-                                .setVibrate(v)
-                                .setSound(uri)
-                                .setContentTitle(noti.getTitulo())
-                                .setContentText(noti.getDescricao());
+            if (noti.isChecked() == false) { //Se vizualizou não precisa mais alertar!!!
+                Date last = noti.getLastShow();
+                if ((last == null) || (firsShowtTime == true) || (last.compareTo(today) < 0)) {
+                    long[] v = {500, 1000}; //vibrate
+                    Uri uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);//sound
+                    NotificationCompat.Builder builder =
+                            new NotificationCompat.Builder(this)
+                                    .setWhen(System.currentTimeMillis())
+                                    .setSmallIcon(R.drawable.ic_email_black)
+                                    .setAutoCancel(true)
+                                    .setVibrate(v)
+                                    .setSound(uri)
+                                    .setContentTitle(noti.getTitulo())
+                                    .setContentText(noti.getDescricao());
 
-                //            Intent resultIntent = new Intent(getApplicationContext(), MainActivity.class);
-                //            //resultIntent.putExtra("", messageList.get(0).getPk());
-                //
-                //            TaskStackBuilder stackBuilder = TaskStackBuilder.create(getApplicationContext());
-                //            stackBuilder.addParentStack(MainActivity.class);
-                //            //stackBuilder.addParentStack(MessageActivity.class);
-                //            stackBuilder.addNextIntent(resultIntent);
-                //
-                //            PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
-                //            mBuilder.setContentIntent(resultPendingIntent);
-                //
-                //
-                //            mNotificationManager.notify(id, mBuilder.build());
+                    //            Intent resultIntent = new Intent(getApplicationContext(), MainActivity.class);
+                    //            //resultIntent.putExtra("", messageList.get(0).getPk());
+                    //
+                    //            TaskStackBuilder stackBuilder = TaskStackBuilder.create(getApplicationContext());
+                    //            stackBuilder.addParentStack(MainActivity.class);
+                    //            //stackBuilder.addParentStack(MessageActivity.class);
+                    //            stackBuilder.addNextIntent(resultIntent);
+                    //
+                    //            PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+                    //            mBuilder.setContentIntent(resultPendingIntent);
+                    //
+                    //
+                    //            mNotificationManager.notify(id, mBuilder.build());
 
-                Intent notificationIntent = new Intent(this, MapsActivity.class);
+                    Intent notificationIntent = new Intent(this, MapsActivity.class);
 
-                Gson gson = new Gson();
-                Realm realm = Realm.getDefaultInstance();
-                realm.beginTransaction();
-                noti.setLastShow(today);
-                Notification object = realm.copyToRealmOrUpdate(noti);
-                String json = gson.toJson(realm.copyFromRealm(object));
-                notificationIntent.putExtra("notificacao", json);
-                Realm.getDefaultInstance().commitTransaction();
+                    Gson gson = new Gson();
+                    Realm realm = Realm.getDefaultInstance();
+                    realm.beginTransaction();
+                    noti.setLastShow(today);
+                    Notification object = realm.copyToRealmOrUpdate(noti);
+                    String json = gson.toJson(realm.copyFromRealm(object));
+                    notificationIntent.putExtra("notificacao", json);
+                    Realm.getDefaultInstance().commitTransaction();
 
-                PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent,
-                        PendingIntent.FLAG_UPDATE_CURRENT);
-                builder.setContentIntent(contentIntent);
+                    PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent,
+                            PendingIntent.FLAG_UPDATE_CURRENT);
+                    builder.setContentIntent(contentIntent);
 
-                //manager.notify(0, builder.build());// 0  para setar tudo na mesma notificação
-                manager.notify(noti.getPk(), builder.build());
+                    //manager.notify(0, builder.build());// 0  para setar tudo na mesma notificação
+                    manager.notify(noti.getPk(), builder.build());
+                }
             }
         }
         firsShowtTime = false;

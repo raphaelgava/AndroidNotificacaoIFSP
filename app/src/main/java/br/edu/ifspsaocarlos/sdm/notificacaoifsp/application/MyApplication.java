@@ -20,7 +20,7 @@ public class MyApplication extends MultiDexApplication {
         // The Realm file will be located in package's "files" directory.
         //RealmConfiguration realmConfig = new RealmConfiguration.Builder().build();
         final RealmConfiguration realmConfig = new RealmConfiguration.Builder().name("notificacao.realm")
-                                                    .schemaVersion(1) //Versão atual do BD! Essa tem que ser o último oldVersion da classe RealmMigrations
+                                                    .schemaVersion(2) //Versão atual do BD! Essa tem que ser o último oldVersion da classe RealmMigrations
                                                     .migration(new RealmMigrations()).build();
         Realm.setDefaultConfiguration(realmConfig);
         // This will automatically trigger the migration if needed

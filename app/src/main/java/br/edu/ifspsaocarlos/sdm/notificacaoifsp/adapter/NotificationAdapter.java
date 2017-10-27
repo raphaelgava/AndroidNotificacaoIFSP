@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Filter;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -167,6 +168,12 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
             holder.txtDescription.setText(notification.getDescricao());
             //set position to identify which object was selected
             holder.mLayoutPrincipal.setTag(position);
+
+            if (notification.isChecked()){
+                holder.imgStatus.setImageResource(R.drawable.opened2);
+            }else{
+                holder.imgStatus.setImageResource(R.drawable.closed2);
+            }
         }
     }
 
@@ -180,6 +187,7 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         private RelativeLayout mLayoutPrincipal;
         private TextView txtType;
         private TextView txtDescription;
+        private ImageView imgStatus;
 
         public ItemViewHolder(final View itemView) {
             super(itemView);
@@ -194,6 +202,8 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
                     selectItem(v);
                 }
             });
+
+            imgStatus = (ImageView) itemView.findViewById(R.id.img_status);
         }
 
         private void selectItem(View v) {
@@ -205,9 +215,11 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
                 Gson gson = new Gson();
                 Realm realm = Realm.getDefaultInstance();
                 realm.beginTransaction();
+                //object.setChecked(true);
                 Notification newObject = realm.copyToRealmOrUpdate(object);
                 String json = gson.toJson(realm.copyFromRealm(newObject));
                 notificationIntent.putExtra("notificacao", json);
+                //realm.commitTransaction();
                 realm.cancelTransaction();
 
                 //Não pode inserir essa opção aqui pois se cancelar o pedido de GPS vai fechar a app!!!

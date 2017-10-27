@@ -11,6 +11,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -65,6 +66,8 @@ public class MapsActivity extends FragmentActivity implements
 
             this.setFinishOnTouchOutside(false);
 
+            btnGoMark = (Button) findViewById(R.id.btnGoMark);
+
             position = new LatLng(-21.969539, -47.878139); //IFSP
             if (obj.getId_local() != null) {
                 Realm realm = Realm.getDefaultInstance();
@@ -75,9 +78,11 @@ public class MapsActivity extends FragmentActivity implements
                         position = new LatLng(Double.parseDouble(latlong[0]), Double.parseDouble(latlong[1]));
                     }
                 }
+            }else{
+                btnGoMark.setVisibility(View.GONE);
+                mapFragment.getView().setVisibility(View.GONE);
             }
 
-            btnGoMark = (Button) findViewById(R.id.btnGoMark);
             btnGoMark.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -101,6 +106,7 @@ public class MapsActivity extends FragmentActivity implements
             texto = (TextView) findViewById(R.id.txtParametro);
             texto.bringToFront();
             texto.setText(obj.getDescricao());
+            texto.setGravity(Gravity.CENTER_VERTICAL);
 
             botao = (Button) findViewById(R.id.btnDialog);
             botao.bringToFront();
@@ -141,9 +147,18 @@ public class MapsActivity extends FragmentActivity implements
             });
             //enableMyLocation();
 */
+            updateObjectRealm(obj);
         } else {
             finish();
         }
+    }
+
+    private void updateObjectRealm(Notification obj){
+        Realm realm = Realm.getDefaultInstance();
+        realm.beginTransaction();
+        obj.setChecked(true);
+        realm.copyToRealmOrUpdate(obj);
+        realm.commitTransaction();
     }
 
 

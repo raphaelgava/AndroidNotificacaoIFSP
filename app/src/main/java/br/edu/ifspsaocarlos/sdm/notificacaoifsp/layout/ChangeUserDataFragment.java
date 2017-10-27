@@ -63,7 +63,7 @@ import io.realm.RealmObject;
  */
 public class ChangeUserDataFragment extends TemplateFragment{
     private EditText inputEmail, inputPassword, inputConfirm, inputUsername, inputFirstName, inputLastName;
-    private EditText inputJob, inputGrade, inputGraduation;
+    private EditText inputJob, inputGrade, inputGraduation, inputCpf;
     private Spinner inputEducation;
     private TextInputLayout inputLayoutEmail, inputLayoutPassword, inputLayoutConfirm;
     private TextInputLayout inputLayoutGraduation, inputLayoutEducation, inputLayoutGrade, inputLayoutJob;
@@ -103,8 +103,6 @@ public class ChangeUserDataFragment extends TemplateFragment{
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
      *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
      * @return A new instance of fragment ChangeUserDataFragment.
      */
     // TODO: Rename and change types and number of parameters
@@ -130,6 +128,7 @@ public class ChangeUserDataFragment extends TemplateFragment{
             inputUsername = (EditText) view.findViewById(R.id.edtUsername);
             inputFirstName = (EditText) view.findViewById(R.id.edtName);
             inputLastName = (EditText) view.findViewById(R.id.edtLastName);
+            inputCpf = (EditText) view.findViewById(R.id.edtCpf);
             inputEmail = (EditText) view.findViewById(R.id.edtEmail);
             inputPassword = (EditText) view.findViewById(R.id.edtPassword);
             inputConfirm = (EditText) view.findViewById(R.id.edtConfirmPassword);
@@ -234,6 +233,7 @@ public class ChangeUserDataFragment extends TemplateFragment{
             inputFirstName.setText(person.getFirst_name());
             inputLastName.setText(person.getLast_name());
             inputUsername.setText(person.getUsername());
+            inputCpf.setText(person.getCpf());
             inputEmail.setText(person.getEmail());
             if (person.getSexo().equals(getString(R.string.json_female))){
                 inputFemale.setChecked(true);

@@ -41,5 +41,18 @@ public class RealmMigrations implements RealmMigration {
             }
             oldVersion++;
         }
+
+        if (oldVersion == 2) { //O último oldVersion tem que bater com a versão atual do BD!
+            final RealmObjectSchema userSchema = schema.get("Notification");
+            if (!userSchema.hasField("checked")) {
+                userSchema.addField("checked", boolean.class);
+            }
+
+            final RealmObjectSchema userSchema2 = schema.get("Person");
+            if (!userSchema2.hasField("cpf")) {
+                userSchema2.addField("cpf", String.class);
+            }
+            oldVersion++;
+        }
     }
 }

@@ -21,9 +21,9 @@
     </string>
 
     <!-- Strings related to service -->
-    <!--<string name="url_base">http://192.168.0.16:8000/</string>-->
+    <string name="url_base">http://192.168.0.16:8000/</string>
     <!--<string name="url_base">http://192.168.43.94:8000/</string>-->
-    <string name="url_base">https://notificacaoifsp.herokuapp.com/</string><!--site-->
+    <!--<string name="url_base">https://notificacaoifsp.herokuapp.com/</string>&lt;!&ndash;site&ndash;&gt;-->
     <string name="url_login">api-token-auth/</string>
     <string name="url_login_username">username</string>
     <string name="url_login_password">password</string>
@@ -52,6 +52,7 @@
     <string name="username">Username</string>
     <string name="name">Name</string>
     <string name="lastName">Last Name</string>
+    <string name="cpf">CPF</string>
     <string name="email">E-mail</string>
     <string name="password">Password</string>
     <string name="confirmPassword">Re-Password</string>
@@ -90,10 +91,6 @@
     <string name="permission_rationale_location">Access to the location service is required to demonstrate the \'my location\' feature, which shows your current location on the map.</string>
     <string name="location_permission_denied">This sample requires location permission to enable the \'my location\' layer. Please try again and grant access to use the location.\nIf the permission has been permanently denied, it can be enabled from the System Settings &gt; Apps &gt; \'Google Maps API Demos\'.</string>
     <string name="permission_required_toast">Location permission is required for this demo.</string>
-
-    <!-- Spinners -->
-    <string name="country_prompt">TESTE</string>
-    <string name="business_prompt">TESTE222</string>
 
     <!-- Maps -->
     <string name="title_activity_maps">Notification Dialog</string>

@@ -36,6 +36,8 @@ import br.edu.ifspsaocarlos.sdm.notificacaoifsp.util.EnumUserType;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.util.ServiceState;
 import io.realm.Realm;
 
+
+
 public class MainActivity extends AppCompatActivity implements OnNavigationItemSelectedListener,
         TemplateFragment.OnFragmentInteractionListener{
 

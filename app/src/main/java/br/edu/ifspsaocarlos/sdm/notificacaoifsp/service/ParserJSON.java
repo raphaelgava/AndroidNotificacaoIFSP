@@ -209,8 +209,17 @@ public class ParserJSON {
 
         if (object != null){
             Notification old = realm.where(Notification.class).equalTo("pk", object.getPk()).findFirst();
-            if (old != null)
-                object.setLastShow(old.getLastShow());
+            if (old != null) {
+                //Se algo na notificação foi alterado, então irá notificar novamente
+                if (object.getDescricao().equals(old.getDescricao()) &&
+                        object.getTitulo().equals(old.getTitulo()) &&
+                        object.getDataHoraString().equals(old.getDataHoraString()) &&
+                        object.getId_local() == old.getId_local()
+                        ) {
+                    object.setLastShow(old.getLastShow());
+                    object.setChecked(old.isChecked());
+                }
+            }
             object.setDatahora(object.getDataHoraString());
 
             final RealmObject finalObject = object;

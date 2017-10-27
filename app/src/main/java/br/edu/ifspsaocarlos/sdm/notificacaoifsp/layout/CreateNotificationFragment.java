@@ -97,8 +97,6 @@ public class CreateNotificationFragment extends TemplateFragment {
         mDay = c.get(Calendar.DAY_OF_MONTH);
 //        mHour = c.get(Calendar.HOUR_OF_DAY);
 //        mMinute = c.get(Calendar.MINUTE);
-
-        notificationObject = new Notification();
     }
 
     /**
@@ -123,6 +121,8 @@ public class CreateNotificationFragment extends TemplateFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        notificationObject = new Notification();
+
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_create_notification, container, false);
         if (view != null)
@@ -308,7 +308,7 @@ public class CreateNotificationFragment extends TemplateFragment {
                                     public void run() {
                                         Realm realm = Realm.getDefaultInstance();
                                         RealmResults<TipoNotificacao> realmResults = realm.where(TipoNotificacao.class).findAll().sort("pk");
-                                        List<TipoNotificacao> documents = realm.copyFromRealm(realmResults);;
+                                        List<TipoNotificacao> documents = realm.copyFromRealm(realmResults);
                                         ArrayAdapter<TipoNotificacao> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, documents);
                                         spTipoNotificacao.setAdapter(adapter);
                                         spTipoNotificacao.setEnabled(true);

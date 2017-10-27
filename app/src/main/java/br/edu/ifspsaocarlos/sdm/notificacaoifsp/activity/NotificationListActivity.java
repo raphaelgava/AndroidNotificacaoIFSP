@@ -2,6 +2,7 @@ package br.edu.ifspsaocarlos.sdm.notificacaoifsp.activity;
 
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -35,11 +36,33 @@ public class NotificationListActivity extends AppCompatActivity {
     private boolean loadNotification;
     private Handler handler;
     private TextView txtEmpty;
+    private SwipeRefreshLayout swipeLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lista_notification);
+
+        swipeLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_notification);
+        swipeLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                // Refresh items
+                if (loadNotification == false) {
+                    handler.post(new Runnable() {
+                        public void run() {
+                            createList();
+                            edtResearch.setEnabled(true);
+                        }
+                    });
+                }
+                // Stop refresh animation
+                swipeLayout.setRefreshing(false);
+            }
+        });
+        swipeLayout.setColorSchemeResources(R.color.colorPrimary,
+                R.color.colorPrimaryDark, R.color.colorAccent,
+                R.color.colorBackgroundCard, R.color.colorCell);
 
         txtEmpty = (TextView) findViewById(R.id.txtNotificationEmpty);
 
@@ -140,5 +163,19 @@ public class NotificationListActivity extends AppCompatActivity {
             Log.d("TCC", "Error: " + e.toString());
         }
     }
+
+    @Override
+    public void onResume(){
+        super.onResume();
+        if (loadNotification == false) {
+            handler.post(new Runnable() {
+                public void run() {
+                    createList();
+                    edtResearch.setEnabled(true);
+                }
+            });
+        }
+    }
+
 
 }
