@@ -152,7 +152,7 @@ public class NotificationListActivity extends AppCompatActivity {
         try {
             today = formatDate.parse(formatDate.format(c.getTime()));
 
-            ArrayList<Notification> list = new ArrayList(realm.where(Notification.class).greaterThanOrEqualTo("eventDate", today).findAll());
+            ArrayList<Notification> list = new ArrayList(realm.where(Notification.class).greaterThanOrEqualTo("eventDate", today).equalTo("id_user", MainActivity.getUserId()).findAll());
 
             if (list.size() > 0) {
                 txtEmpty.setVisibility(View.GONE);

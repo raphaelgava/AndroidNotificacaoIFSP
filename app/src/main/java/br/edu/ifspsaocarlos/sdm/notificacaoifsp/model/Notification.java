@@ -22,6 +22,7 @@ public class Notification extends RealmObject implements Serializable {
     //public class Offering  extends RealmObject{
     private static final long  serialVersionUID = 100L;
     @PrimaryKey
+    private String myPk;
     private int pk;
     private String datahora;
     private int id_tipo;
@@ -54,6 +55,7 @@ public class Notification extends RealmObject implements Serializable {
 
     public void setId_user(int id_user) {
         this.id_user = id_user;
+        setMyPk();
     }
 
     public static long getSerialVersionUID() {
@@ -205,5 +207,13 @@ public class Notification extends RealmObject implements Serializable {
 
     public void setChecked(boolean checked) {
         this.checked = checked;
+    }
+
+    public String getMyPk() {
+        return myPk;
+    }
+
+    public void setMyPk() {
+        this.myPk = pk + "-" + id_user;
     }
 }

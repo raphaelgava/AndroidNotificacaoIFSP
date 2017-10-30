@@ -303,7 +303,7 @@ public class CreateNotificationFragment extends TemplateFragment {
                         try {
                             Thread.sleep(getResources().getInteger(R.integer.tempo_inatividade_servico));
                             if ((FetchJSONService.isBuscandoDadosTerminou() == true) &&
-                                    (FetchJSONService.isLocalTerminou() == true)){
+                                    (FetchJSONService.isTipoNotificacaoTerminou() == true)){
                                 handler.post(new Runnable() {
                                     public void run() {
                                         Realm realm = Realm.getDefaultInstance();
@@ -312,6 +312,8 @@ public class CreateNotificationFragment extends TemplateFragment {
                                         ArrayAdapter<TipoNotificacao> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, documents);
                                         spTipoNotificacao.setAdapter(adapter);
                                         spTipoNotificacao.setEnabled(true);
+
+                                        FetchJSONService.setTipoNotificacaoTerminou();
 
                                         secontThread.start(); //Por conta da ordem que foi inserido na fila do service json
                                     }
@@ -345,6 +347,8 @@ public class CreateNotificationFragment extends TemplateFragment {
                                         ArrayAdapter<Local> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, documents);
                                         spLocal.setAdapter(adapter);
                                         spLocal.setEnabled(true);
+
+                                        FetchJSONService.setLocalTerminou();
 
                                         //secontThread.start(); //Por conta da ordem que foi inserido na fila do service json
                                     }

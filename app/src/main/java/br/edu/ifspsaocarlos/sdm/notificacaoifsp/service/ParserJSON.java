@@ -8,7 +8,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.activity.MainActivity;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.AddedOffering;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.Local;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.Notification;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.Offering;
@@ -170,7 +173,6 @@ public class ParserJSON {
         Realm realm = Realm.getDefaultInstance();
         Offering object = null;
 
-
         Gson gson = MyGsonBuilder.getInstance().myGson();
         object = gson.fromJson(json.toString(), Offering.class);
         object.setId_user(MainActivity.getUserId());//feito isso apenas pra trazer na busca das ofertas as ofertas relacionadas ao curso do usuario
@@ -198,6 +200,70 @@ public class ParserJSON {
         return false;
     }
 
+    public void updateAddedOffering(){
+        //Gson gson = new Gson();
+        Realm realm = Realm.getDefaultInstance();
+
+        ArrayList<Offering> listOffering = new ArrayList(realm.where(Offering.class).equalTo("id_user", MainActivity.getUserId()).equalTo("is_active", true).findAll());
+        ArrayList<AddedOffering> listAdded = new ArrayList(realm.where(AddedOffering.class).equalTo("username", MainActivity.getUserId()).findAll());
+
+        for (AddedOffering offer1 : listAdded){
+            boolean delete = false;
+//            boolean add = false;
+            for (Offering offer2 : listOffering){
+                if (offer2.hasAluno(MainActivity.getUserId())) {
+                    if (offer1.getMyPk().equals(offer2.getMyPk())) {
+                        delete = true;
+                        break;
+                    }
+//                    else{
+//                        add = true;
+//                    }
+                }
+            }
+
+            if (delete == false){
+                final AddedOffering obj = offer1;
+                realm.executeTransaction(new Realm.Transaction() {
+                    @Override
+                    public void execute(Realm realm) {
+                        try {
+                            AddedOffering other = realm.copyToRealmOrUpdate(obj);
+                            other.deleteFromRealm();
+                        }catch (Exception e){
+                            Log.d("TCC", "ERROR: " + e.toString());
+                        }
+                    }
+                });
+            }
+//            else if(add = true){
+//
+//            }
+        }
+
+//        if (object != null){
+//            final RealmObject finalObject = object;
+//            realm.executeTransactionAsync(new Realm.Transaction() {
+//                @Override
+//                public void execute(Realm bgRealm) {
+//                    bgRealm.copyToRealmOrUpdate(finalObject);
+//                }
+//            }, new Realm.Transaction.OnSuccess() {
+//                @Override
+//                public void onSuccess() {
+//                    Log.e("TCC", "Offering saved");
+//                }
+//            }, new Realm.Transaction.OnError() {
+//                @Override
+//                public void onError(Throwable error) {
+//                    Log.e("TCC", "Erro: " + error.toString());
+//                }
+//            });
+//            return true;
+//        }
+//        return false;
+    }
+
     public boolean saveNotificacao(JSONObject json){
         //Gson gson = new Gson();
         Realm realm = Realm.getDefaultInstance();
@@ -208,7 +274,8 @@ public class ParserJSON {
         object.setId_user(MainActivity.getUserId());//feito isso apenas pra trazer na busca das ofertas as ofertas relacionadas ao curso do usuario
 
         if (object != null){
-            Notification old = realm.where(Notification.class).equalTo("pk", object.getPk()).findFirst();
+            //Notification old = realm.where(Notification.class).equalTo("pk", object.getPk()).findFirst();
+            Notification old = realm.where(Notification.class).equalTo("pk", object.getPk()).equalTo("id_user", MainActivity.getUserId()).findFirst();
             if (old != null) {
                 //Se algo na notificação foi alterado, então irá notificar novamente
                 if (object.getDescricao().equals(old.getDescricao()) &&

@@ -10,6 +10,7 @@ import io.realm.annotations.RealmClass;
 @RealmClass
 public class AddedOffering extends RealmObject{
     @PrimaryKey
+    private String myPk;
     private int pk;
     private Offering offer;
     private int username;
@@ -21,9 +22,14 @@ public class AddedOffering extends RealmObject{
     public AddedOffering(Offering offer) {
         if (offer != null) {
             this.offer = offer;
+            this.myPk = offer.getMyPk();
             this.pk = offer.getPk();
             this.username = offer.getId_user();
         }
+    }
+
+    public String getMyPk() {
+        return myPk;
     }
 
     public int getPk() {
@@ -38,6 +44,8 @@ public class AddedOffering extends RealmObject{
         if (offer != null) {
             this.offer = offer;
             this.pk = offer.getPk();
+            this.myPk = offer.getMyPk();
+            this.username = offer.getId_user();
         }
     }
 }

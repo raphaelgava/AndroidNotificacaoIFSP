@@ -22,6 +22,7 @@ public class Offering  extends RealmObject implements Serializable {
 //public class Offering  extends RealmObject{
     private static final long  serialVersionUID = 100L;
     @PrimaryKey
+    private String myPk;
     private int pk;
     private int semestre;
     private int week;
@@ -43,6 +44,7 @@ public class Offering  extends RealmObject implements Serializable {
     private RealmList<RealmInteger> alunos;
 
     public Offering(){
+        myPk = "";
         pk = 0;
         semestre = 0;
         week = 0;
@@ -67,6 +69,7 @@ public class Offering  extends RealmObject implements Serializable {
 
     public void setId_user(int id_user) {
         this.id_user = id_user;
+        setMyPk();
     }
 
     public int getSemestre() {
@@ -213,6 +216,18 @@ public class Offering  extends RealmObject implements Serializable {
         this.alunos.add(val);
     }
 
+    public boolean hasAluno(int valor){
+        RealmInteger val = new RealmInteger(valor);
+        RealmList<RealmInteger> list = getAlunos();
+        for (int i = 0; i < list.size(); i++){
+            RealmInteger a = list.get(i);
+            if (a.getPk() == val.getPk()){
+                return true;
+            }
+        }
+        return false;
+    }
+
     public void removeAluno(int valor){
 //        if (alunos == null){
 //            this.alunos = new RealmList<RealmInteger>();
@@ -227,5 +242,13 @@ public class Offering  extends RealmObject implements Serializable {
             }
         }
 //        }
+    }
+
+    public String getMyPk() {
+        return myPk;
+    }
+
+    public void setMyPk() {
+        this.myPk = pk + "-" + id_user;
     }
 }

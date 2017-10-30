@@ -74,7 +74,12 @@
         <activity
             android:name=".activity.MapsActivity"
             android:label="@string/title_activity_maps"
-            android:theme="@style/Theme_Dialog" />
+            android:theme="@style/Theme_Dialog"
+            android:parentActivityName=".activity.MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".activity.MainActivity" />
+        </activity>
         <activity
             android:name=".activity.RemetentListActivity"
             android:configChanges="orientation|screenSize" />

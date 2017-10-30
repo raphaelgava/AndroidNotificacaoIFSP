@@ -215,11 +215,11 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
                 Gson gson = new Gson();
                 Realm realm = Realm.getDefaultInstance();
                 realm.beginTransaction();
-                //object.setChecked(true);
+//                object.setChecked(true);
                 Notification newObject = realm.copyToRealmOrUpdate(object);
                 String json = gson.toJson(realm.copyFromRealm(newObject));
                 notificationIntent.putExtra("notificacao", json);
-                //realm.commitTransaction();
+//                realm.commitTransaction();
                 realm.cancelTransaction();
 
                 //Não pode inserir essa opção aqui pois se cancelar o pedido de GPS vai fechar a app!!!

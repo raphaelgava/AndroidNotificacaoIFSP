@@ -294,8 +294,7 @@ public class CustomGrid extends RecyclerView.Adapter<CustomGrid.ItemViewHolder> 
 //                                                            }
 //                                                        }.start();
 
-                                                        FetchJSONService.setOffering(deletedObj);
-                                                        ServiceState.getInstance().pushState(ServiceState.EnumServiceState.ENUM_REMOVE_STUDENT_OFFERING);
+                                                        FetchJSONService.setOffering(deletedObj, ServiceState.EnumServiceState.ENUM_REMOVE_STUDENT_OFFERING);
                                                     }
                                                 }
                                             }, new Realm.Transaction.OnSuccess() {

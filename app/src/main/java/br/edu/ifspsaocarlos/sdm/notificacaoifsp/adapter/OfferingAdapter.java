@@ -2,6 +2,7 @@ package br.edu.ifspsaocarlos.sdm.notificacaoifsp.adapter;
 
 import android.os.Handler;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -166,17 +167,21 @@ public class OfferingAdapter extends RecyclerView.Adapter<OfferingAdapter.ItemVi
 
     @Override
     public void onBindViewHolder(ItemViewHolder holder, int position) {
-        //Recuperar o objeto da lista
-        Offering offering = mListaOffering.get(position);
+        try {
+            //Recuperar o objeto da lista
+            Offering offering = mListaOffering.get(position);
 
-        if (offering != null) {
-            //Setar os valores conforme a grid faz scroll
-            holder.txtProf.setText(offering.getProfessor());
-            holder.txtDescription.setText(offering.getDescricao());
-            holder.ckbSelected.setChecked(offering.isChecked());
-            //set position to identify which object was selected
-            holder.ckbSelected.setTag(position);
-            holder.mLayoutPrincipal.setTag(position);
+            if (offering != null) {
+                //Setar os valores conforme a grid faz scroll
+                holder.txtProf.setText(offering.getProfessor());
+                holder.txtDescription.setText(offering.getDescricao());
+                holder.ckbSelected.setChecked(offering.isChecked());
+                //set position to identify which object was selected
+                holder.ckbSelected.setTag(position);
+                holder.mLayoutPrincipal.setTag(position);
+            }
+        }catch (Exception e){
+            Log.d("TCC", "ERRO OFFER ADAPTER on bind: " + e.toString());
         }
     }
 

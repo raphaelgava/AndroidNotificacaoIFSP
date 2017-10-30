@@ -173,6 +173,7 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
 //            if (person == null) {
                 Log.d("TCC", "Sending json get person data");
                 ServiceState.getInstance().pushState(ServiceState.EnumServiceState.ENUM_USER);
+                ServiceState.getInstance().pushState(ServiceState.EnumServiceState.ENUM_OFERECIMENTO_UPDATE);
 //            }
         }
     }
@@ -308,7 +309,8 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
         if ((getPeronType() == EnumUserType.ENUM_EMPLOYEE) || (getPeronType() == EnumUserType.ENUM_PROFESSOR)) {
             itemSend.setVisible(true);
             itemNot.setVisible(true);
-            if (getPeronType() == EnumUserType.ENUM_EMPLOYEE){
+            //if (getPeronType() == EnumUserType.ENUM_EMPLOYEE) //Voltar a hora que professor puder
+            {
                 offering.setVisible(false);
             }
         }
@@ -347,32 +349,48 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
             fab.setVisibility(View.INVISIBLE);
     }
 
-    public static void setFragTransactionStack(int fragType, int content, Bundle data, boolean flagAddStack){
-        // Create new fragment and transaction
-        android.support.v4.app.FragmentTransaction transaction = fragmentManager.beginTransaction();
 
-        if (fragType == R.id.nav_class_schedule){
-            if (fragmentManager.getBackStackEntryCount() >= 1) {
-                fragmentManager.popBackStackImmediate(0, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        //https://stackoverflow.com/questions/7469082/getting-exception-illegalstateexception-can-not-perform-this-action-after-onsa/10261438#10261438
+        //http://w3cgeek.com/illegalstateexception-can-not-perform-this-action-after-onsaveinstancestate-how-to-prevent.html
+        outState.putString("WORKAROUND_FOR_BUG_19917_KEY", "WORKAROUND_FOR_BUG_19917_VALUE");
+        //super.onSaveInstanceState(outState);
+    }
+
+    public static void setFragTransactionStack(int fragType, int content, Bundle data, boolean flagAddStack){
+        try {
+            // Create new fragment and transaction
+            android.support.v4.app.FragmentTransaction transaction = fragmentManager.beginTransaction();
+
+            if (fragType == R.id.nav_class_schedule) {
+                if (fragmentManager.getBackStackEntryCount() >= 1) {
+                    fragmentManager.popBackStackImmediate(0, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+                }
+
+                showFloatingActionButton();
+            } else {
+                fab.setVisibility(View.INVISIBLE);
             }
 
-            showFloatingActionButton();
-        }
-        else{
-            fab.setVisibility(View.INVISIBLE);
-        }
+            if (fragType == R.id.nav_create_notification) {
+                transaction.replace(content, FragmentFactory.CreateFragment(fab.getContext(), data, fragType), TAG_FRAG_CREATE_NOTIFICATION);
+            } else {
+                transaction.replace(content, FragmentFactory.CreateFragment(fab.getContext(), data, fragType));
+            }
 
-        if (fragType == R.id.nav_create_notification)
-        {
-            transaction.replace(content, FragmentFactory.CreateFragment(fab.getContext(), data, fragType), TAG_FRAG_CREATE_NOTIFICATION);
-        }
-        else {
-            transaction.replace(content, FragmentFactory.CreateFragment(fab.getContext(), data, fragType));
-        }
+            if (flagAddStack) {
+                transaction.addToBackStack(Integer.toString(fragType));
+                //transaction.commit();
 
-        if (flagAddStack) {
-            transaction.addToBackStack(Integer.toString(fragType));
-            transaction.commit();
+                //https://stackoverflow.com/questions/7469082/getting-exception-illegalstateexception-can-not-perform-this-action-after-onsa/10261438#10261438
+                //http://w3cgeek.com/illegalstateexception-can-not-perform-this-action-after-onsaveinstancestate-how-to-prevent.html
+                transaction.commitAllowingStateLoss();
+            }
+
+            fragmentManager.executePendingTransactions();
+        }catch (Exception e){
+            Log.d("TCC", "ERRO transaction: " + e.toString());
         }
     }
 
@@ -437,6 +455,20 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
                 //String message=data.getStringExtra("MESSAGE");
                 //textView1.setText(message);
                 break;
+//            case RESULT_NOTIFICATION_ACTIVITY:
+//                if (resultCode == Activity.RESULT_OK){
+//                    Gson gson = new Gson();
+//                    Bundle bundle = data.getExtras();
+//                    for (int i = 0; i < bundle.size(); i++){
+//                        Notification object = gson.fromJson(bundle.getString(Integer.toString(i)), Notification.class);
+//
+//                        Log.d("TCC", object.getTitulo());
+//                    }
+//                    setFragTransactionStack(R.id.nav_class_schedule, R.id.content_frame, bundle, true);
+//                }
+//                //String message=data.getStringExtra("MESSAGE");
+//                //textView1.setText(message);
+//                break;
             default:
                 Log.d("TCC", "Activity Result wrong");
         }

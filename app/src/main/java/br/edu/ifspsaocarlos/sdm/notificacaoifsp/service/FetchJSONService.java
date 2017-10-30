@@ -68,6 +68,7 @@ public class FetchJSONService extends Service implements Runnable {
     private boolean flagLocalNotification;
     private static boolean cmdLocalLiberado;
     private static boolean cmdTipoNotificacaoLiberado;
+    private static boolean cmdBuscandoOfferLiberado;
 
     public FetchJSONService() {
         machine = ServiceState.getInstance();
@@ -77,11 +78,12 @@ public class FetchJSONService extends Service implements Runnable {
         firsShowtTime = true;
         cmdLocalLiberado = false;
         cmdTipoNotificacaoLiberado = false;
+        cmdBuscandoOfferLiberado = false;
     }
 
-    public static void setOffering(AddedOffering offer){
+    public static void setOffering(AddedOffering offer, ServiceState.EnumServiceState option){
         stackOffering.add(offer);
-        ServiceState.getInstance().pushState(ServiceState.EnumServiceState.ENUM_INSERT_STUDENT_OFFERING);
+        ServiceState.getInstance().pushState(option);
     }
 
     public static void setNotification(Notification notification){
@@ -137,8 +139,12 @@ public class FetchJSONService extends Service implements Runnable {
                                 case ENUM_USER:
                                     buscarUsuario();
                                     break;
+                                case ENUM_OFERECIMENTO_UPDATE:
+                                    cmdBuscandoOfferLiberado = false;
+                                    buscarOferecimento(true);
+                                    break;
                                 case ENUM_OFERECIMENTO:
-                                    buscarOferecimento();
+                                    buscarOferecimento(false);
                                     break;
                                 case ENUM_REMETENTE:
                                     buscarRemetente();
@@ -207,7 +213,10 @@ public class FetchJSONService extends Service implements Runnable {
 //                primeiraBusca = false;
             }
             catch (InterruptedException ie) {
-                Log.e("TCC", "Erro na thread de recuperação de contato");
+                Log.e("TCC", "Erro na thread de recuperação: " + ie.toString());
+            }
+            catch (Exception e){
+                Log.e("TCC", "Erro na thread de recuperação: " + e.toString());
             }
         }
     }
@@ -251,10 +260,12 @@ public class FetchJSONService extends Service implements Runnable {
 //                    at com.google.gson.stream.JsonWriter.beforeName(JsonWriter.java:616)
 
                     //realm.beginTransaction();
-                    final Offering bla = realm.where(Offering.class).equalTo("pk", offer.getPk()).findFirst();
+                    //final Offering bla = realm.where(Offering.class).equalTo("pk", offer.getPk()).findFirst();
+                    final Offering bla = realm.where(Offering.class).equalTo("myPk", offer.getMyPk()).findFirst();
 
                     String json = gson.toJson(realm.copyFromRealm(bla));
                     JSONObject user = new JSONObject(json);
+
 
                     if (flagRemove){
                         realm.executeTransaction(new Realm.Transaction() {
@@ -338,7 +349,8 @@ public class FetchJSONService extends Service implements Runnable {
                     //Gson gson = new Gson();
                     Gson gson = MyGsonBuilder.getInstance().myGson();
 
-                    final Notification bla = realm.where(Notification.class).equalTo("pk", objeto.getPk()).findFirst();
+                    //final Notification bla = realm.where(Notification.class).equalTo("pk", objeto.getPk()).findFirst();
+                    final Notification bla = realm.where(Notification.class).equalTo("pk", objeto.getPk()).equalTo("id_user", MainActivity.getUserId()).findFirst();
 
                     String json = gson.toJson(realm.copyFromRealm(bla));
                     JSONObject user = new JSONObject(json);
@@ -605,73 +617,78 @@ public class FetchJSONService extends Service implements Runnable {
 
     // TODO: 10/19/2017 Buscar oferecimento pois se o professor retirar o aluno/inserir aluno não será atualizado na grade
     // TODO: 10/19/2017 Buscar oferecimento para exibir a grade do professor!
-    private void buscarOferecimento() {
-        boolean flagOk = true;
+    private void buscarOferecimento(boolean aluno) {
+        try {
+            boolean flagOk = true;
 
-        String url = getString(R.string.url_base);
+            String url = getString(R.string.url_base);
 
-        Person p = null;
-        switch (MainActivity.getPeronType()){
-            case ENUM_STUDENT:
-                Realm realm = Realm.getDefaultInstance();
-                p = realm.where(Person.class).equalTo("pk", MainActivity.getUserId()).findFirst();
-            case ENUM_PROFESSOR:
-                url += getString(R.string.url_oferecimento); break;
-            default:
-                Log.e("TCC", "Tipo pessoa desconhecida");
-                flagOk = false;
-        }
+            Person p = null;
+            switch (MainActivity.getPeronType()) {
+                case ENUM_STUDENT:
+                    Realm realm = Realm.getDefaultInstance();
+                    p = realm.where(Person.class).equalTo("pk", MainActivity.getUserId()).findFirst();
+                case ENUM_PROFESSOR:
+                    url += getString(R.string.url_oferecimento);
+                    break;
+                default:
+                    Log.e("TCC", "Tipo pessoa desconhecida");
+                    flagOk = false;
+            }
 
-        if (flagOk == true) {
-            novoComandoLiberado = false;
-            //url += Integer.toString(MainActivity.getUserId());
-            try {
-                HashMap<String, String> params = new HashMap<String, String>();
-                Calendar cd = Calendar.getInstance();
-                int year = cd.get(Calendar.YEAR);
-                int month = cd.get(Calendar.MONTH);
-                int semester;
-                if (month <= 6){
-                    semester = 1;
-                }
-                else{
-                    semester = 2;
-                }
+            if (flagOk == true) {
+                novoComandoLiberado = false;
+                //url += Integer.toString(MainActivity.getUserId());
+                try {
+                    HashMap<String, String> params = new HashMap<String, String>();
+                    Calendar cd = Calendar.getInstance();
+                    int year = cd.get(Calendar.YEAR);
+                    int month = cd.get(Calendar.MONTH);
+                    int semester;
+                    if (month <= 6) {
+                        semester = 1;
+                    } else {
+                        semester = 2;
+                    }
 
-                if (p != null)
-                    url += "?ano=" + year + "&semestre=" + semester + "&turma=" + p.getPkTurma() + "&pk=" + p.getPk();
-                else
-                    url += "?ano=" + year + "&semestre=" + semester;
+                    if (p != null)
+                        url += "?ano=" + year + "&semestre=" + semester + "&turma=" + p.getPkTurma();// + "&pk=" + p.getPk();
+                    else
+                        url += "?ano=" + year + "&semestre=" + semester;
 
-                StringRequest sr = new StringRequest(Request.Method.GET, url , new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String s) {
-                        try {
-                            byte[] u = s.getBytes("ISO-8859-1");
-                            s = new String(u, "UTF-8");
+                    if (aluno)
+                        url += "&pk=" + MainActivity.getUserId();
 
-                            JSONArray jsonArray = new JSONArray(s);
-                            for(int i = 0; i < jsonArray.length(); i++) {
-                                JSONObject jsonObj = jsonArray.getJSONObject(i);
-                                ParserJSON.getInstance().saveOffering(jsonObj);
+                    StringRequest sr = new StringRequest(Request.Method.GET, url, new Response.Listener<String>() {
+                        @Override
+                        public void onResponse(String s) {
+                            try {
+                                byte[] u = s.getBytes("ISO-8859-1");
+                                s = new String(u, "UTF-8");
+
+                                JSONArray jsonArray = new JSONArray(s);
+                                for (int i = 0; i < jsonArray.length(); i++) {
+                                    JSONObject jsonObj = jsonArray.getJSONObject(i);
+                                    ParserJSON.getInstance().saveOffering(jsonObj);
+                                }
+                                //Toast.makeText(FetchJSONService.this, "Finalmente: " + s, Toast.LENGTH_SHORT).show();
+                                Log.d("TCC", "Response Offering");
+                                MainActivity.setFragTransactionStack(R.id.nav_class_schedule, R.id.content_frame, null, true);
+                            } catch (JSONException e) {
+                                Toast.makeText(FetchJSONService.this, "Erro na conversão " +
+                                        "de objeto JSON!", Toast.LENGTH_SHORT).show();
+                            } catch (UnsupportedEncodingException e) {
+                                e.printStackTrace();
                             }
-                            //Toast.makeText(FetchJSONService.this, "Finalmente: " + s, Toast.LENGTH_SHORT).show();
-                            Log.d("TCC", "Response Offering");
-                        } catch (JSONException e) {
-                            Toast.makeText(FetchJSONService.this, "Erro na conversão " +
-                                    "de objeto JSON!", Toast.LENGTH_SHORT).show();
-                        } catch (UnsupportedEncodingException e) {
-                            e.printStackTrace();
+                            novoComandoLiberado = true; //para não ficar travado caso de algum erro
                         }
-                        novoComandoLiberado = true; //para não ficar travado caso de algum erro
-                    }
-                }, new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        novoComandoLiberado = true; // para não deixar a página sem carregar nada caso de erro
-                        Toast.makeText(FetchJSONService.this, "Erro na recuperação da offerta: " + error.toString(), Toast.LENGTH_SHORT).show();
-                    }
-                }){
+                    }, new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            novoComandoLiberado = true; // para não deixar a página sem carregar nada caso de erro
+                            Toast.makeText(FetchJSONService.this, "Erro na recuperação da offerta: " + error.toString(), Toast.LENGTH_SHORT).show();
+                        }
+                    }) {
 //                    //Só funciona para POST
 //                    @Override
 //                    protected Map<String,String> getParams(){
@@ -683,22 +700,25 @@ public class FetchJSONService extends Service implements Runnable {
 //                        return params;
 //                    }
 
-                    @Override
-                    public Map<String, String> getHeaders() throws AuthFailureError {
-                        Map<String, String> headers = new HashMap<>();
-                        // Basic Authentication
-                        //String auth = "Basic " + Base64.encodeToString(CONSUMER_KEY_AND_SECRET.getBytes(), Base64.NO_WRAP);
+                        @Override
+                        public Map<String, String> getHeaders() throws AuthFailureError {
+                            Map<String, String> headers = new HashMap<>();
+                            // Basic Authentication
+                            //String auth = "Basic " + Base64.encodeToString(CONSUMER_KEY_AND_SECRET.getBytes(), Base64.NO_WRAP);
 
-                        headers.put(getString(R.string.authorization), MainActivity.getAuth()); //Authorization Token ...
-                        return headers;
-                    }
-                };
+                            headers.put(getString(R.string.authorization), MainActivity.getAuth()); //Authorization Token ...
+                            return headers;
+                        }
+                    };
 
-                queue.add(sr);
-            } catch (Exception e) {
-                e.printStackTrace();
-                novoComandoLiberado = true; //para não ficar travado caso de algum erro
+                    queue.add(sr);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    novoComandoLiberado = true; //para não ficar travado caso de algum erro
+                }
             }
+        }catch (Exception e){
+            Log.e("TCC", "ERRO buscar oferta: " + e.toString());
         }
     }
 
@@ -866,10 +886,10 @@ public class FetchJSONService extends Service implements Runnable {
                     //            Intent resultIntent = new Intent(getApplicationContext(), MainActivity.class);
                     //            //resultIntent.putExtra("", messageList.get(0).getPk());
                     //
-                    //            TaskStackBuilder stackBuilder = TaskStackBuilder.create(getApplicationContext());
-                    //            stackBuilder.addParentStack(MainActivity.class);
-                    //            //stackBuilder.addParentStack(MessageActivity.class);
-                    //            stackBuilder.addNextIntent(resultIntent);
+//                                TaskStackBuilder stackBuilder = TaskStackBuilder.create(getApplicationContext());
+//                                stackBuilder.addParentStack(MainActivity.class);
+//                                //stackBuilder.addParentStack(MessageActivity.class);
+//                                stackBuilder.addNextIntent(resultIntent);
                     //
                     //            PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
                     //            mBuilder.setContentIntent(resultPendingIntent);
@@ -883,16 +903,27 @@ public class FetchJSONService extends Service implements Runnable {
                     Realm realm = Realm.getDefaultInstance();
                     realm.beginTransaction();
                     noti.setLastShow(today);
+//                    noti.setChecked(true);
                     Notification object = realm.copyToRealmOrUpdate(noti);
-                    String json = gson.toJson(realm.copyFromRealm(object));
-                    notificationIntent.putExtra("notificacao", json);
                     Realm.getDefaultInstance().commitTransaction();
 
-                    PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent,
+                    String json = gson.toJson(realm.copyFromRealm(object));
+                    notificationIntent.putExtra("notificacao", json);
+
+
+//                    TaskStackBuilder stackBuilder = TaskStackBuilder.create(getApplicationContext());
+//                    stackBuilder.addParentStack(MainActivity.class);
+//                    stackBuilder.addNextIntent(notificationIntent);
+//
+//                    PendingIntent contentIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+//                    builder.setContentIntent(contentIntent);
+
+                    PendingIntent contentIntent = PendingIntent.getActivity(this, noti.getPk(), notificationIntent,
                             PendingIntent.FLAG_UPDATE_CURRENT);
                     builder.setContentIntent(contentIntent);
 
                     //manager.notify(0, builder.build());// 0  para setar tudo na mesma notificação
+                    //manager.notify(noti.getPk(), builder.build());
                     manager.notify(noti.getPk(), builder.build());
                 }
             }
@@ -959,6 +990,22 @@ public class FetchJSONService extends Service implements Runnable {
 
     public static boolean isTipoNotificacaoTerminou(){
         return cmdTipoNotificacaoLiberado;
+    }
+
+    public static void setTipoNotificacaoTerminou(){
+        cmdTipoNotificacaoLiberado = false;
+    }
+
+    public static void setLocalTerminou(){
+        cmdLocalLiberado = false;
+    }
+
+    public static boolean isOfferingTerminou(){
+        return cmdBuscandoOfferLiberado;
+    }
+
+    public static void setOfferingerminou(){
+        cmdBuscandoOfferLiberado = false;
     }
 }
 
