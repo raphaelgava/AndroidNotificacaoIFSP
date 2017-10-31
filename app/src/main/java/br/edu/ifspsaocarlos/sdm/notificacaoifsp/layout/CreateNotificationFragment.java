@@ -70,7 +70,7 @@ public class CreateNotificationFragment extends TemplateFragment {
 //    private SimpleDateFormat formatTime;
     private boolean loadRemetent;
     private Handler handler;
-    private Thread secontThread;
+    private Thread firstThread, secondThread;
 
     private Notification notificationObject = null;
 
@@ -296,8 +296,10 @@ public class CreateNotificationFragment extends TemplateFragment {
             });
 
             handler = new Handler();
-            new Thread(){
+            firstThread = new Thread(){
+            //new Thread(){
                 public void run() {
+                    Log.d("TCC", "Thread Tipo notificaçao");
                     loadRemetent = true;
                     while (loadRemetent) {
                         try {
@@ -306,16 +308,21 @@ public class CreateNotificationFragment extends TemplateFragment {
                                     (FetchJSONService.isTipoNotificacaoTerminou() == true)){
                                 handler.post(new Runnable() {
                                     public void run() {
-                                        Realm realm = Realm.getDefaultInstance();
-                                        RealmResults<TipoNotificacao> realmResults = realm.where(TipoNotificacao.class).findAll().sort("pk");
-                                        List<TipoNotificacao> documents = realm.copyFromRealm(realmResults);
-                                        ArrayAdapter<TipoNotificacao> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, documents);
-                                        spTipoNotificacao.setAdapter(adapter);
-                                        spTipoNotificacao.setEnabled(true);
+                                        try {
+                                            Log.d("TCC", "Thread Tipo notificaçao writing");
+                                            Realm realm = Realm.getDefaultInstance();
+                                            RealmResults<TipoNotificacao> realmResults = realm.where(TipoNotificacao.class).findAll().sort("pk");
+                                            List<TipoNotificacao> documents = realm.copyFromRealm(realmResults);
+                                            ArrayAdapter<TipoNotificacao> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, documents);
+                                            spTipoNotificacao.setAdapter(adapter);
+                                            spTipoNotificacao.setEnabled(true);
 
-                                        FetchJSONService.setTipoNotificacaoTerminou();
+                                            FetchJSONService.setTipoNotificacaoTerminou();
 
-                                        secontThread.start(); //Por conta da ordem que foi inserido na fila do service json
+                                            secondThread.start(); //Por conta da ordem que foi inserido na fila do service json
+                                        }catch (Exception e){
+                                            Log.d("TCC", "Thread Tipo notificaçao: " + e.toString());
+                                        }
                                     }
                                 });
 
@@ -323,21 +330,27 @@ public class CreateNotificationFragment extends TemplateFragment {
                             }
                         } catch (InterruptedException e) {
                             e.printStackTrace();
+                            Log.d("TCC", "Thread Tipo notificaçao: " + e.toString());
                         }
                     }
                 }
-            }.start();
+            };//.start();
+            firstThread.start();
 
-            secontThread = new Thread(){
+            secondThread = new Thread(){
                 public void run() {
+                    Log.d("TCC", "Thread Local");
                     loadRemetent = true;
                     while (loadRemetent) {
                         try {
                             Thread.sleep(getResources().getInteger(R.integer.tempo_inatividade_servico));
                             if ((FetchJSONService.isBuscandoDadosTerminou() == true) &&
                                     (FetchJSONService.isLocalTerminou())){
+                                Log.d("TCC", "Thread Local check ok");
                                 handler.post(new Runnable() {
                                     public void run() {
+                                    try{
+                                        Log.d("TCC", "Thread Local writing");
                                         Realm realm = Realm.getDefaultInstance();
                                         RealmResults<Local> realmResults = realm.where(Local.class).findAll().sort("pk");
                                         List<Local> documents = realm.copyFromRealm(realmResults);
@@ -349,8 +362,9 @@ public class CreateNotificationFragment extends TemplateFragment {
                                         spLocal.setEnabled(true);
 
                                         FetchJSONService.setLocalTerminou();
-
-                                        //secontThread.start(); //Por conta da ordem que foi inserido na fila do service json
+                                    }catch (Exception e){
+                                        Log.d("TCC", "Thread local: " + e.toString());
+                                    }
                                     }
                                 });
 
@@ -358,12 +372,30 @@ public class CreateNotificationFragment extends TemplateFragment {
                             }
                         } catch (InterruptedException e) {
                             e.printStackTrace();
+                            Log.d("TCC", "ERRO Thread Local: " + e.toString());
                         }
                     }
+                    Log.d("TCC", "Thread Local end");
                 }
             };
         }
         return view;
+    }
+
+    @Override
+    public void onStop(){
+        try {
+            while (firstThread.isAlive() || secondThread.isAlive()) {
+                loadRemetent = false;
+
+                Thread.sleep(getResources().getInteger(R.integer.tempo_inatividade_servico));
+            }
+        }catch (Exception e){
+            Log.d("TCC", "problem to close: " + e.toString());
+        }
+
+
+        super.onStop();
     }
 
 //    public ArrayList<String> retrieve()

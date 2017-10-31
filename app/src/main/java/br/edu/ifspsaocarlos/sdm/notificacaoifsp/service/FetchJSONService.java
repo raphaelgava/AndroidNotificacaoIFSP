@@ -280,7 +280,8 @@ public class FetchJSONService extends Service implements Runnable {
                                 }
                             }
                         });
-                        MainActivity.setFragTransactionStack(R.id.nav_class_schedule, R.id.content_frame, null, true);
+                        if (MainActivity.isGridShowing())
+                            MainActivity.setFragTransactionStack(R.id.nav_class_schedule, R.id.content_frame, null, true);
                     }
 
                     try {
@@ -368,7 +369,6 @@ public class FetchJSONService extends Service implements Runnable {
                                 }
                             }
                         });
-                        //MainActivity.setFragTransactionStack(R.id.nav_class_schedule, R.id.content_frame, null, true);
                     }
 
                     try {
@@ -479,7 +479,7 @@ public class FetchJSONService extends Service implements Runnable {
                             //Toast.makeText(FetchJSONService.this, "Finalmente: " + s.toString(), Toast.LENGTH_SHORT).show();
                             Log.d("TCC", "Local: " + s.toString());
                             novoComandoLiberado = true; //para não ficar travado caso de algum erro
-                            cmdLocalLiberado = cmdTipoNotificacaoLiberado;
+                            cmdLocalLiberado = true;
                         }
                     },
                     new Response.ErrorListener() {
@@ -487,7 +487,7 @@ public class FetchJSONService extends Service implements Runnable {
                         public void onErrorResponse(VolleyError volleyError) {
                             Toast.makeText(FetchJSONService.this, "Erro na recuperação do Local: " + volleyError.toString(), Toast.LENGTH_SHORT).show();
                             novoComandoLiberado = true; //para não ficar travado caso de algum erro
-                            cmdLocalLiberado = cmdTipoNotificacaoLiberado;
+                            cmdLocalLiberado = true;
                         }
                     }
             ){
@@ -507,7 +507,7 @@ public class FetchJSONService extends Service implements Runnable {
         } catch (Exception e) {
             e.printStackTrace();
             novoComandoLiberado = true; //para não ficar travado caso de algum erro
-            cmdLocalLiberado = cmdTipoNotificacaoLiberado;
+            cmdLocalLiberado = true;
         }
     }
 
@@ -673,7 +673,8 @@ public class FetchJSONService extends Service implements Runnable {
                                 }
                                 //Toast.makeText(FetchJSONService.this, "Finalmente: " + s, Toast.LENGTH_SHORT).show();
                                 Log.d("TCC", "Response Offering");
-                                MainActivity.setFragTransactionStack(R.id.nav_class_schedule, R.id.content_frame, null, true);
+                                if (MainActivity.isGridShowing())
+                                    MainActivity.setFragTransactionStack(R.id.nav_class_schedule, R.id.content_frame, null, true);
                             } catch (JSONException e) {
                                 Toast.makeText(FetchJSONService.this, "Erro na conversão " +
                                         "de objeto JSON!", Toast.LENGTH_SHORT).show();

@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.NavigationView.OnNavigationItemSelectedListener;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -23,6 +24,7 @@ import android.widget.Toast;
 import com.google.gson.Gson;
 
 import java.util.Date;
+import java.util.List;
 
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.R;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.layout.CreateNotificationFragment;
@@ -79,6 +81,7 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
                 drawer.closeDrawer(GravityCompat.START);
             }
         });
+        fab.setVisibility(View.INVISIBLE);
 
         final NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
@@ -139,10 +142,8 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
             startService(serviceIntent);
 
             checkUserData(actualUser);
-            //updateAdapter();
-            //startMessagesService();
 
-            showFloatingActionButton();
+            //showFloatingActionButton();
         }
         else{
             goBackToLogin();
@@ -358,40 +359,81 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
         //super.onSaveInstanceState(outState);
     }
 
+    private static Fragment getVisibleFragment(){
+        //FragmentManager fragmentManager = MainActivity.this.getSupportFragmentManager();
+        List<Fragment> fragments = fragmentManager.getFragments();
+        if(fragments != null){
+            for(Fragment fragment : fragments){
+                if(fragment != null && fragment.isVisible())
+                    return fragment;
+            }
+        }
+        return null;
+    }
+
+    public static boolean isGridShowing(){
+        Fragment frag = getVisibleFragment();
+        if (frag != null){
+            Log.d("TCC", frag.getClass().getSimpleName());
+            if (!frag.getClass().getSimpleName().equals("GridNotificationsFragment")){
+                Log.d("TCC", "Não pode setar a grid");
+                return false;
+            }
+        }
+        return true;
+    }
+
     public static void setFragTransactionStack(int fragType, int content, Bundle data, boolean flagAddStack){
         try {
-            // Create new fragment and transaction
-            android.support.v4.app.FragmentTransaction transaction = fragmentManager.beginTransaction();
+            if (flagSetFragment == true) {
+                // Create new fragment and transaction
+                android.support.v4.app.FragmentTransaction transaction = fragmentManager.beginTransaction();
 
-            if (fragType == R.id.nav_class_schedule) {
-                if (fragmentManager.getBackStackEntryCount() >= 1) {
-                    fragmentManager.popBackStackImmediate(0, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+                if (fragType == R.id.nav_class_schedule) {
+                    if (fragmentManager.getBackStackEntryCount() >= 1) {
+                        fragmentManager.popBackStackImmediate(0, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+                    }
+
+                    showFloatingActionButton();
+                } else {
+                    fab.setVisibility(View.INVISIBLE);
                 }
 
-                showFloatingActionButton();
-            } else {
-                fab.setVisibility(View.INVISIBLE);
+                if (fragType == R.id.nav_create_notification) {
+                    transaction.replace(content, FragmentFactory.CreateFragment(fab.getContext(), data, fragType), TAG_FRAG_CREATE_NOTIFICATION);
+                } else {
+                    transaction.replace(content, FragmentFactory.CreateFragment(fab.getContext(), data, fragType));
+                }
+
+                if (flagAddStack) {
+                    transaction.addToBackStack(Integer.toString(fragType));
+                    //transaction.commit();
+
+                    //https://stackoverflow.com/questions/7469082/getting-exception-illegalstateexception-can-not-perform-this-action-after-onsa/10261438#10261438
+                    //http://w3cgeek.com/illegalstateexception-can-not-perform-this-action-after-onsaveinstancestate-how-to-prevent.html
+                    transaction.commitAllowingStateLoss();
+                }
+
+                fragmentManager.executePendingTransactions();
+            }else{
+                Log.d("TCC", "flagSetFragment is false");
             }
-
-            if (fragType == R.id.nav_create_notification) {
-                transaction.replace(content, FragmentFactory.CreateFragment(fab.getContext(), data, fragType), TAG_FRAG_CREATE_NOTIFICATION);
-            } else {
-                transaction.replace(content, FragmentFactory.CreateFragment(fab.getContext(), data, fragType));
-            }
-
-            if (flagAddStack) {
-                transaction.addToBackStack(Integer.toString(fragType));
-                //transaction.commit();
-
-                //https://stackoverflow.com/questions/7469082/getting-exception-illegalstateexception-can-not-perform-this-action-after-onsa/10261438#10261438
-                //http://w3cgeek.com/illegalstateexception-can-not-perform-this-action-after-onsaveinstancestate-how-to-prevent.html
-                transaction.commitAllowingStateLoss();
-            }
-
-            fragmentManager.executePendingTransactions();
         }catch (Exception e){
             Log.d("TCC", "ERRO transaction: " + e.toString());
         }
+    }
+
+    private static boolean flagSetFragment = false;
+    @Override
+    public void onPause(){
+        super.onPause();
+        flagSetFragment = false;
+    }
+
+    @Override
+    public void onResume(){
+        super.onResume();
+        flagSetFragment = true;
     }
 
     @SuppressWarnings("StatementWithEmptyBody")
