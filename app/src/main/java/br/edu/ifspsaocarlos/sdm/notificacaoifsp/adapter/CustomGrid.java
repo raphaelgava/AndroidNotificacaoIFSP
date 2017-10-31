@@ -265,7 +265,7 @@ public class CustomGrid extends RecyclerView.Adapter<CustomGrid.ItemViewHolder> 
                                             realm.executeTransactionAsync(new Realm.Transaction() {
                                                 @Override
                                                 public void execute(Realm bgRealm) {
-                                                    Offering deleteOffer = bgRealm.where(Offering.class).equalTo("pk", offer.getPk()).findFirst();
+                                                    Offering deleteOffer = bgRealm.where(Offering.class).equalTo("myPk", offer.getMyPk()).findFirst();
                                                     if (deleteOffer != null) {
                                                         deleteOffer.removeAluno(MainActivity.getUserId());
                                                         AddedOffering deletedObj = new AddedOffering(deleteOffer);

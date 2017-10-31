@@ -207,22 +207,44 @@ public class ParserJSON {
         ArrayList<Offering> listOffering = new ArrayList(realm.where(Offering.class).equalTo("id_user", MainActivity.getUserId()).equalTo("is_active", true).findAll());
         ArrayList<AddedOffering> listAdded = new ArrayList(realm.where(AddedOffering.class).equalTo("username", MainActivity.getUserId()).findAll());
 
+        for (Offering offer2 : listOffering){
+            if (offer2.hasAluno(MainActivity.getUserId())) {
+                boolean add = true;
+                for (AddedOffering offer1 : listAdded) {
+                    if (offer1.getMyPk().equals(offer2.getMyPk())) {
+                        add = false;
+                        break;
+                    }
+                }
+
+                if (add == true){
+                    final AddedOffering obj =new AddedOffering(offer2);
+                    realm.executeTransaction(new Realm.Transaction() {
+                        @Override
+                        public void execute(Realm realm) {
+                            try {
+                                realm.copyToRealmOrUpdate(obj);
+                            }catch (Exception e){
+                                Log.d("TCC", "ERROR: " + e.toString());
+                            }
+                        }
+                    });
+                }
+            }
+        }
+
         for (AddedOffering offer1 : listAdded){
-            boolean delete = false;
-//            boolean add = false;
+            boolean delete = true;
             for (Offering offer2 : listOffering){
                 if (offer2.hasAluno(MainActivity.getUserId())) {
                     if (offer1.getMyPk().equals(offer2.getMyPk())) {
-                        delete = true;
+                        delete = false;
                         break;
                     }
-//                    else{
-//                        add = true;
-//                    }
                 }
             }
 
-            if (delete == false){
+            if (delete == true){
                 final AddedOffering obj = offer1;
                 realm.executeTransaction(new Realm.Transaction() {
                     @Override
@@ -236,10 +258,9 @@ public class ParserJSON {
                     }
                 });
             }
-//            else if(add = true){
-//
-//            }
         }
+
+
 
 //        if (object != null){
 //            final RealmObject finalObject = object;

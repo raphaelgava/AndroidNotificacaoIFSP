@@ -55,6 +55,7 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
     private Intent serviceIntent;
 
     private static FloatingActionButton fab;
+    private static boolean flagSetFragment;
 
     private static final String TAG_FRAG_CREATE_NOTIFICATION = "tagNotification";
 
@@ -122,6 +123,8 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
 
         setFragTransactionStack(R.id.nav_class_schedule, R.id.content_frame, null, true);
 
+        flagSetFragment = true;
+
         /**
          * Verifica se esta cadastrado para só depois startar o que tem que startar. Sem isso ele
          * insere você na lista de usuários pois ele acaba percorrendo o fetUser duas vezes.
@@ -143,7 +146,7 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
 
             checkUserData(actualUser);
 
-            //showFloatingActionButton();
+            showFloatingActionButton();
         }
         else{
             goBackToLogin();
@@ -385,16 +388,17 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
 
     public static void setFragTransactionStack(int fragType, int content, Bundle data, boolean flagAddStack){
         try {
-            if (flagSetFragment == true) {
+            //if (flagSetFragment == true)
+            {
                 // Create new fragment and transaction
                 android.support.v4.app.FragmentTransaction transaction = fragmentManager.beginTransaction();
 
                 if (fragType == R.id.nav_class_schedule) {
+                    showFloatingActionButton();
+
                     if (fragmentManager.getBackStackEntryCount() >= 1) {
                         fragmentManager.popBackStackImmediate(0, FragmentManager.POP_BACK_STACK_INCLUSIVE);
                     }
-
-                    showFloatingActionButton();
                 } else {
                     fab.setVisibility(View.INVISIBLE);
                 }
@@ -415,15 +419,16 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
                 }
 
                 fragmentManager.executePendingTransactions();
-            }else{
-                Log.d("TCC", "flagSetFragment is false");
             }
+//            else{
+//                Log.d("TCC", "flagSetFragment is false");
+//            }
         }catch (Exception e){
             Log.d("TCC", "ERRO transaction: " + e.toString());
         }
     }
 
-    private static boolean flagSetFragment = false;
+
     @Override
     public void onPause(){
         super.onPause();

@@ -328,7 +328,7 @@ public class FetchJSONService extends Service implements Runnable {
 
     private void atualizarNotificacao(boolean flagRemove) {
         if (stackNotification.isEmpty() == false){
-            final Notification objeto = stackNotification.pop();
+            Notification obj = stackNotification.pop();
 
             boolean flagOk = true;
 
@@ -343,17 +343,20 @@ public class FetchJSONService extends Service implements Runnable {
                     Log.e("TCC", "Tipo pessoa desconhecida");
                     flagOk = false;
             }
-            if (flagOk == true) {
+            if ((flagOk == true) && (obj != null)) {
                 //url += Integer.toString(objeto.getPk()) + "/"; //PUT to update is necessary this last slash!!!
-
                 try {
+                    //realm.beginTransaction();
                     //Gson gson = new Gson();
                     Gson gson = MyGsonBuilder.getInstance().myGson();
 
                     //final Notification bla = realm.where(Notification.class).equalTo("pk", objeto.getPk()).findFirst();
-                    final Notification bla = realm.where(Notification.class).equalTo("pk", objeto.getPk()).equalTo("id_user", MainActivity.getUserId()).findFirst();
+                    //final Notification bla = realm.where(Notification.class).equalTo("pk", objeto.getPk()).equalTo("id_user", MainActivity.getUserId()).findFirst();
+                    realm.beginTransaction();
+                    final Notification object = realm.copyToRealmOrUpdate(obj);
+                    String json = gson.toJson(realm.copyFromRealm(object));
+                    stopTransaction();
 
-                    String json = gson.toJson(realm.copyFromRealm(bla));
                     JSONObject user = new JSONObject(json);
                     Log.d("TCC", "JSON notification: " + user.toString());
 
@@ -362,7 +365,7 @@ public class FetchJSONService extends Service implements Runnable {
                             @Override
                             public void execute(Realm realm) {
                                 try {
-                                    Notification other = realm.copyToRealmOrUpdate(bla);
+                                    Notification other = realm.copyToRealmOrUpdate(object);
                                     other.deleteFromRealm();
                                 }catch (Exception e){
                                     Log.d("TCC", "ERROR: " + e.toString());
