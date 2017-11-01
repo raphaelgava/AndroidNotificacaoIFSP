@@ -64,9 +64,10 @@ public class OfferingAdapter extends RecyclerView.Adapter<OfferingAdapter.ItemVi
                                             for (int i = 0; i < allItems.size(); i++) {
                                                 Offering data = allItems.get(i);
 
-                                                String condicao = data.getDescricao().toLowerCase();
+                                                String condicaoD = data.getDescricao().toLowerCase();
+                                                String condicaoS = data.getSigla().toLowerCase();
 
-                                                if (condicao.contains(finalFiltro)) {
+                                                if ((condicaoD.contains(finalFiltro)) || (condicaoS.contains(finalFiltro))) {
                                                     //se conter adiciona na lista de itens filtrados.
                                                     mListaOffering.add(data);
                                                 }
@@ -174,7 +175,7 @@ public class OfferingAdapter extends RecyclerView.Adapter<OfferingAdapter.ItemVi
             if (offering != null) {
                 //Setar os valores conforme a grid faz scroll
                 holder.txtProf.setText(offering.getProfessor());
-                holder.txtDescription.setText(offering.getDescricao());
+                holder.txtDescription.setText(offering.getSigla() + " - " + offering.getDescricao());
                 holder.ckbSelected.setChecked(offering.isChecked());
                 //set position to identify which object was selected
                 holder.ckbSelected.setTag(position);

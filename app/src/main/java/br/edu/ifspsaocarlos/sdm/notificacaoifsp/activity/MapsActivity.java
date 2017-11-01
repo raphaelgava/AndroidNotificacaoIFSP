@@ -41,6 +41,7 @@ public class MapsActivity extends FragmentActivity implements
     private TextView texto;
     //    private Offering offer;
     private LatLng position;
+    private String marker;
 
     private Notification obj;
 
@@ -76,6 +77,10 @@ public class MapsActivity extends FragmentActivity implements
                     if (!local.getPosition().isEmpty()) {
                         String[] latlong = local.getPosition().split(",");
                         position = new LatLng(Double.parseDouble(latlong[0]), Double.parseDouble(latlong[1]));
+                        marker = local.getDescricao();
+                        if (marker.equals("")){
+                            marker = "Marker";
+                        }
                     }
                 }
             }else{
@@ -181,7 +186,7 @@ public class MapsActivity extends FragmentActivity implements
         mMap = googleMap;
 
         // Add a marker in Sydney and move the camera
-        mMap.addMarker(new MarkerOptions().position(position).title("Marker"));
+        mMap.addMarker(new MarkerOptions().position(position).title(marker));
         //mMap.moveCamera(CameraUpdateFactory.newLatLng(position));
         CameraPosition yourLocation = new CameraPosition.Builder()
                 .target(position)      // Sets the center of the map to Mountain View

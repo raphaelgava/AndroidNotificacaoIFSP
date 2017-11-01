@@ -64,9 +64,10 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
                                             for (int i = 0; i < allItems.size(); i++) {
                                                 Notification data = allItems.get(i);
 
-                                                String condicao = data.getDescricao().toLowerCase();
+                                                String condicaoD = data.getDescricao().toLowerCase();
+                                                String condicaoT = data.getTitulo().toLowerCase();
 
-                                                if (condicao.contains(finalFiltro)) {
+                                                if ((condicaoD.contains(finalFiltro)) || (condicaoT.contains(finalFiltro))) {
                                                     //se conter adiciona na lista de itens filtrados.
                                                     mListaNotifications.add(data);
                                                 }
