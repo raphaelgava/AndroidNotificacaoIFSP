@@ -1,5 +1,6 @@
 package br.edu.ifspsaocarlos.sdm.notificacaoifsp.layout;
 
+import android.annotation.SuppressLint;
 import android.app.DatePickerDialog;
 import android.content.Context;
 import android.os.Bundle;
@@ -84,6 +85,12 @@ public class ChangeUserDataFragment extends TemplateFragment{
 
     }
 
+    /**
+     * Error: Avoid non-default constructors in fragments: use a default constructor plus Fragment#setArguments(Bundle) instead [ValidFragment]
+     * https://stackoverflow.com/questions/17420637/error-non-default-constructors-in-fragments
+     */
+
+    @SuppressLint("ValidFragment")
     public ChangeUserDataFragment(Context cxt) {
         person = null;
 
