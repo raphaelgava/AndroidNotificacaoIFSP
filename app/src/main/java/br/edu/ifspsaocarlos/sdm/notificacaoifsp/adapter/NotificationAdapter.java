@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.R;
-import br.edu.ifspsaocarlos.sdm.notificacaoifsp.activity.MapsActivity;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.activity.NotificationActivity;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.Notification;
 import io.realm.Realm;
 
@@ -211,7 +211,8 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
             Notification object = mListaNotifications.get((Integer) v.getTag());
             if(object != null)
             {
-                Intent notificationIntent = new Intent(v.getContext(), MapsActivity.class);
+                //Intent notificationIntent = new Intent(v.getContext(), MapsActivity.class);
+                Intent notificationIntent = new Intent(v.getContext(), NotificationActivity.class);
 
                 Gson gson = new Gson();
                 Realm realm = Realm.getDefaultInstance();

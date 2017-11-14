@@ -39,7 +39,7 @@ import java.util.Stack;
 
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.R;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.activity.MainActivity;
-import br.edu.ifspsaocarlos.sdm.notificacaoifsp.activity.MapsActivity;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.activity.NotificationActivity;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.AddedOffering;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.Notification;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.Offering;
@@ -100,7 +100,7 @@ public class FetchJSONService extends Service implements Runnable {
         super.onCreate();
         appAberta = true;
         novoComandoLiberado = false;
-        Log.e("", "onCreate");
+        Log.d("TCC", "onCreate");
         queue = Volley.newRequestQueue(FetchJSONService.this);
 
         // Add as notification
@@ -111,16 +111,51 @@ public class FetchJSONService extends Service implements Runnable {
     }
 
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.e("", "onStartCommand");
-        return super.onStartCommand(intent, flags, startId);
+        Log.d("TCC", "onStartCommand");
+        //super.onStartCommand(intent, flags, startId);
+        onTaskRemoved(intent);
+        return START_REDELIVER_INTENT;
+        //return super.onStartCommand(intent, flags, startId);
+    }
+
+    @Override
+    public void onTaskRemoved(Intent rootIntent){
+        Log.d("TCC", "onTaskRemoved");
+        Intent restart = new Intent(getApplicationContext(), this.getClass());
+        restart.setPackage(getPackageName());
+        startService(restart);
+        super.onTaskRemoved(rootIntent);
+
+//        Intent restartServiceTask = new Intent(getApplicationContext(),this.getClass());
+//        restartServiceTask.setPackage(getPackageName());
+//        PendingIntent restartPendingIntent =PendingIntent.getService(getApplicationContext(), 1,restartServiceTask, PendingIntent.FLAG_ONE_SHOT);
+//        AlarmManager myAlarmService = (AlarmManager) getApplicationContext().getSystemService(Context.ALARM_SERVICE);
+//        myAlarmService.set(
+//                ELAPSED_REALTIME,
+//                SystemClock.elapsedRealtime() + 1000,
+//                restartPendingIntent);
+//        super.onTaskRemoved(rootIntent);
+
+//        Intent restartServiceIntent = new Intent(getApplicationContext(), this.getClass());
+//        restartServiceIntent.setPackage(getPackageName());
+//        PendingIntent restartServicePendingIntent = PendingIntent.getService(
+//                getApplicationContext(), 1, restartServiceIntent, PendingIntent.FLAG_ONE_SHOT);
+//        AlarmManager alarmService = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+//        alarmService.set(ELAPSED_REALTIME, SystemClock.elapsedRealtime() + 1000,
+//                restartServicePendingIntent);
+//
+//        super.onTaskRemoved(rootIntent);
     }
 
     private int contTime;
+    private int contTimeReset;
 
     public void run() {
-        Log.e("", "run");
+        Log.d("TCC", "run");
         contTime = 0;
-        while (appAberta) {
+        contTimeReset = 0;
+        //while (appAberta) {
+        while (true) {
             try {
                 Thread.sleep(getResources().getInteger(R.integer.tempo_inatividade_servico));
                 handler.post(new Runnable() {
@@ -176,13 +211,23 @@ public class FetchJSONService extends Service implements Runnable {
                             }
                             ServiceState.finishLastPop();
                             contTime = 0;
+                            contTimeReset = 0;
                         }
                         else{
                             if (isBuscandoDadosTerminou() == true) {
+                                contTimeReset = 0;
                                 contTime++;
+                                Log.d("TCC", "contTime");
                                 if (contTime == 5) {
                                     contTime = 0;
                                     machine.pushState(ServiceState.EnumServiceState.ENUM_NOTIFICATION);
+                                }
+                            }
+                            else{
+                                Log.d("TCC", "contTimeReset");
+                                contTimeReset++;
+                                if (contTimeReset ==10){
+                                    novoComandoLiberado = true;
                                 }
                             }
                         }
@@ -901,7 +946,8 @@ public class FetchJSONService extends Service implements Runnable {
                     //
                     //            mNotificationManager.notify(id, mBuilder.build());
 
-                    Intent notificationIntent = new Intent(this, MapsActivity.class);
+                    //Intent notificationIntent = new Intent(this, MapsActivity.class);
+                    Intent notificationIntent = new Intent(this, NotificationActivity.class);
 
                     Gson gson = new Gson();
                     Realm realm = Realm.getDefaultInstance();

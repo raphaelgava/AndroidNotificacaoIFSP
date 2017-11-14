@@ -20,9 +20,9 @@
                 android:id="@+id/txtParametro"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:ems="10"
                 android:text="Name"
                 android:textSize="18sp" />
+            <!--android:ems="10"-->
             <!--
                         <ImageView
                             android:layout_width="match_parent"
@@ -32,33 +32,12 @@
         </LinearLayout>
     </ScrollView>
 
-    <FrameLayout
+    <Button
+        android:text="@string/go_map"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:minHeight="200dp"
-        android:orientation="vertical">
-        <fragment
-            android:id="@+id/map"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            class="com.google.android.gms.maps.SupportMapFragment"/>
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom|left"
-            android:background="@color/colorOptionMap"
-            android:orientation="vertical"
-            android:padding="5dp">
-            <Button
-                android:id="@+id/btnGoMark"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="0.5"
-                android:text="@string/go_mark" />
-        </LinearLayout>
-    </FrameLayout>
+        android:layout_height="wrap_content"
+        android:id="@+id/btnDialogMap"
+        android:layout_alignParentBottom="true"/>
 
     <Button
         android:text="@string/go_back"
@@ -68,73 +47,144 @@
         android:layout_alignParentBottom="true"/>
 </LinearLayout>
 
-<!--
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
+
+    <!--<?xml version="1.0" encoding="utf-8"?>-->
+<!--<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"-->
+    <!--android:orientation="vertical"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="match_parent">-->
 
 
-    <ScrollView
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:scrollbars="vertical">
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:orientation="vertical">
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Name"
-                android:ems="10"
-                android:id="@+id/txtParametro" />
+    <!--<ScrollView-->
+        <!--xmlns:android="http://schemas.android.com/apk/res/android"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:scrollbars="vertical">-->
+        <!--<LinearLayout-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_alignParentTop="true"-->
+            <!--android:orientation="vertical">-->
 
-            <ImageView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:srcCompat="?android:attr/alertDialogIcon" />
+            <!--<TextView-->
+                <!--android:id="@+id/txtParametro"-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:ems="10"-->
+                <!--android:text="Name"-->
+                <!--android:textSize="18sp" />-->
+            <!--&lt;!&ndash;-->
+                        <!--<ImageView-->
+                            <!--android:layout_width="match_parent"-->
+                            <!--android:layout_height="wrap_content"-->
+                            <!--app:srcCompat="?android:attr/alertDialogIcon" />-->
+            <!--&ndash;&gt;-->
+        <!--</LinearLayout>-->
+    <!--</ScrollView>-->
 
-        </LinearLayout>
-    </ScrollView>
+    <!--<FrameLayout-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="0dp"-->
+        <!--android:layout_weight="1"-->
+        <!--android:minHeight="200dp"-->
+        <!--android:orientation="vertical">-->
+        <!--<fragment-->
+            <!--android:id="@+id/map"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--class="com.google.android.gms.maps.SupportMapFragment"/>-->
 
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:minHeight="200dp"
-        android:orientation="vertical">
-        <fragment
-            android:id="@+id/map"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            class="com.google.android.gms.maps.SupportMapFragment"/>
+        <!--<LinearLayout-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_gravity="bottom|left"-->
+            <!--android:background="@color/colorOptionMap"-->
+            <!--android:orientation="vertical"-->
+            <!--android:padding="5dp">-->
+            <!--<Button-->
+                <!--android:id="@+id/btnGoMark"-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:layout_weight="0.5"-->
+                <!--android:text="@string/go_mark" />-->
+        <!--</LinearLayout>-->
+    <!--</FrameLayout>-->
 
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom|left"
-            android:background="@color/colorOptionMap"
-            android:orientation="vertical"
-            android:padding="5dp">
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="0.5"
-                android:onClick="onGoMark"
-                android:text="@string/go_mark" />
-        </LinearLayout>
-    </FrameLayout>
+    <!--<Button-->
+        <!--android:text="@string/go_back"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:id="@+id/btnDialog"-->
+        <!--android:layout_alignParentBottom="true"/>-->
+<!--</LinearLayout>-->
 
-    <Button
-        android:text="Button"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/btnDialog"
-        android:layout_alignParentBottom="true"/>
-</LinearLayout>
+<!--&lt;!&ndash;-->
+<!--<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"-->
+    <!--xmlns:app="http://schemas.android.com/apk/res-auto"-->
+    <!--android:orientation="vertical"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="match_parent">-->
 
--->
+
+    <!--<ScrollView-->
+        <!--xmlns:android="http://schemas.android.com/apk/res/android"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:scrollbars="vertical">-->
+        <!--<LinearLayout-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_alignParentTop="true"-->
+            <!--android:orientation="vertical">-->
+            <!--<TextView-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:text="Name"-->
+                <!--android:ems="10"-->
+                <!--android:id="@+id/txtParametro" />-->
+
+            <!--<ImageView-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--app:srcCompat="?android:attr/alertDialogIcon" />-->
+
+        <!--</LinearLayout>-->
+    <!--</ScrollView>-->
+
+    <!--<FrameLayout-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="0dp"-->
+        <!--android:layout_weight="1"-->
+        <!--android:minHeight="200dp"-->
+        <!--android:orientation="vertical">-->
+        <!--<fragment-->
+            <!--android:id="@+id/map"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--class="com.google.android.gms.maps.SupportMapFragment"/>-->
+
+        <!--<LinearLayout-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_gravity="bottom|left"-->
+            <!--android:background="@color/colorOptionMap"-->
+            <!--android:orientation="vertical"-->
+            <!--android:padding="5dp">-->
+            <!--<Button-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:layout_weight="0.5"-->
+                <!--android:onClick="onGoMark"-->
+                <!--android:text="@string/go_mark" />-->
+        <!--</LinearLayout>-->
+    <!--</FrameLayout>-->
+
+    <!--<Button-->
+        <!--android:text="Button"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:id="@+id/btnDialog"-->
+        <!--android:layout_alignParentBottom="true"/>-->
+<!--</LinearLayout>-->
+
+<!--&ndash;&gt;-->

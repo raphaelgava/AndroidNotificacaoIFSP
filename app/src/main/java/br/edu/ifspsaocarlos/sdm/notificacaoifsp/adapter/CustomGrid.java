@@ -25,7 +25,7 @@ import java.util.List;
 
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.R;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.activity.MainActivity;
-import br.edu.ifspsaocarlos.sdm.notificacaoifsp.activity.MapsActivity;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.activity.NotificationActivity;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.layout.GridNotificationsFragment;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.AddedOffering;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.Notification;
@@ -190,7 +190,8 @@ public class CustomGrid extends RecyclerView.Adapter<CustomGrid.ItemViewHolder> 
 
                             String json = gson.toJson(finalList.get(0));
 
-                            Intent intent = new Intent(v.getContext(), MapsActivity.class);
+                            //Intent intent = new Intent(v.getContext(), MapsActivity.class);
+                            Intent intent = new Intent(v.getContext(), NotificationActivity.class);
                             intent.putExtra("notificacao", json);
 
                             //Não pode inserir essa opção aqui pois se cancelar o pedido de GPS vai fechar a app!!!

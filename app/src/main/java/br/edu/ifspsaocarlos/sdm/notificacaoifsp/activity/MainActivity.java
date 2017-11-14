@@ -1,6 +1,8 @@
 package br.edu.ifspsaocarlos.sdm.notificacaoifsp.activity;
 
 import android.app.Activity;
+import android.app.ActivityManager;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -141,8 +143,15 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
 
             Log.d("TCC", toast);
 
-            serviceIntent = new Intent(this, FetchJSONService.class);
-            startService(serviceIntent);
+            if (isServiceRunning("FetchJSONService")==false) {
+                serviceIntent = new Intent(this, FetchJSONService.class);
+                startService(serviceIntent);
+                Log.d("TCC", "starting service");
+            }
+            else{
+                Log.d("TCC", "using old service");
+            }
+
 
             checkUserData(actualUser);
 
@@ -151,6 +160,18 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
         else{
             goBackToLogin();
         }
+    }
+
+    public boolean isServiceRunning(String serviceClassName){
+        final ActivityManager activityManager = (ActivityManager) getApplication().getApplicationContext().getSystemService(Context.ACTIVITY_SERVICE);
+        final List<ActivityManager.RunningServiceInfo> services = activityManager.getRunningServices(Integer.MAX_VALUE);
+
+        for (ActivityManager.RunningServiceInfo runningServiceInfo : services) {
+            if (runningServiceInfo.service.getClassName().equals(serviceClassName)){
+                return true;
+            }
+        }
+        return false;
     }
 
     /*
