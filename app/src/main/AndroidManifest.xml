@@ -61,6 +61,7 @@
         <activity
             android:name=".activity.LoginActivity"
             android:configChanges="orientation|screenSize"
+            android:windowSoftInputMode="stateHidden"
             android:label="@string/title_activity_login"> <!-- Não permite alteração dos dados ao rotacionar -->
 
              <intent-filter>
@@ -91,12 +92,15 @@
         </activity>
         <activity
             android:name=".activity.RemetentListActivity"
+            android:windowSoftInputMode="stateHidden"
             android:configChanges="orientation|screenSize" />
         <activity
             android:name=".activity.OfferingListActivity"
+            android:windowSoftInputMode="stateHidden"
             android:configChanges="orientation|screenSize" />
         <activity
             android:name=".activity.NotificationListActivity"
+            android:windowSoftInputMode="stateHidden"
             android:configChanges="orientation|screenSize" />
         <activity
             android:name=".activity.AboutActivity"
