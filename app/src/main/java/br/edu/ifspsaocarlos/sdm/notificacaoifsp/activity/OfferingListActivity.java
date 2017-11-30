@@ -35,7 +35,7 @@ public class OfferingListActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private OfferingAdapter offeringAdapter;
     private EditText edtResearch;
-    private Button btnEndOffering;
+    private Button btnEndOffering, btnCreate;
     private boolean loadOffering;
     private final Realm realm = Realm.getDefaultInstance();
     private Handler handler;
@@ -81,30 +81,53 @@ public class OfferingListActivity extends AppCompatActivity {
                 }
             });
 
-            btnEndOffering = (Button) findViewById(R.id.btnEndOffer) ;
+            btnCreate = (Button) findViewById(R.id.btnCreateOffer);
+            btnEndOffering = (Button) findViewById(R.id.btnEndOffer);
             btnEndOffering.requestFocus();
-            btnEndOffering.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Intent data = new Intent();
-                    //Type listType = new TypeToken<ArrayList<Offering>>() {}.getType();
-                    ArrayList<Offering> end = new ArrayList<Offering>(array);
 
-                    try {
-                        Gson gson = new Gson();
-                        for (int i = 0; i < end.size(); i++) {
-                            String json = gson.toJson(realm.copyFromRealm(end.get(i)));
-                            data.putExtra(Integer.toString(i), json);
+            switch (MainActivity.getPeronType()){
+                case ENUM_PROFESSOR:
+                    btnEndOffering.setText("Go back");
+                    btnEndOffering.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                       finish();
                         }
+                    });
+                    btnCreate.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Intent intent = new Intent(getApplicationContext(), CreateOffering.class);
+                            startActivity(intent);
+                        }
+                    });
+                    break;
+                default:
+                    btnCreate.setVisibility(View.GONE);
+                    btnEndOffering.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Intent data = new Intent();
+                            //Type listType = new TypeToken<ArrayList<Offering>>() {}.getType();
+                            ArrayList<Offering> end = new ArrayList<Offering>(array);
 
-                        setResult(RESULT_OK, data);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    } finally {
-                        finish();
-                    }
-                }
-            });
+                            try {
+                                Gson gson = new Gson();
+                                for (int i = 0; i < end.size(); i++) {
+                                    String json = gson.toJson(realm.copyFromRealm(end.get(i)));
+                                    data.putExtra(Integer.toString(i), json);
+                                }
+
+                                setResult(RESULT_OK, data);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            } finally {
+                                finish();
+                            }
+                        }
+                    });
+            }
+
 
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);//to show the back button on the actionbar
 

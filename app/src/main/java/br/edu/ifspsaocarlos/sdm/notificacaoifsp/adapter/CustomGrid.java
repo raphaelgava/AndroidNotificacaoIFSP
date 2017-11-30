@@ -24,10 +24,12 @@ import java.util.Date;
 import java.util.List;
 
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.R;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.activity.CreateOffering;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.activity.MainActivity;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.activity.NotificationActivity;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.layout.GridNotificationsFragment;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.AddedOffering;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.MyClass;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.Notification;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.Offering;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.RealmInteger;
@@ -67,13 +69,35 @@ public class CustomGrid extends RecyclerView.Adapter<CustomGrid.ItemViewHolder> 
         //Recuperar o objeto da lista
         Offering offer = mListaOferecimentos.get(position);
 
-        //Setar os valores conforme a grid faz scroll
-        holder.txtSigla.setText(offer.getSigla());
-        String nome =  offer.getProfessor();
-        int endIndex = nome.indexOf(' ');
-        if (endIndex > 0)
-            nome = nome.substring(0, endIndex);
-        holder.txtProfessor.setText(nome);
+        String nome = "";
+        int endIndex;
+        if (offer.getPk() > 0) {
+            //Setar os valores conforme a grid faz scroll
+            holder.txtSigla.setText(offer.getSigla().toUpperCase());
+            switch (MainActivity.getPeronType()) {
+                case ENUM_STUDENT:
+                    nome = offer.getProfessor();
+                    endIndex = nome.indexOf(' ');
+                    if (endIndex > 0)
+                        nome = nome.substring(0, endIndex);
+                    break;
+                case ENUM_PROFESSOR:
+                    Realm realm = Realm.getDefaultInstance();
+                    MyClass c = realm.where(MyClass.class).equalTo("pk", offer.getId_curso()).findFirst();
+                    if (c != null) {
+                        nome = c.getSigla();
+                    } else {
+                        nome = offer.getProfessor();
+                        endIndex = nome.indexOf(' ');
+                        if (endIndex > 0)
+                            nome = nome.substring(0, endIndex);
+                    }
+                    break;
+            }
+            holder.txtProfessor.setText(nome.toUpperCase());
+        }
+
+
         holder.mLayoutPrincipal.setTag(position);
 
         holder.mLayoutPrincipal.setBackgroundResource(R.drawable.shape_color);
@@ -149,60 +173,76 @@ public class CustomGrid extends RecyclerView.Adapter<CustomGrid.ItemViewHolder> 
                 @Override
                 public void onClick(View v) {
                     Offering offer = mListaOferecimentos.get((Integer) v.getTag());
+                    if ((offer != null) && (offer.getPk() > 0)) {
+                        switch (MainActivity.getPeronType()) {
+                            case ENUM_STUDENT:
+                                //if ((offer != null) && (offer.getPk() > 0)) {
+                                Gson gson = MyGsonBuilder.getInstance().myGson();
+                                SimpleDateFormat formatDate = new SimpleDateFormat("yyyy-MM-dd");
+                                Date d = Calendar.getInstance().getTime();
+                                Realm realm = Realm.getDefaultInstance();
+                                //RealmResults<Notification> object = realm.where(Notification.class).equalTo("pk", offer.getPk()).findAllSorted("datahora", Sort.DESCENDING);
+                                RealmResults<Notification> stepEntryResults = realm.where(Notification.class).
+                                        equalTo("id_user", MainActivity.getUserId()).findAll();
+                                List<Notification> messageList = realm.copyFromRealm(stepEntryResults);
+                                List<Notification> finalList = new ArrayList<Notification>();
 
-                    if ((offer != null) && (offer.getPk() > 0)){
-                        Gson gson = MyGsonBuilder.getInstance().myGson();
-                        SimpleDateFormat formatDate = new SimpleDateFormat("yyyy-MM-dd");
-                        Date d = Calendar.getInstance().getTime();
-                        Realm realm = Realm.getDefaultInstance();
-                        //RealmResults<Notification> object = realm.where(Notification.class).equalTo("pk", offer.getPk()).findAllSorted("datahora", Sort.DESCENDING);
-                        RealmResults<Notification> stepEntryResults = realm.where(Notification.class).
-                                equalTo("id_user", MainActivity.getUserId()).findAll();
-                        List<Notification> messageList = realm.copyFromRealm(stepEntryResults);
-                        List<Notification> finalList = new ArrayList<Notification>();
-
-                        for (Notification noti : messageList){
-                            if (d.before(noti.getDatahora())){
-                                RealmList<RealmInteger> list = noti.getRemetente();
-                                for (RealmInteger integer : list){
-                                    if (integer.getPk() == offer.getPk()) {
-                                        finalList.add(noti);
-                                        break;
+                                for (Notification noti : messageList) {
+                                    if (d.before(noti.getDatahora())) {
+                                        RealmList<RealmInteger> list = noti.getRemetente();
+                                        for (RealmInteger integer : list) {
+                                            if (integer.getPk() == offer.getPk()) {
+                                                finalList.add(noti);
+                                                break;
+                                            }
+                                        }
                                     }
                                 }
-                            }
-                        }
 
-                        if (finalList.size() > 0) {
-                            Collections.sort(finalList, new Comparator<Notification>(){
-                                public int compare(Notification obj1, Notification obj2) {
-                                    // ## Ascending order
-                                    // return obj1.firstName.compareToIgnoreCase(obj2.firstName);  // To compare date values
-                                    // return Integer.valueOf(obj1.empId).compareTo(obj2.empId); // To compare integer values
+                                if (finalList.size() > 0) {
+                                    Collections.sort(finalList, new Comparator<Notification>() {
+                                        public int compare(Notification obj1, Notification obj2) {
+                                            // ## Ascending order
+                                            // return obj1.firstName.compareToIgnoreCase(obj2.firstName);  // To compare date values
+                                            // return Integer.valueOf(obj1.empId).compareTo(obj2.empId); // To compare integer values
 
-                                    // ## Descending order
-                                    // return obj2.firstName.compareToIgnoreCase(obj1.firstName); // To compare string values
-                                    // return Integer.valueOf(obj2.empId).compareTo(obj1.empId); // To compare integer values
+                                            // ## Descending order
+                                            // return obj2.firstName.compareToIgnoreCase(obj1.firstName); // To compare string values
+                                            // return Integer.valueOf(obj2.empId).compareTo(obj1.empId); // To compare integer values
 
-                                    return obj1.getDatahora().compareTo(obj2.getDatahora()); // To compare date values
+                                            return obj1.getDatahora().compareTo(obj2.getDatahora()); // To compare date values
+                                        }
+                                    });
+
+                                    String json = gson.toJson(finalList.get(0));
+
+                                    //Intent intent = new Intent(v.getContext(), MapsActivity.class);
+                                    Intent intent = new Intent(v.getContext(), NotificationActivity.class);
+                                    intent.putExtra("notificacao", json);
+
+                                    //Não pode inserir essa opção aqui pois se cancelar o pedido de GPS vai fechar a app!!!
+                                    //intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                                    v.getContext().startActivity(intent);
+                                } else {
+                                    Toast.makeText(v.getContext(), "There is no notification related to this offering",
+                                            Toast.LENGTH_SHORT).show();
                                 }
-                            });
 
-                            String json = gson.toJson(finalList.get(0));
-
-                            //Intent intent = new Intent(v.getContext(), MapsActivity.class);
-                            Intent intent = new Intent(v.getContext(), NotificationActivity.class);
-                            intent.putExtra("notificacao", json);
-
-                            //Não pode inserir essa opção aqui pois se cancelar o pedido de GPS vai fechar a app!!!
-                            //intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                            v.getContext().startActivity(intent);
+                                //}
+                                break;
+                            case ENUM_PROFESSOR:
+                                Intent intent = new Intent(frag.getContext(), CreateOffering.class);
+                                //intent.putExtra("notificacao", notificationObject);
+                                Gson gson2 = new Gson();
+                                Realm realm2 = Realm.getDefaultInstance();
+                                realm2.beginTransaction();
+                                Offering object = realm2.copyToRealmOrUpdate(offer);
+                                String json = gson2.toJson(realm2.copyFromRealm(object));
+                                intent.putExtra("oferecimento", json);
+                                Realm.getDefaultInstance().cancelTransaction();
+                                frag.startActivity(intent);
+                                break;
                         }
-                        else{
-                            Toast.makeText(v.getContext(), "There is no notification related to this offering",
-                                    Toast.LENGTH_SHORT).show();
-                        }
-
                     }
 
 

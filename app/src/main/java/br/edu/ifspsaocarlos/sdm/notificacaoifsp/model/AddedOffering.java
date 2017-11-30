@@ -14,6 +14,7 @@ public class AddedOffering extends RealmObject{
     private int pk;
     private Offering offer;
     private int username;
+
     public AddedOffering(){
 
 
@@ -47,5 +48,13 @@ public class AddedOffering extends RealmObject{
             this.myPk = offer.getMyPk();
             this.username = offer.getId_user();
         }
+    }
+
+    public int getUsername() {
+        return username;
+    }
+
+    public void setUsername(int username) {
+        this.username = username;
     }
 }

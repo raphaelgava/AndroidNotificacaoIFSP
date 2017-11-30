@@ -25,6 +25,7 @@ import android.widget.Toast;
 import com.google.gson.Gson;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.R;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.activity.MainActivity;
@@ -36,6 +37,7 @@ import br.edu.ifspsaocarlos.sdm.notificacaoifsp.service.ParserJSON;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.util.EnumUserType;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.util.ServiceState;
 import io.realm.Realm;
+import io.realm.RealmResults;
 
 //todo estudar OnFragmentInteractionListener (verificar se cada fragmento tem que ter o seu e se o main tem que implementar todos)
 
@@ -106,21 +108,65 @@ public class GridNotificationsFragment extends TemplateFragment{
 
     private static void mainBundle() {
         Realm realm = Realm.getDefaultInstance();
-        ArrayList<AddedOffering> list = new ArrayList(realm.where(AddedOffering.class).equalTo("username", MainActivity.getUserId()).findAll());
-
         Intent data = new Intent();
 
-        try {
-            Gson gson = new Gson();
-            for (int i = 0; i < list.size(); i++) {
-                Offering offer = list.get(i).getOffer();
-
-                String json = gson.toJson(realm.copyFromRealm(offer));
-                data.putExtra(Integer.toString(i), json);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+        Calendar cd = Calendar.getInstance();
+        int year = cd.get(Calendar.YEAR);
+        int month = cd.get(Calendar.MONTH);
+        int semester;
+        if (month <= 6) {
+            semester = 1;
+        } else {
+            semester = 2;
         }
+
+
+        //@// TODO: 11/30/2017 por algum motivo o AddedOfering salvo ao buscar oferecimentos (professor) não retorna na busca
+
+        switch (MainActivity.getPeronType()){
+            case ENUM_STUDENT:
+                RealmResults<AddedOffering> list = realm.where(AddedOffering.class).equalTo("username", MainActivity.getUserId()).findAll();
+                try {
+                    Gson gson = new Gson();
+                    for (int i = 0; i < list.size(); i++) {
+                        Offering offer = list.get(i).getOffer();
+                        //Offering offer = list.get(i);//.getOffer();
+                        if (offer.getId_user() == MainActivity.getUserId()) {
+                            if ((offer.getAno() == year) && (offer.getSemestre() == semester) && (offer.getIs_active() == true)) {
+                                String json = gson.toJson(realm.copyFromRealm(offer));
+                                data.putExtra(Integer.toString(i), json);
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            break;
+
+            default:
+                ArrayList<Offering> listO = new ArrayList(realm.where(Offering.class).equalTo("id_user", MainActivity.getUserId()).findAll());
+                try {
+                    Gson gson = new Gson();
+                    for (int i = 0; i < listO.size(); i++) {
+                        Offering offer = listO.get(i);
+
+                        if (offer.getId_user() == MainActivity.getUserId()) {
+                            if ((offer.getAno() == year) && (offer.getSemestre() == semester) && (offer.getIs_active() == true)) {
+                                String json = gson.toJson(realm.copyFromRealm(offer));
+                                data.putExtra(Integer.toString(i), json);
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+        }
+
+        //RealmResults<AddedOffering> list = realm.where(AddedOffering.class).findAll();
+        //ArrayList<AddedOffering> list = new ArrayList(realm.where(AddedOffering.class).equalTo("username", MainActivity.getUserId()).findAll());
+
+
 
         currentBundle = data.getExtras();
     }
@@ -267,7 +313,9 @@ public class GridNotificationsFragment extends TemplateFragment{
     public void configurarAdapter() {
         try {
             flagLoading = true;
-            if (MainActivity.getPeronType() == EnumUserType.ENUM_STUDENT) {
+            if ((MainActivity.getPeronType() == EnumUserType.ENUM_STUDENT)
+                || (MainActivity.getPeronType() == EnumUserType.ENUM_PROFESSOR))
+            {
                 ArrayList<Offering> mListaOferecimentos = new ArrayList<Offering>();
 
                 Point size = new Point();
@@ -330,7 +378,9 @@ public class GridNotificationsFragment extends TemplateFragment{
         thisView = inflater.inflate(R.layout.fragment_grid_notifications, null);
 
         try {
-            if (MainActivity.getPeronType() == EnumUserType.ENUM_STUDENT) {
+            if ((MainActivity.getPeronType() == EnumUserType.ENUM_STUDENT)
+                || (MainActivity.getPeronType() == EnumUserType.ENUM_PROFESSOR))
+            {
                 TextView txt = (TextView) thisView.findViewById(R.id.txtWelcome);
                 txt.setVisibility(View.GONE);
             }

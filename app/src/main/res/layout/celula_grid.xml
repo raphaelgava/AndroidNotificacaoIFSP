@@ -13,7 +13,7 @@
         android:layout_gravity="center"
         android:gravity="center_vertical"
         android:layout_height="wrap_content"
-        android:text="SDM"
+        android:text=""
         android:layout_alignParentTop="true"
         android:layout_alignEnd="@+id/tv_profssor" />
 
@@ -23,7 +23,7 @@
         android:layout_gravity="center"
         android:gravity="center_vertical"
         android:layout_height="wrap_content"
-        android:text="09/11"
+        android:text=""
         android:layout_below="@+id/tv_sigla"
         android:layout_alignParentStart="true" />
 

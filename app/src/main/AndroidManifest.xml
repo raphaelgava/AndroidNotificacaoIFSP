@@ -23,8 +23,9 @@
         check if any of your dependencies require it.
     -->
     <uses-permission android:name="manifest.PERMISSION.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
-    <!--android:name="android.support.multidex.MultiDexApplication"-->
+    <!-- android:name="android.support.multidex.MultiDexApplication" -->
     <application
         android:name=".application.MyApplication"
         android:allowBackup="true"
@@ -61,22 +62,20 @@
         <activity
             android:name=".activity.LoginActivity"
             android:configChanges="orientation|screenSize"
-            android:windowSoftInputMode="stateHidden"
-            android:label="@string/title_activity_login"> <!-- Não permite alteração dos dados ao rotacionar -->
+            android:label="@string/title_activity_login"
+            android:windowSoftInputMode="stateHidden"> <!-- Não permite alteração dos dados ao rotacionar -->
 
-             <intent-filter>
-             <action android:name="android.intent.action.MAIN" />
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
 
-
-             <category android:name="android.intent.category.LAUNCHER" />
-             </intent-filter>
-
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
         </activity>
         <activity
             android:name=".activity.MapsActivity"
             android:label="@string/title_activity_maps"
-            android:theme="@style/Theme_Dialog"
-            android:parentActivityName=".activity.NotificationActivity">
+            android:parentActivityName=".activity.NotificationActivity"
+            android:theme="@style/Theme_Dialog">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".activity.MainActivity" />
@@ -84,24 +83,27 @@
         <activity
             android:name=".activity.NotificationActivity"
             android:label="@string/title_activity_maps"
-            android:theme="@style/Theme_Dialog"
-            android:parentActivityName=".activity.MainActivity">
+            android:parentActivityName=".activity.MainActivity"
+            android:theme="@style/Theme_Dialog">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".activity.MainActivity" />
         </activity>
         <activity
             android:name=".activity.RemetentListActivity"
-            android:windowSoftInputMode="stateHidden"
-            android:configChanges="orientation|screenSize" />
+            android:configChanges="orientation|screenSize"
+            android:windowSoftInputMode="stateHidden" />
         <activity
             android:name=".activity.OfferingListActivity"
-            android:windowSoftInputMode="stateHidden"
-            android:configChanges="orientation|screenSize" />
+            android:configChanges="orientation|screenSize"
+            android:windowSoftInputMode="stateHidden" />
         <activity
             android:name=".activity.NotificationListActivity"
-            android:windowSoftInputMode="stateHidden"
-            android:configChanges="orientation|screenSize" />
+            android:configChanges="orientation|screenSize"
+            android:windowSoftInputMode="stateHidden" />
+        <activity android:name=".activity.CreateOffering"
+            android:configChanges="orientation|screenSize"
+            android:windowSoftInputMode="stateHidden"/>
         <activity
             android:name=".activity.AboutActivity"
             android:configChanges="orientation|screenSize" />
@@ -109,13 +111,37 @@
         <service
             android:name=".service.FetchJSONService"
             android:enabled="true"
-            android:exported="false">
+            android:exported="true">
+
+            <!-- android:process=":myService" -->
+            <!-- Inicia o servico em processo separado -->
+
+
+            <!-- android:stopWithTask="false"> -->
+
             <intent-filter>
                 <action android:name="FETCH_SERVICE" />
 
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </service>
+
+        <receiver
+            android:name=".service.BroadcastService"
+            android:enabled="true"
+            android:exported="true">
+
+            <!-- android:label="RestartServiceWhenStopped" -->
+            <intent-filter>
+                <action android:name="ResetingFetchJSONService" />
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <!-- <action android:name="android.intent.action.QUICKBOOT_POWERON"/> -->
+                <!-- <action android:name="android.intent.action.USER_PRESENT"/> -->
+                <!-- <action android:name="android.intent.action.ACTION_EXTERNAL_APPLICATIONS_AVAILABLE"/> -->
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

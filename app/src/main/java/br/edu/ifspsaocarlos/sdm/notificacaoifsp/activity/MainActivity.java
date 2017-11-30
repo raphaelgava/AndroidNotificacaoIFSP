@@ -2,6 +2,7 @@ package br.edu.ifspsaocarlos.sdm.notificacaoifsp.activity;
 
 import android.app.Activity;
 import android.app.ActivityManager;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -143,9 +144,13 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
 
             Log.d("TCC", toast);
 
-            if (isServiceRunning("FetchJSONService")==false) {
+            //if (isServiceRunning("FetchJSONService")==false) {
+            if (isMyServiceRunning(FetchJSONService.class)==false) {
                 serviceIntent = new Intent(this, FetchJSONService.class);
                 startService(serviceIntent);
+//                Intent broadcastIntent = new Intent();
+//                broadcastIntent.setAction("ResetingFetchJSONService");
+//                sendBroadcast(new Intent("ResetingFetchJSONService"));
                 Log.d("TCC", "starting service");
             }
             else{
@@ -162,12 +167,12 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
         }
     }
 
-    public boolean isServiceRunning(String serviceClassName){
-        final ActivityManager activityManager = (ActivityManager) getApplication().getApplicationContext().getSystemService(Context.ACTIVITY_SERVICE);
-        final List<ActivityManager.RunningServiceInfo> services = activityManager.getRunningServices(Integer.MAX_VALUE);
-
-        for (ActivityManager.RunningServiceInfo runningServiceInfo : services) {
-            if (runningServiceInfo.service.getClassName().equals(serviceClassName)){
+    private boolean isMyServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            String sclass = serviceClass.getName();
+            String ssclass = service.service.getClassName();
+            if (sclass.equals(ssclass)) {
                 return true;
             }
         }
@@ -280,10 +285,29 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
         return null;
     }
 
+    private BroadcastReceiver mReceiver;
+
     public void onDestroy(){
         if (serviceIntent != null) {
             stopService(serviceIntent);
         }
+
+//        try {
+////            IntentFilter intentFilter = new IntentFilter(
+////                    "service.FetchJSONService");
+////            mReceiver = new BroadcastService();
+////            this.registerReceiver(mReceiver, intentFilter);
+//
+//
+//            //Intent broadcastIntent = new Intent(getApplicationContext(), FetchJSONService.class);
+//            //sendBroadcast(broadcastIntent);
+//            Intent broadcastIntent = new Intent();
+//            broadcastIntent.setAction("ResetingFetchJSONService");
+//            sendBroadcast(broadcastIntent);
+//        }catch (Exception e){
+//            Log.d("TCC", "Broadcast: " + e.toString());
+//        }
+
         super.onDestroy();
     }
 
@@ -334,6 +358,7 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
         if ((getPeronType() == EnumUserType.ENUM_EMPLOYEE) || (getPeronType() == EnumUserType.ENUM_PROFESSOR)) {
             itemSend.setVisible(true);
             itemNot.setVisible(true);
+            //offering.setVisible(true);
             //if (getPeronType() == EnumUserType.ENUM_EMPLOYEE) //Voltar a hora que professor puder
             {
                 offering.setVisible(false);

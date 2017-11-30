@@ -45,6 +45,12 @@
             android:scrollbars="vertical"
             android:layout_weight="9"/>
 
+        <Button
+            android:id="@+id/btnCreateOffer"
+            android:layout_width="match_parent"
+            android:text="Create Offering"
+            android:layout_weight="1"
+            android:layout_height="wrap_content" />
 
         <Button
             android:id="@+id/btnEndOffer"

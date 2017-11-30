@@ -55,6 +55,7 @@ public class ServiceState {
         ENUM_INSERT_NOTIFICATION,
         ENUM_REMOVE_STUDENT_OFFERING,
         ENUM_TIPO_NOTIFICACAO,
-        ENUM_LOCAL
+        ENUM_LOCAL,
+        ENUM_CLASS
     }
 }

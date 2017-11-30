@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.activity.MainActivity;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.AddedOffering;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.Local;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.MyClass;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.Notification;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.Offering;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.Person;
@@ -150,7 +151,46 @@ public class ParserJSON {
                     }, new Realm.Transaction.OnSuccess() {
                         @Override
                         public void onSuccess() {
-                            Log.e("TCC", "User saved");
+                            Log.e("TCC", "Local saved");
+                        }
+                    }, new Realm.Transaction.OnError() {
+                        @Override
+                        public void onError(Throwable error) {
+                            Log.e("TCC", "Erro: " + error.toString());
+                        }
+                    });
+                }
+            }
+            return true;
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
+    public boolean saveClass(JSONArray json){
+        Gson gson = new Gson();
+        Realm realm = Realm.getDefaultInstance();
+        MyClass object = null;
+
+        try {
+            for (int i = 0; i < json.length(); i++) {
+                JSONObject obj = json.getJSONObject(i);
+                object = gson.fromJson(obj.toString(), MyClass.class);
+
+                if (object != null){
+                    final RealmObject finalObject = object;
+                    realm.executeTransactionAsync(new Realm.Transaction() {
+                        @Override
+                        public void execute(Realm bgRealm) {
+                            bgRealm.copyToRealmOrUpdate(finalObject);
+                            //bgRealm.insertOrUpdate(finalObject);//faster than copyToRealmOrUpdate
+                        }
+                    }, new Realm.Transaction.OnSuccess() {
+                        @Override
+                        public void onSuccess() {
+                            Log.e("TCC", "Class saved");
                         }
                     }, new Realm.Transaction.OnError() {
                         @Override
@@ -179,10 +219,22 @@ public class ParserJSON {
 
         if (object != null){
             final RealmObject finalObject = object;
+//            final Offering aaa = object;
             realm.executeTransactionAsync(new Realm.Transaction() {
                 @Override
                 public void execute(Realm bgRealm) {
                     bgRealm.copyToRealmOrUpdate(finalObject);
+//                    if (MainActivity.getPeronType() == EnumUserType.ENUM_PROFESSOR){
+//                        Realm r = Realm.getDefaultInstance();
+//                        r.beginTransaction();
+//                        AddedOffering a = new AddedOffering(aaa);
+//                        AddedOffering b = r.copyToRealmOrUpdate(a);
+//                        Log.e("TCC", "AddedOffering saved: " + b.getMyPk() + " - " + b.getUsername());
+//                        r.commitTransaction();
+////                        AddedOffering teste = bgRealm.where(AddedOffering.class).equalTo("username", MainActivity.getUserId()).findFirst();
+////                        if (teste != null)
+////                            Log.e("TCC", "aaa");
+//                    }
                 }
             }, new Realm.Transaction.OnSuccess() {
                 @Override

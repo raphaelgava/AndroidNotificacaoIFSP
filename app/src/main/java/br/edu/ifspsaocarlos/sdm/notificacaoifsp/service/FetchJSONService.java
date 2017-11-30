@@ -1,3 +1,1067 @@
+//package br.edu.ifspsaocarlos.sdm.notificacaoifsp.service;
+//
+//import android.app.NotificationManager;
+//import android.app.PendingIntent;
+//import android.app.Service;
+//import android.content.Context;
+//import android.content.Intent;
+//import android.media.RingtoneManager;
+//import android.net.Uri;
+//import android.os.Handler;
+//import android.os.IBinder;
+//import android.support.annotation.Nullable;
+//import android.support.v4.app.NotificationCompat;
+//import android.util.Log;
+//import android.widget.Toast;
+//
+//import com.android.volley.AuthFailureError;
+//import com.android.volley.Request;
+//import com.android.volley.RequestQueue;
+//import com.android.volley.Response;
+//import com.android.volley.VolleyError;
+//import com.android.volley.toolbox.JsonArrayRequest;
+//import com.android.volley.toolbox.JsonObjectRequest;
+//import com.android.volley.toolbox.StringRequest;
+//import com.android.volley.toolbox.Volley;
+//import com.google.gson.Gson;
+//
+//import org.json.JSONArray;
+//import org.json.JSONException;
+//import org.json.JSONObject;
+//
+//import java.io.UnsupportedEncodingException;
+//import java.text.SimpleDateFormat;
+//import java.util.Calendar;
+//import java.util.Date;
+//import java.util.HashMap;
+//import java.util.List;
+//import java.util.Map;
+//import java.util.Stack;
+//
+//import br.edu.ifspsaocarlos.sdm.notificacaoifsp.R;
+//import br.edu.ifspsaocarlos.sdm.notificacaoifsp.activity.MainActivity;
+//import br.edu.ifspsaocarlos.sdm.notificacaoifsp.activity.NotificationActivity;
+//import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.AddedOffering;
+//import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.Notification;
+//import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.Offering;
+//import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.Person;
+//import br.edu.ifspsaocarlos.sdm.notificacaoifsp.util.EnumParser;
+//import br.edu.ifspsaocarlos.sdm.notificacaoifsp.util.EnumUserType;
+//import br.edu.ifspsaocarlos.sdm.notificacaoifsp.util.MyGsonBuilder;
+//import br.edu.ifspsaocarlos.sdm.notificacaoifsp.util.ServiceState;
+//import io.realm.Realm;
+//import io.realm.RealmResults;
+//
+///**
+// * Para funcionar tem que estar registrado no manifest!!
+// */
+//public class FetchJSONService extends Service implements Runnable {
+//    private boolean appAberta;
+//    private boolean firsShowtTime;
+//    private static boolean novoComandoLiberado;
+//
+//    private ServiceState machine;
+//    private RequestQueue queue;
+//    private static Stack<AddedOffering> stackOffering;
+//    private final Realm realm = Realm.getDefaultInstance();
+//    private Handler handler;
+//    private static Stack<Notification> stackNotification;
+//    private NotificationManager manager;
+//    private boolean flagLocalNotification;
+//    private static boolean cmdLocalLiberado;
+//    private static boolean cmdTipoNotificacaoLiberado;
+//    private static boolean cmdBuscandoOfferLiberado;
+//
+//    public FetchJSONService() {
+//        machine = ServiceState.getInstance();
+//        stackOffering = new Stack<AddedOffering>();
+//        stackNotification = new Stack<Notification>();
+//        flagLocalNotification = false;
+//        firsShowtTime = true;
+//        cmdLocalLiberado = false;
+//        cmdTipoNotificacaoLiberado = false;
+//        cmdBuscandoOfferLiberado = false;
+//    }
+//
+//    public static void setOffering(AddedOffering offer, ServiceState.EnumServiceState option){
+//        stackOffering.add(offer);
+//        ServiceState.getInstance().pushState(option);
+//    }
+//
+//    public static void setNotification(Notification notification){
+//        stackNotification.add(notification);
+//        ServiceState.getInstance().pushState(ServiceState.EnumServiceState.ENUM_INSERT_NOTIFICATION);
+//    }
+//
+////    public IBinder onBind(Intent intent) {
+////// TODO: Return the communication channel to the service.
+////        throw new UnsupportedOperationException("Not yet implemented");
+////    }
+//
+//    //@Nullable
+//    @Override
+//    public IBinder onBind(Intent intent) {
+//        return null;
+//    }
+//
+//
+//    public void onCreate() {
+//        super.onCreate();
+//        appAberta = true;
+//        novoComandoLiberado = false;
+//        Log.d("TCC", "onCreate");
+//        queue = Volley.newRequestQueue(FetchJSONService.this);
+//
+//        // Add as notification
+//        manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+//
+//        handler = new Handler();
+////        new Thread(this).start();
+//    }
+//
+//    private String mainAuth;
+//    private int mainUser;
+//    private EnumUserType mainType;
+//
+//    public int onStartCommand(Intent intent, int flags, int startId) {
+//        Log.d("TCC", "onStartCommand");
+//        super.onStartCommand(intent, flags, startId);
+//
+//        //onTaskRemoved(intent);
+//        //return START_REDELIVER_INTENT;
+//
+//        // /return super.onStartCommand(intent, flags, startId);
+//
+//        mainAuth = MainActivity.getAuth();
+//        mainUser = MainActivity.getUserId();
+//        mainType = MainActivity.getPeronType();
+//
+//        new Thread(this).start();
+//        return START_STICKY;
+//    }
+//
+//
+//    @Override
+//    public void onDestroy() {
+//        super.onDestroy();
+//        Log.e("", "onDestroy");
+//
+//        appAberta = false;
+//
+//        //Não precisa cancelar a fila pois não é pra ser finalizado
+//        queue.cancelAll("MyTAG");
+//
+//        //stopSelf();
+//        sendBroadcast(new Intent("ResetingFetchJSONService"));
+//    }
+//
+//
+//    private int contTime;
+//    private int contTimeReset;
+//
+//    public void run() {
+//        Log.d("TCC", "run");
+//        contTime = 0;
+//        contTimeReset = 0;
+//        //while (appAberta) {
+//        while (true) {
+//            try {
+//                Thread.sleep(getResources().getInteger(R.integer.tempo_inatividade_servico));
+//                handler.post(new Runnable() {
+//                    public void run() {
+//                        if (machine.hasItemEnabled() == true) {
+//                            ServiceState.EnumServiceState state = machine.popState();
+//                            switch (state) {
+//                                case ENUM_NOTIFICATION:
+//                                    buscarNotificacao();
+//                                    machine.pushState(ServiceState.EnumServiceState.ENUM_LOCAL);
+//                                    flagLocalNotification = true;
+//                                    break;
+//                                case ENUM_SHOW_NOTIFICATION:
+//                                    showNotification();
+//                                    break;
+//                                case ENUM_USER:
+//                                    buscarUsuario();
+//                                    break;
+//                                case ENUM_OFERECIMENTO_UPDATE:
+//                                    cmdBuscandoOfferLiberado = false;
+//                                    buscarOferecimento(true);
+//                                    break;
+//                                case ENUM_OFERECIMENTO:
+//                                    buscarOferecimento(false);
+//                                    break;
+//                                case ENUM_REMETENTE:
+//                                    buscarRemetente();
+//                                    break;
+//                                case ENUM_REMOVE_STUDENT_OFFERING:
+//                                    atualizarAlunoOferecimento(true);
+//                                    break;
+//                                case ENUM_INSERT_STUDENT_OFFERING:
+//                                    atualizarAlunoOferecimento(false);
+//                                    break;
+//                                case ENUM_INSERT_NOTIFICATION:
+//                                    //Removendo para não duplicar registro já que ao ser criado ele é salvo para poder ser acessado pelo fetch
+//                                    atualizarNotificacao(true);
+//                                    break;
+//                                case ENUM_TIPO_NOTIFICACAO:
+//                                    cmdLocalLiberado = false;
+//                                    cmdTipoNotificacaoLiberado = false;
+//                                    buscarTipoNotificacao();
+//                                    break;
+//                                case ENUM_LOCAL:
+//                                    buscaLocal();
+//                                    if (flagLocalNotification == true) {
+//                                        machine.pushState(ServiceState.EnumServiceState.ENUM_SHOW_NOTIFICATION);
+//                                        flagLocalNotification = false;
+//                                    }
+//                                    break;
+////                                default:
+//
+//                            }
+//                            ServiceState.finishLastPop();
+//                            contTime = 0;
+//                            contTimeReset = 0;
+//                        }
+//                        else{
+//                            if (isBuscandoDadosTerminou() == true) {
+//                                contTimeReset = 0;
+//                                contTime++;
+//                                Log.d("TCC", "contTime");
+//                                if (contTime == 5) {
+//                                    contTime = 0;
+//                                    machine.pushState(ServiceState.EnumServiceState.ENUM_NOTIFICATION);
+//                                }
+//                            }
+//                            else{
+//                                Log.d("TCC", "contTimeReset");
+//                                contTimeReset++;
+//                                if (contTimeReset ==10){
+//                                    novoComandoLiberado = true;
+//                                }
+//                            }
+//                        }
+//                    }
+//                });
+//
+////                if (!primeiraBusca && novoNumeroContatos != ultimoNumeroContatos) {
+////                    NotificationManager nm = (NotificationManager)
+////                            getSystemService(NOTIFICATION_SERVICE);
+////                    Intent intent = new Intent(this, NovoContatoActivity.class);
+////                    intent.putExtra("mensagem_da_notificacao",
+////                            getString(R.string.contatos_atualizados));
+////                    PendingIntent p = PendingIntent.getActivity(this, 0, intent, 0);
+////                    Notification.Builder builder = new Notification.Builder(this);
+////                    builder.setSmallIcon(R.drawable.ic_contato);
+////                    builder.setTicker(getString(R.string.novo_contato_adicionado));
+////                    builder.setContentTitle(getString(R.string.novo_contato));
+////                    builder.setContentText(getString(R.string.clique_aqui));
+////                    builder.setWhen(System.currentTimeMillis());
+////                    builder.setContentIntent(p);
+////                    builder.setLargeIcon(BitmapFactory.decodeResource(getResources(),
+////                            R.drawable.ic_mensageiro));
+////                    Notification notification = builder.build();
+////                    notification.vibrate = new long[] {100, 250};
+////                    nm.notify(R.mipmap.ic_launcher, notification);
+////                }
+////                ultimoNumeroContatos = novoNumeroContatos;
+////                primeiraBusca = false;
+//            }
+//            catch (InterruptedException ie) {
+//                Log.e("TCC", "Erro na thread de recuperação: " + ie.toString());
+//            }
+//            catch (Exception e){
+//                Log.e("TCC", "Erro na thread de recuperação: " + e.toString());
+//            }
+//        }
+//    }
+//
+//    private void atualizarAlunoOferecimento(boolean flagRemove) {
+//        if (stackOffering.isEmpty() == false){
+//            final AddedOffering offer = stackOffering.pop();
+//
+//            boolean flagOk = true;
+//
+//            String url = getString(R.string.url_base);
+//
+//            novoComandoLiberado = false;
+//            switch (mainType){
+//                case ENUM_STUDENT:
+//                    url += getString(R.string.url_oferecimento); break;
+//                default:
+//                    Log.e("TCC", "Tipo pessoa desconhecida");
+//                    flagOk = false;
+//            }
+//            if (flagOk == true) {
+//                url += Integer.toString(offer.getPk()) + "/"; //PUT to update is necessary this last slash!!!
+//
+//                try {
+//                    Gson gson = new Gson();
+////                    Gson gson = MyGsonBuilder.getInstance().myGson();
+//
+//                    //Person managedModel = realm.copyFromRealm(person);
+////                    FATAL EXCEPTION: Thread-276  - PROBLEMA TRANSAÇÃO DO REALM
+////                    Process: br.edu.ifspsaocarlos.sdm.notificacaoifsp, PID: 31614
+////                    java.lang.IllegalArgumentException: Only valid managed objects can be copied from Realm.
+////
+////                    FATAL EXCEPTION: main - PROBLEMA DE REFERENCIA CIRCULAR (ADAPTER DO GSON)
+////                    Process: br.edu.ifspsaocarlos.sdm.notificacaoifsp, PID: 15165
+////                    java.lang.StackOverflowError
+////                    at java.lang.String._getChars(String.java:908)
+////
+////                    FATAL EXCEPTION: main - PROBLEMA DA STRING DO JSON
+////                    Process: br.edu.ifspsaocarlos.sdm.notificacaoifsp, PID: 16561
+////                    java.lang.IllegalStateException: Nesting problem.
+////                    at com.google.gson.stream.JsonWriter.beforeName(JsonWriter.java:616)
+//
+//                    //realm.beginTransaction();
+//                    //final Offering bla = realm.where(Offering.class).equalTo("pk", offer.getPk()).findFirst();
+//                    final Offering bla = realm.where(Offering.class).equalTo("myPk", offer.getMyPk()).findFirst();
+//
+//                    String json = gson.toJson(realm.copyFromRealm(bla));
+//                    JSONObject user = new JSONObject(json);
+//
+//
+//                    if (flagRemove){
+//                        realm.executeTransaction(new Realm.Transaction() {
+//                            @Override
+//                            public void execute(Realm realm) {
+//                                try {
+//                                    AddedOffering deletedObj = new AddedOffering(bla);
+//                                    AddedOffering other = realm.copyToRealmOrUpdate(deletedObj);
+//                                    other.deleteFromRealm();
+//                                }catch (Exception e){
+//                                    Log.d("TCC", "ERROR: " + e.toString());
+//                                }
+//                            }
+//                        });
+//                        if (MainActivity.isGridShowing())
+//                            MainActivity.setFragTransactionStack(R.id.nav_class_schedule, R.id.content_frame, null, true);
+//                    }
+//
+//                    try {
+//                        RequestQueue queue = Volley.newRequestQueue(this.getApplicationContext());
+//                        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, url, user,
+//                                new Response.Listener<JSONObject>() {
+//                                    public void onResponse(JSONObject s) {
+//                                        //realm.commitTransaction();
+//                                        Log.e("TCC", "Updated offer." + s.toString());
+//                                        novoComandoLiberado = true; //para não ficar travado caso de algum erro
+//                                    }
+//                                }, new Response.ErrorListener() {
+//                            public void onErrorResponse(VolleyError volleyError) {
+//                                stopTransaction();
+//                                Log.e("TCC", "Error during update offer." + volleyError.toString());
+//                                novoComandoLiberado = true; //para não ficar travado caso de algum erro
+//                            }
+//                        }) {
+//                            @Override
+//                            public Map<String, String> getHeaders() throws AuthFailureError {
+//                                Map<String, String> headers = new HashMap<>();
+//                                // Basic Authentication
+//                                //String auth = "Basic " + Base64.encodeToString(CONSUMER_KEY_AND_SECRET.getBytes(), Base64.NO_WRAP);
+//                                headers.put("Content-Type", "application/json");
+//                                headers.put(getString(R.string.authorization), mainAuth); //Authorization Token ...
+//                                return headers;
+//                            }
+//                        };
+//
+//                        queue.add(jsonObjectRequest);
+//                    } catch (Exception e) {
+//                        stopTransaction();
+//                        Log.e("TCC", "Erro na leitura de mensagens");
+//                        novoComandoLiberado = true; //para não ficar travado caso de algum erro
+//                    }
+//                } catch (JSONException e) {
+//                    stopTransaction();
+//                    Log.e("TCC", "ERROR: " + e.toString());
+//                    novoComandoLiberado = true; //para não ficar travado caso de algum erro
+//                }
+//            }
+//        }
+//    }
+//
+//    private void atualizarNotificacao(boolean flagRemove) {
+//        if (stackNotification.isEmpty() == false){
+//            Notification obj = stackNotification.pop();
+//
+//            boolean flagOk = true;
+//
+//            String url = getString(R.string.url_base);
+//
+//            novoComandoLiberado = false;
+//            switch (mainType){
+//                case ENUM_EMPLOYEE:
+//                case ENUM_PROFESSOR:
+//                    url += getString(R.string.url_notificacao); break;
+//                default:
+//                    Log.e("TCC", "Tipo pessoa desconhecida");
+//                    flagOk = false;
+//            }
+//            if ((flagOk == true) && (obj != null)) {
+//                //url += Integer.toString(objeto.getPk()) + "/"; //PUT to update is necessary this last slash!!!
+//                try {
+//                    //realm.beginTransaction();
+//                    //Gson gson = new Gson();
+//                    Gson gson = MyGsonBuilder.getInstance().myGson();
+//
+//                    //final Notification bla = realm.where(Notification.class).equalTo("pk", objeto.getPk()).findFirst();
+//                    //final Notification bla = realm.where(Notification.class).equalTo("pk", objeto.getPk()).equalTo("id_user", MainActivity.getUserId()).findFirst();
+//                    realm.beginTransaction();
+//                    final Notification object = realm.copyToRealmOrUpdate(obj);
+//                    String json = gson.toJson(realm.copyFromRealm(object));
+//                    stopTransaction();
+//
+//                    JSONObject user = new JSONObject(json);
+//                    Log.d("TCC", "JSON notification: " + user.toString());
+//
+//                    if (flagRemove){
+//                        realm.executeTransaction(new Realm.Transaction() {
+//                            @Override
+//                            public void execute(Realm realm) {
+//                                try {
+//                                    Notification other = realm.copyToRealmOrUpdate(object);
+//                                    other.deleteFromRealm();
+//                                }catch (Exception e){
+//                                    Log.d("TCC", "ERROR: " + e.toString());
+//                                }
+//                            }
+//                        });
+//                    }
+//
+//                    try {
+//                        RequestQueue queue = Volley.newRequestQueue(this.getApplicationContext());
+//                        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, url, user,
+//                                new Response.Listener<JSONObject>() {
+//                                    public void onResponse(JSONObject s) {
+//                                        //realm.commitTransaction();
+//                                        novoComandoLiberado = true; //para não ficar travado caso de algum erro
+//                                        Log.e("TCC", "Updated notification." + s.toString());
+//                                    }
+//                                }, new Response.ErrorListener() {
+//                            public void onErrorResponse(VolleyError volleyError) {
+//                                stopTransaction();
+//                                novoComandoLiberado = true; //para não ficar travado caso de algum erro
+//                                Log.e("TCC", "Error during update notification." + volleyError.toString());
+//                            }
+//                        }) {
+//                            @Override
+//                            public Map<String, String> getHeaders() throws AuthFailureError {
+//                                Map<String, String> headers = new HashMap<>();
+//                                // Basic Authentication
+//                                //String auth = "Basic " + Base64.encodeToString(CONSUMER_KEY_AND_SECRET.getBytes(), Base64.NO_WRAP);
+//                                headers.put("Content-Type", "application/json");
+//                                headers.put(getString(R.string.authorization), mainAuth); //Authorization Token ...
+//                                return headers;
+//                            }
+//                        };
+//
+//                        queue.add(jsonObjectRequest);
+//                    } catch (Exception e) {
+//                        stopTransaction();
+//                        Log.e("TCC", "Erro na leitura de mensagens");
+//                        novoComandoLiberado = true; //para não ficar travado caso de algum erro
+//                    }
+//                } catch (JSONException e) {
+//                    stopTransaction();
+//                    Log.e("TCC", "ERROR: " + e.toString());
+//                    novoComandoLiberado = true; //para não ficar travado caso de algum erro
+//                }
+//            }
+//        }
+//    }
+//
+//    private void stopTransaction() {
+//        if(realm.isInTransaction()) {
+//            realm.cancelTransaction();
+//        }
+//    }
+//
+//    private void buscarTipoNotificacao() {
+//
+//        String url = getString(R.string.url_base) + getString(R.string.url_tipo_notificacao);
+//
+//        try {
+//
+//            JsonArrayRequest jsonObjectRequest = new JsonArrayRequest(Request.Method.GET, url, null,
+//                    new Response.Listener<JSONArray>() {
+//                        @Override
+//                        public void onResponse(JSONArray s) {
+//                            ParserJSON.getInstance().saveTipoNotificacao(s);
+//                            //Toast.makeText(FetchJSONService.this, "Finalmente: " + s.toString(), Toast.LENGTH_SHORT).show();
+//                            Log.d("TCC", "TipoNotificacao: " + s.toString());
+//                            novoComandoLiberado = true; //para não ficar travado caso de algum erro
+//                            cmdTipoNotificacaoLiberado = true;
+//                        }
+//                    },
+//                    new Response.ErrorListener() {
+//                        @Override
+//                        public void onErrorResponse(VolleyError volleyError) {
+//                            Toast.makeText(FetchJSONService.this, "Erro na recuperação do TipoNotificacao: " + volleyError.toString(), Toast.LENGTH_SHORT).show();
+//                            novoComandoLiberado = true; //para não ficar travado caso de algum erro
+//                            cmdTipoNotificacaoLiberado = true;
+//                        }
+//                    }
+//            ){
+//                @Override
+//                public Map<String, String> getHeaders() throws AuthFailureError {
+//                    Map<String, String> headers = new HashMap<>();
+//                    // Basic Authentication
+//                    //String auth = "Basic " + Base64.encodeToString(CONSUMER_KEY_AND_SECRET.getBytes(), Base64.NO_WRAP);
+//                    headers.put("Content-Type", "application/json");
+//                    headers.put(getString(R.string.authorization), mainAuth); //Authorization Token ...
+//                    return headers;
+//                }
+//            };
+//            jsonObjectRequest.setTag("MyTAG");
+//
+//            queue.add(jsonObjectRequest);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            novoComandoLiberado = true; //para não ficar travado caso de algum erro
+//            cmdTipoNotificacaoLiberado = true;
+//        }
+//    }
+//
+//    private void buscaLocal() {
+//
+//        String url = getString(R.string.url_base) + getString(R.string.url_local);
+//        Log.d("TCC", "Local: " + url);
+//        try {
+//
+//            JsonArrayRequest jsonObjectRequest = new JsonArrayRequest(Request.Method.GET, url, null,
+//                    new Response.Listener<JSONArray>() {
+//                        @Override
+//                        public void onResponse(JSONArray s) {
+//                            ParserJSON.getInstance().saveLocal(s);
+//                            //Toast.makeText(FetchJSONService.this, "Finalmente: " + s.toString(), Toast.LENGTH_SHORT).show();
+//                            Log.d("TCC", "Local: " + s.toString());
+//                            novoComandoLiberado = true; //para não ficar travado caso de algum erro
+//                            cmdLocalLiberado = true;
+//                        }
+//                    },
+//                    new Response.ErrorListener() {
+//                        @Override
+//                        public void onErrorResponse(VolleyError volleyError) {
+//                            Toast.makeText(FetchJSONService.this, "Erro na recuperação do Local: " + volleyError.toString(), Toast.LENGTH_SHORT).show();
+//                            novoComandoLiberado = true; //para não ficar travado caso de algum erro
+//                            cmdLocalLiberado = true;
+//                        }
+//                    }
+//            ){
+//                @Override
+//                public Map<String, String> getHeaders() throws AuthFailureError {
+//                    Map<String, String> headers = new HashMap<>();
+//                    // Basic Authentication
+//                    //String auth = "Basic " + Base64.encodeToString(CONSUMER_KEY_AND_SECRET.getBytes(), Base64.NO_WRAP);
+//                    headers.put("Content-Type", "application/json");
+//                    headers.put(getString(R.string.authorization), mainAuth); //Authorization Token ...
+//                    Log.d("TCC", "Local Auth: " + mainAuth);
+//                    return headers;
+//                }
+//            };
+//            jsonObjectRequest.setTag("MyTAG");
+//
+//            queue.add(jsonObjectRequest);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            novoComandoLiberado = true; //para não ficar travado caso de algum erro
+//            cmdLocalLiberado = true;
+//        }
+//    }
+//
+//    private void buscarUsuario() {
+//
+//        String url = getString(R.string.url_base);
+//
+//        boolean flagOk = true;
+//
+//        EnumParser parser = null;
+//        switch (mainType){
+//            case ENUM_STUDENT: url += getString(R.string.url_student); parser = EnumParser.ENUM_STUDENT; break;
+//            case ENUM_EMPLOYEE: url += getString(R.string.url_employee); parser = EnumParser.ENUM_EMPLOYEE; break;
+//            case ENUM_PROFESSOR: url += getString(R.string.url_professor); parser = EnumParser.ENUM_PROFESSOR; break;
+//            default:
+//                Log.e("TCC", "Tipo pessoa desconhecida");
+//                flagOk = false;
+//        }
+//
+//        if (flagOk == true) {
+//            novoComandoLiberado = false;
+//            url += Integer.toString(mainUser);
+//            try {
+//
+//                JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, url, null,
+//                        new Response.Listener<JSONObject>() {
+//                            @Override
+//                            public void onResponse(JSONObject s) {
+//                                ParserJSON.getInstance().saveUser(s);
+//                                //Toast.makeText(FetchJSONService.this, "Finalmente: " + s.toString(), Toast.LENGTH_SHORT).show();
+//                                Log.d("TCC", "User: " + s.toString());
+//                                novoComandoLiberado = true;
+//
+//                                /* // TODO: 9/12/2017 caso queira pegar um array de dentro do json!!!
+//                                JSONArray jsonArray;
+//                                try {
+//                                    jsonArray = s.getJSONArray("contatos");
+//                                    novoNumeroContatos = s.length();
+//                                    Toast.makeText(FetchJSONService.this, "Finalmente: " + s.toString(), Toast.LENGTH_SHORT).show();
+//                                } catch (JSONException je) {
+//                                    Toast.makeText(FetchJSONService.this, "Erro na conversão " +
+//                                            "de objeto JSON!", Toast.LENGTH_SHORT).show();
+//                                }
+//                                */
+//                            }
+//                        },
+//                        new Response.ErrorListener() {
+//                            @Override
+//                            public void onErrorResponse(VolleyError volleyError) {
+//                                Toast.makeText(FetchJSONService.this, "Erro na recuperação do usuário: " + volleyError.toString(), Toast.LENGTH_SHORT).show();
+//                                novoComandoLiberado = true;
+//                            }
+//                        }
+//                ){
+//                    @Override
+//                    public Map<String, String> getHeaders() throws AuthFailureError {
+//                        Map<String, String> headers = new HashMap<>();
+//                        // Basic Authentication
+//                        //String auth = "Basic " + Base64.encodeToString(CONSUMER_KEY_AND_SECRET.getBytes(), Base64.NO_WRAP);
+//                        headers.put("Content-Type", "application/json");
+//                        headers.put(getString(R.string.authorization), mainAuth); //Authorization Token ...
+//                        return headers;
+//                    }
+//                };
+//
+//
+//                /*
+//                // TODO: 9/12/2017 SE FOR UTILIZAR ARRAY TEM QUE UTILIZAR ESSA FORMA. CASO CONTÁRIO OCORRERÁ UMA EXCEÇÃO: com.android.volley.ParseError: org.json.JSONException
+//
+//                JsonArrayRequest jsonObjectRequest = new JsonArrayRequest(Request.Method.GET, url, null,
+//                        new Response.Listener<JSONArray>() {
+//                            @Override
+//                            public void onResponse(JSONArray s) {
+//                                //JSONArray jsonArray;
+//                                //jsonArray = s.getJSONArray("contatos");
+//                                novoNumeroContatos = s.length();
+//                                Toast.makeText(FetchJSONService.this, "Finalmente: " + s.toString(), Toast.LENGTH_SHORT).show();
+//                            }
+//                        },
+//                        new Response.ErrorListener() {
+//                            @Override
+//                            public void onErrorResponse(VolleyError volleyError) {
+//                                Toast.makeText(FetchJSONService.this, "Erro na recuperação do usuário: " + volleyError.toString(), Toast.LENGTH_SHORT).show();
+//                            }
+//                        }
+//                ){
+//                    @Override
+//                    public Map<String, String> getHeaders() throws AuthFailureError {
+//                        Map<String, String> headers = new HashMap<>();
+//                        // Basic Authentication
+//                        //String auth = "Basic " + Base64.encodeToString(CONSUMER_KEY_AND_SECRET.getBytes(), Base64.NO_WRAP);
+//
+//                        headers.put(getString(R.string.authorization), MainActivity.getAuth()); //Authorization Token ...
+//                        return headers;
+//                    }
+//                };
+//                */
+//                jsonObjectRequest.setTag("MyTAG");
+//
+//                queue.add(jsonObjectRequest);
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//                novoComandoLiberado = true; //para não ficar travado caso de algum erro
+//            }
+//        }
+//    }
+//
+//    // TODO: 10/19/2017 Buscar oferecimento pois se o professor retirar o aluno/inserir aluno não será atualizado na grade
+//    // TODO: 10/19/2017 Buscar oferecimento para exibir a grade do professor!
+//    private void buscarOferecimento(boolean aluno) {
+//        try {
+//            boolean flagOk = true;
+//
+//            String url = getString(R.string.url_base);
+//
+//            Person p = null;
+//            switch (mainType) {
+//                case ENUM_STUDENT:
+//                    Realm realm = Realm.getDefaultInstance();
+//                    p = realm.where(Person.class).equalTo("pk", mainUser).findFirst();
+//                case ENUM_PROFESSOR:
+//                    url += getString(R.string.url_oferecimento);
+//                    break;
+//                default:
+//                    Log.e("TCC", "Tipo pessoa desconhecida");
+//                    flagOk = false;
+//            }
+//
+//            if (flagOk == true) {
+//                novoComandoLiberado = false;
+//                //url += Integer.toString(MainActivity.getUserId());
+//                try {
+//                    HashMap<String, String> params = new HashMap<String, String>();
+//                    Calendar cd = Calendar.getInstance();
+//                    int year = cd.get(Calendar.YEAR);
+//                    int month = cd.get(Calendar.MONTH);
+//                    int semester;
+//                    if (month <= 6) {
+//                        semester = 1;
+//                    } else {
+//                        semester = 2;
+//                    }
+//
+//                    if (p != null)
+//                        url += "?ano=" + year + "&semestre=" + semester + "&turma=" + p.getPkTurma();// + "&pk=" + p.getPk();
+//                    else
+//                        url += "?ano=" + year + "&semestre=" + semester;
+//
+//                    if (aluno)
+//                        url += "&pk=" + mainUser;
+//
+//                    StringRequest sr = new StringRequest(Request.Method.GET, url, new Response.Listener<String>() {
+//                        @Override
+//                        public void onResponse(String s) {
+//                            try {
+//                                byte[] u = s.getBytes("ISO-8859-1");
+//                                s = new String(u, "UTF-8");
+//
+//                                JSONArray jsonArray = new JSONArray(s);
+//                                for (int i = 0; i < jsonArray.length(); i++) {
+//                                    JSONObject jsonObj = jsonArray.getJSONObject(i);
+//                                    ParserJSON.getInstance().saveOffering(jsonObj);
+//                                }
+//                                //Toast.makeText(FetchJSONService.this, "Finalmente: " + s, Toast.LENGTH_SHORT).show();
+//                                Log.d("TCC", "Response Offering");
+//                                if (MainActivity.isGridShowing())
+//                                    MainActivity.setFragTransactionStack(R.id.nav_class_schedule, R.id.content_frame, null, true);
+//                            } catch (JSONException e) {
+//                                Toast.makeText(FetchJSONService.this, "Erro na conversão " +
+//                                        "de objeto JSON!", Toast.LENGTH_SHORT).show();
+//                            } catch (UnsupportedEncodingException e) {
+//                                e.printStackTrace();
+//                            }
+//                            novoComandoLiberado = true; //para não ficar travado caso de algum erro
+//                        }
+//                    }, new Response.ErrorListener() {
+//                        @Override
+//                        public void onErrorResponse(VolleyError error) {
+//                            novoComandoLiberado = true; // para não deixar a página sem carregar nada caso de erro
+//                            Toast.makeText(FetchJSONService.this, "Erro na recuperação da offerta: " + error.toString(), Toast.LENGTH_SHORT).show();
+//                        }
+//                    }) {
+////                    //Só funciona para POST
+////                    @Override
+////                    protected Map<String,String> getParams(){
+////                        // Posting parameters to login url
+////                        Map<String, String> params = new HashMap<String, String>();
+////
+////                        params.put("ano", Integer.toString(year));
+////                        params.put("semestre", Integer.toString(semester));
+////                        return params;
+////                    }
+//
+//                        @Override
+//                        public Map<String, String> getHeaders() throws AuthFailureError {
+//                            Map<String, String> headers = new HashMap<>();
+//                            // Basic Authentication
+//                            //String auth = "Basic " + Base64.encodeToString(CONSUMER_KEY_AND_SECRET.getBytes(), Base64.NO_WRAP);
+//
+//                            headers.put(getString(R.string.authorization), mainAuth); //Authorization Token ...
+//                            return headers;
+//                        }
+//                    };
+//
+//                    queue.add(sr);
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                    novoComandoLiberado = true; //para não ficar travado caso de algum erro
+//                }
+//            }
+//        }catch (Exception e){
+//            Log.e("TCC", "ERRO buscar oferta: " + e.toString());
+//        }
+//    }
+//
+//    private void buscarRemetente() {
+//        boolean flagOk = true;
+//
+//        String url = getString(R.string.url_base);
+//
+//        novoComandoLiberado = false;
+//
+//        if (flagOk == true) {
+//            url += getString(R.string.url_remetente);
+//            try {
+//                StringRequest sr = new StringRequest(Request.Method.GET, url , new Response.Listener<String>() {
+//                    @Override
+//                    public void onResponse(String s) {
+//                        try {
+//                            byte[] u = s.getBytes("ISO-8859-1");
+//                            s = new String(u, "UTF-8");
+//
+//                            JSONArray jsonArray = new JSONArray(s);
+//                            for(int i = 0; i < jsonArray.length(); i++) {
+//                                JSONObject jsonObj = jsonArray.getJSONObject(i);
+//                                ParserJSON.getInstance().saveRemetent(jsonObj);
+//                            }
+//                            //Toast.makeText(FetchJSONService.this, "Finalmente: " + s, Toast.LENGTH_SHORT).show();
+//                            Log.d("TCC", "Response Remetent");
+//                        } catch (JSONException e) {
+//                            Toast.makeText(FetchJSONService.this, "Erro na conversão " +
+//                                    "de objeto JSON!", Toast.LENGTH_SHORT).show();
+//                        } catch (UnsupportedEncodingException e) {
+//                            e.printStackTrace();
+//                        }
+//                        novoComandoLiberado = true; //para não ficar travado caso de algum erro
+//                    }
+//                }, new Response.ErrorListener() {
+//                    @Override
+//                    public void onErrorResponse(VolleyError error) {
+//                        novoComandoLiberado = true; // para não deixar a página sem carregar nada caso de erro
+//                        Toast.makeText(FetchJSONService.this, "Erro na recuperação do remetente: " + error.toString(), Toast.LENGTH_SHORT).show();
+//                    }
+//                }){
+////                    //Só funciona para POST
+////                    @Override
+////                    protected Map<String,String> getParams(){
+////                        // Posting parameters to login url
+////                        Map<String, String> params = new HashMap<String, String>();
+////
+////                        params.put("ano", Integer.toString(year));
+////                        params.put("semestre", Integer.toString(semester));
+////                        return params;
+////                    }
+//
+//                    @Override
+//                    public Map<String, String> getHeaders() throws AuthFailureError {
+//                        Map<String, String> headers = new HashMap<>();
+//                        // Basic Authentication
+//                        //String auth = "Basic " + Base64.encodeToString(CONSUMER_KEY_AND_SECRET.getBytes(), Base64.NO_WRAP);
+//
+//                        headers.put(getString(R.string.authorization), mainAuth); //Authorization Token ...
+//                        return headers;
+//                    }
+//                };
+//
+//                queue.add(sr);
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//                novoComandoLiberado = true; //para não ficar travado caso de algum erro
+//            }
+//        }
+//    }
+//
+//
+//    private void buscarNotificacao() {
+//        RequestQueue queue = Volley.newRequestQueue(FetchJSONService.this);
+//        String url = getString(R.string.url_base) + getString(R.string.url_notificacao);
+//        try {
+//            novoComandoLiberado = false;
+//
+//            url += "?pk=" + mainUser + "&user=" + mainType.ordinal();
+//
+//            StringRequest sr = new StringRequest(Request.Method.GET, url , new Response.Listener<String>() {
+//                @Override
+//                public void onResponse(String s) {
+//                    try {
+//                        byte[] u = s.getBytes("ISO-8859-1");
+//                        s = new String(u, "UTF-8");
+//
+//                        JSONArray jsonArray = new JSONArray(s);
+//                        for(int i = 0; i < jsonArray.length(); i++) {
+//                            JSONObject jsonObj = jsonArray.getJSONObject(i);
+//                            ParserJSON.getInstance().saveNotificacao(jsonObj);
+//                        }
+//                        //Toast.makeText(FetchJSONService.this, "Finalmente: " + s, Toast.LENGTH_SHORT).show();
+//                        Log.d("TCC", "Response Notification");
+//                    } catch (JSONException e) {
+//                        Toast.makeText(FetchJSONService.this, "Erro na conversão " +
+//                                "de objeto JSON!", Toast.LENGTH_SHORT).show();
+//                    } catch (UnsupportedEncodingException e) {
+//                        e.printStackTrace();
+//                    }
+//                    novoComandoLiberado = true; //para não ficar travado caso de algum erro
+//                }
+//            }, new Response.ErrorListener() {
+//                @Override
+//                public void onErrorResponse(VolleyError error) {
+//                    novoComandoLiberado = true; // para não deixar a página sem carregar nada caso de erro
+//                    Toast.makeText(FetchJSONService.this, "Erro na recuperação da offerta: " + error.toString(), Toast.LENGTH_SHORT).show();
+//                }
+//            }){
+//                @Override
+//                public Map<String, String> getHeaders() throws AuthFailureError {
+//                    Map<String, String> headers = new HashMap<>();
+//                    // Basic Authentication
+//                    //String auth = "Basic " + Base64.encodeToString(CONSUMER_KEY_AND_SECRET.getBytes(), Base64.NO_WRAP);
+//
+//                    headers.put(getString(R.string.authorization), mainAuth); //Authorization Token ...
+//                    return headers;
+//                }
+//            };
+//
+//            queue.add(sr);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            novoComandoLiberado = true; //para não ficar travado caso de algum erro
+//        }
+//    }
+//
+//    private void showNotification() {
+//        String dateMask = getString(R.string.mask_date);
+//        SimpleDateFormat formatDate = new SimpleDateFormat(dateMask);
+//        Calendar c = Calendar.getInstance();
+//        Date today = c.getTime();
+//        try {
+//            today = formatDate.parse(formatDate.format(c.getTime()));
+//        }catch (Exception e){
+//            Log.d("TCC", "Erro to convert date: " + e.toString());
+//        }
+//
+//        RealmResults<Notification> stepEntryResults = realm.where(Notification.class).equalTo("id_user", mainUser).findAll();
+//        List<Notification> messageList = realm.copyFromRealm(stepEntryResults);
+//
+////        StatusBarNotification status[] = new StatusBarNotification[0];
+////        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+////            status = manager.getActiveNotifications();
+////        }
+////        boolean flagNotificar;
+//
+//        for (Notification noti : messageList) {
+//            if (noti.isChecked() == false) { //Se vizualizou não precisa mais alertar!!!
+//                Date last = noti.getLastShow();
+//                if ((last == null) || (firsShowtTime == true) || (last.compareTo(today) < 0)) {
+//                    long[] v = {500, 1000}; //vibrate
+//                    Uri uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);//sound
+//                    NotificationCompat.Builder builder =
+//                            new NotificationCompat.Builder(this)
+//                                    .setWhen(System.currentTimeMillis())
+//                                    .setSmallIcon(R.drawable.ic_email_black)
+//                                    .setAutoCancel(true)
+//                                    .setVibrate(v)
+//                                    .setSound(uri)
+//                                    .setContentTitle(noti.getTitulo())
+//                                    .setContentText(noti.getDescricao());
+//
+//                    //            Intent resultIntent = new Intent(getApplicationContext(), MainActivity.class);
+//                    //            //resultIntent.putExtra("", messageList.get(0).getPk());
+//                    //
+////                                TaskStackBuilder stackBuilder = TaskStackBuilder.create(getApplicationContext());
+////                                stackBuilder.addParentStack(MainActivity.class);
+////                                //stackBuilder.addParentStack(MessageActivity.class);
+////                                stackBuilder.addNextIntent(resultIntent);
+//                    //
+//                    //            PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+//                    //            mBuilder.setContentIntent(resultPendingIntent);
+//                    //
+//                    //
+//                    //            mNotificationManager.notify(id, mBuilder.build());
+//
+//                    //Intent notificationIntent = new Intent(this, MapsActivity.class);
+//                    Intent notificationIntent = new Intent(this, NotificationActivity.class);
+//
+//                    Gson gson = new Gson();
+//                    Realm realm = Realm.getDefaultInstance();
+//                    realm.beginTransaction();
+//                    noti.setLastShow(today);
+////                    noti.setChecked(true);
+//                    Notification object = realm.copyToRealmOrUpdate(noti);
+//                    Realm.getDefaultInstance().commitTransaction();
+//
+//                    String json = gson.toJson(realm.copyFromRealm(object));
+//                    notificationIntent.putExtra("notificacao", json);
+//
+//
+////                    TaskStackBuilder stackBuilder = TaskStackBuilder.create(getApplicationContext());
+////                    stackBuilder.addParentStack(MainActivity.class);
+////                    stackBuilder.addNextIntent(notificationIntent);
+////
+////                    PendingIntent contentIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+////                    builder.setContentIntent(contentIntent);
+//
+//                    PendingIntent contentIntent = PendingIntent.getActivity(this, noti.getPk(), notificationIntent,
+//                            PendingIntent.FLAG_UPDATE_CURRENT);
+//                    builder.setContentIntent(contentIntent);
+//
+//                    //manager.notify(0, builder.build());// 0  para setar tudo na mesma notificação
+//                    //manager.notify(noti.getPk(), builder.build());
+//                    manager.notify(noti.getPk(), builder.build());
+//                }
+//            }
+//        }
+//        firsShowtTime = false;
+//
+//        /*
+//        // check first use
+//        //if (!isFirstUse)
+//        {
+//            Integer id = messageList.get(0).getPk();
+//            NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+//            mNotificationManager.cancel(id);
+//
+//            Realm realm = Realm.getDefaultInstance();
+//
+//            //if (contact != null)
+//            {
+//                NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(getApplicationContext())
+//                        .setSmallIcon(R.drawable.ic_email_black)
+//                        //.setWhen(System.currentTimeMillis())
+//                        //.setAutoCancel(true)
+//                        .setContentTitle("New notification")
+//                        .setContentText("TESTING NOTIFICATION");
+//
+//                Intent resultIntent = new Intent(getApplicationContext(), MainActivity.class);
+//                //resultIntent.putExtra("", messageList.get(0).getPk());
+//
+//                TaskStackBuilder stackBuilder = TaskStackBuilder.create(getApplicationContext());
+//                stackBuilder.addParentStack(MainActivity.class);
+//                //stackBuilder.addParentStack(MessageActivity.class);
+//                stackBuilder.addNextIntent(resultIntent);
+//
+//                PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+//                mBuilder.setContentIntent(resultPendingIntent);
+//
+//
+//                mNotificationManager.notify(id, mBuilder.build());
+//            }
+//        }
+//        */
+//    }
+//
+//    public static boolean isBuscandoDadosTerminou() {
+//        return novoComandoLiberado;
+//    }
+//
+//    public static boolean isLocalTerminou(){
+//        return cmdLocalLiberado;
+//    }
+//
+//    public static boolean isTipoNotificacaoTerminou(){
+//        return cmdTipoNotificacaoLiberado;
+//    }
+//
+//    public static void setTipoNotificacaoTerminou(){
+//        cmdTipoNotificacaoLiberado = false;
+//    }
+//
+//    public static void setLocalTerminou(){
+//        cmdLocalLiberado = false;
+//    }
+//
+//    public static boolean isOfferingTerminou(){
+//        return cmdBuscandoOfferLiberado;
+//    }
+//
+//    public static void setOfferingerminou(){
+//        cmdBuscandoOfferLiberado = false;
+//    }
+//}
+
+
+
+
+
+
+
 package br.edu.ifspsaocarlos.sdm.notificacaoifsp.service;
 
 import android.app.NotificationManager;
@@ -119,13 +1183,33 @@ public class FetchJSONService extends Service implements Runnable {
     }
 
     @Override
+    public void onDestroy() {
+        super.onDestroy();
+        Log.d("", "onDestroy");
+
+        queue.cancelAll("MyTAG"); //@todo: Verificar se é necessário chamar o stopService/ cancelAll / stopSelf
+
+        appAberta = false;
+        stopSelf();
+    }
+
+    @Override
     public void onTaskRemoved(Intent rootIntent){
         Log.d("TCC", "onTaskRemoved");
-        Intent restart = new Intent(getApplicationContext(), this.getClass());
-        restart.setPackage(getPackageName());
-        startService(restart);
-        super.onTaskRemoved(rootIntent);
+        try {
+//            int count = 0;
+//            while (count < 100) {
+//                Thread.sleep(100);
+//                count++;
+//            }
 
+            Intent restart = new Intent(getApplicationContext(), this.getClass());
+            restart.setPackage(getPackageName());
+            startService(restart);
+            super.onTaskRemoved(rootIntent);
+        }catch(Exception e){
+            Log.d("", "Error: " + e.toString());
+        }
 //        Intent restartServiceTask = new Intent(getApplicationContext(),this.getClass());
 //        restartServiceTask.setPackage(getPackageName());
 //        PendingIntent restartPendingIntent =PendingIntent.getService(getApplicationContext(), 1,restartServiceTask, PendingIntent.FLAG_ONE_SHOT);
@@ -205,6 +1289,9 @@ public class FetchJSONService extends Service implements Runnable {
                                         machine.pushState(ServiceState.EnumServiceState.ENUM_SHOW_NOTIFICATION);
                                         flagLocalNotification = false;
                                     }
+                                    break;
+                                case ENUM_CLASS:
+                                    buscaCurso();
                                     break;
 //                                default:
 
@@ -325,6 +1412,7 @@ public class FetchJSONService extends Service implements Runnable {
                                 }
                             }
                         });
+
                         if (MainActivity.isGridShowing())
                             MainActivity.setFragTransactionStack(R.id.nav_class_schedule, R.id.content_frame, null, true);
                     }
@@ -559,6 +1647,52 @@ public class FetchJSONService extends Service implements Runnable {
         }
     }
 
+    private void buscaCurso() {
+
+        String url = getString(R.string.url_base) + getString(R.string.url_curso);
+
+        try {
+
+            JsonArrayRequest jsonObjectRequest = new JsonArrayRequest(Request.Method.GET, url, null,
+                    new Response.Listener<JSONArray>() {
+                        @Override
+                        public void onResponse(JSONArray s) {
+                            ParserJSON.getInstance().saveClass(s);
+                            //Toast.makeText(FetchJSONService.this, "Finalmente: " + s.toString(), Toast.LENGTH_SHORT).show();
+                            Log.d("TCC", "Curso: " + s.toString());
+                            novoComandoLiberado = true; //para não ficar travado caso de algum erro
+                            //cmdLocalLiberado = true;
+                        }
+                    },
+                    new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError volleyError) {
+                            Toast.makeText(FetchJSONService.this, "Erro na recuperação do Curso: " + volleyError.toString(), Toast.LENGTH_SHORT).show();
+                            novoComandoLiberado = true; //para não ficar travado caso de algum erro
+                            //cmdLocalLiberado = true;
+                        }
+                    }
+            ){
+                @Override
+                public Map<String, String> getHeaders() throws AuthFailureError {
+                    Map<String, String> headers = new HashMap<>();
+                    // Basic Authentication
+                    //String auth = "Basic " + Base64.encodeToString(CONSUMER_KEY_AND_SECRET.getBytes(), Base64.NO_WRAP);
+                    headers.put("Content-Type", "application/json");
+                    headers.put(getString(R.string.authorization), MainActivity.getAuth()); //Authorization Token ...
+                    return headers;
+                }
+            };
+            jsonObjectRequest.setTag("MyTAG");
+
+            queue.add(jsonObjectRequest);
+        } catch (Exception e) {
+            e.printStackTrace();
+            novoComandoLiberado = true; //para não ficar travado caso de algum erro
+            //cmdLocalLiberado = true;
+        }
+    }
+
     private void buscarUsuario() {
 
         String url = getString(R.string.url_base);
@@ -588,8 +1722,8 @@ public class FetchJSONService extends Service implements Runnable {
                                 //Toast.makeText(FetchJSONService.this, "Finalmente: " + s.toString(), Toast.LENGTH_SHORT).show();
                                 Log.d("TCC", "User: " + s.toString());
                                 novoComandoLiberado = true;
-                                
-                                /* // TODO: 9/12/2017 caso queira pegar um array de dentro do json!!! 
+
+                                /* // TODO: 9/12/2017 caso queira pegar um array de dentro do json!!!
                                 JSONArray jsonArray;
                                 try {
                                     jsonArray = s.getJSONArray("contatos");
@@ -620,9 +1754,9 @@ public class FetchJSONService extends Service implements Runnable {
                         return headers;
                     }
                 };
-                
-                
-                /* 
+
+
+                /*
                 // TODO: 9/12/2017 SE FOR UTILIZAR ARRAY TEM QUE UTILIZAR ESSA FORMA. CASO CONTÁRIO OCORRERÁ UMA EXCEÇÃO: com.android.volley.ParseError: org.json.JSONException
 
                 JsonArrayRequest jsonObjectRequest = new JsonArrayRequest(Request.Method.GET, url, null,
@@ -665,7 +1799,7 @@ public class FetchJSONService extends Service implements Runnable {
 
     // TODO: 10/19/2017 Buscar oferecimento pois se o professor retirar o aluno/inserir aluno não será atualizado na grade
     // TODO: 10/19/2017 Buscar oferecimento para exibir a grade do professor!
-    private void buscarOferecimento(boolean aluno) {
+    private void buscarOferecimento(boolean readPk) {
         try {
             boolean flagOk = true;
 
@@ -704,8 +1838,10 @@ public class FetchJSONService extends Service implements Runnable {
                     else
                         url += "?ano=" + year + "&semestre=" + semester;
 
-                    if (aluno)
+                    if (readPk)
                         url += "&pk=" + MainActivity.getUserId();
+
+                    url += "&user=" + MainActivity.getPeronType().ordinal();
 
                     StringRequest sr = new StringRequest(Request.Method.GET, url, new Response.Listener<String>() {
                         @Override
@@ -721,8 +1857,11 @@ public class FetchJSONService extends Service implements Runnable {
                                 }
                                 //Toast.makeText(FetchJSONService.this, "Finalmente: " + s, Toast.LENGTH_SHORT).show();
                                 Log.d("TCC", "Response Offering");
-                                if (MainActivity.isGridShowing())
+                                if (MainActivity.isGridShowing()) {
+                                    //ENUM_CLASS apenas aqui pois é onde pode aparecer um oferecimento com curso novo
+                                    ServiceState.getInstance().pushState(ServiceState.EnumServiceState.ENUM_CLASS);
                                     MainActivity.setFragTransactionStack(R.id.nav_class_schedule, R.id.content_frame, null, true);
+                                }
                             } catch (JSONException e) {
                                 Toast.makeText(FetchJSONService.this, "Erro na conversão " +
                                         "de objeto JSON!", Toast.LENGTH_SHORT).show();
@@ -1017,19 +2156,6 @@ public class FetchJSONService extends Service implements Runnable {
         */
     }
 
-
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        Log.e("", "onDestroy");
-
-        queue.cancelAll("MyTAG");
-
-        appAberta = false;
-        stopSelf();
-    }
-
     public static boolean isBuscandoDadosTerminou() {
         return novoComandoLiberado;
     }
@@ -1059,6 +2185,10 @@ public class FetchJSONService extends Service implements Runnable {
     }
 }
 
+//======================================TESTS====================================================
+//======================================TESTS====================================================
+//======================================TESTS====================================================
+//======================================TESTS====================================================
 
 
 //
