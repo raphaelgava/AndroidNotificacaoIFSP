@@ -14,13 +14,14 @@ import com.google.gson.Gson;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.R;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.MyClass;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.Offering;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.util.EnumUserType;
 import io.realm.Realm;
 
 public class CreateOffering extends AppCompatActivity {
 
-    private EditText edtTime, edtWeek, edtYear, edtQtd, edtTitle, edtInitials, edtClass;
+    private EditText edtTime, edtWeek, edtYear, edtQtd, edtTitle, edtInitials, edtClass, edtProfessor;
     private Button btnGoBack;
-    private TextInputLayout txtClass;
+    private TextInputLayout txtClass, txtProfessor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,8 +43,17 @@ public class CreateOffering extends AppCompatActivity {
             edtTitle = (EditText) findViewById(R.id.edtTitle);
             edtInitials = (EditText) findViewById(R.id.edtInitials);
             edtClass = (EditText) findViewById(R.id.edtClass);
+            edtProfessor = (EditText) findViewById(R.id.edtProfessor);
             btnGoBack = (Button) findViewById(R.id.btnGoBack);
             txtClass = (TextInputLayout) findViewById(R.id.txtClass);
+            txtProfessor = (TextInputLayout) findViewById(R.id.txtProfessor);
+
+            if (MainActivity.getPeronType() == EnumUserType.ENUM_STUDENT){
+                edtProfessor.setText(obj.getProfessor());
+            }
+            else{
+                txtProfessor.setVisibility(View.GONE);
+            }
 
             switch (obj.getTime()){
                 case 1: edtTime.setText("First"); break;

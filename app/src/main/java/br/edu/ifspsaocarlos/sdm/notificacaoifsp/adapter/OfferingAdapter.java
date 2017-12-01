@@ -1,5 +1,6 @@
 package br.edu.ifspsaocarlos.sdm.notificacaoifsp.adapter;
 
+import android.content.Intent;
 import android.os.Handler;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -11,11 +12,14 @@ import android.widget.Filter;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.google.gson.Gson;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.R;
+import br.edu.ifspsaocarlos.sdm.notificacaoifsp.activity.CreateOffering;
 import br.edu.ifspsaocarlos.sdm.notificacaoifsp.model.Offering;
 import io.realm.Realm;
 
@@ -212,6 +216,14 @@ public class OfferingAdapter extends RecyclerView.Adapter<OfferingAdapter.ItemVi
                 }
             });
 
+            ckbSelected.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    selectLongItem(v);
+                    return true;    // <- set to true
+                }
+            });
+
             mLayoutPrincipal = (RelativeLayout) itemView.findViewById(R.id.llOfferingList);
             mLayoutPrincipal.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -219,6 +231,31 @@ public class OfferingAdapter extends RecyclerView.Adapter<OfferingAdapter.ItemVi
                     selectItem(v);
                 }
             });
+
+            mLayoutPrincipal.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    selectLongItem(v);
+
+                    return true;
+                }
+            });
+        }
+
+        private void selectLongItem(View v) {
+            Offering offering = mListaOffering.get((Integer) v.getTag());
+            if(offering != null) {
+                Intent intent = new Intent(v.getContext(), CreateOffering.class);
+                //intent.putExtra("notificacao", notificationObject);
+                Gson gson2 = new Gson();
+                Realm realm2 = Realm.getDefaultInstance();
+                realm2.beginTransaction();
+                Offering object = realm2.copyToRealmOrUpdate(offering);
+                String json = gson2.toJson(realm2.copyFromRealm(object));
+                intent.putExtra("oferecimento", json);
+                Realm.getDefaultInstance().cancelTransaction();
+                v.getContext().startActivity(intent);
+            }
         }
 
         private void selectItem(View v) {

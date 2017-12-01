@@ -94,6 +94,7 @@
     <string name="offerTime">Time</string>
     <string name="offerInitials">Initials</string>
     <string name="offerClass">Class</string>
+    <string name="offerProfessor">Professor</string>
 
     <!--Color Dialog-->
     <string name="set_color">Set color</string>
