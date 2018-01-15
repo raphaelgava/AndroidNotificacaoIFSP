@@ -6,43 +6,43 @@
         <item
             android:id="@+id/nav_class_schedule"
             android:icon="@drawable/ic_menu_class_schedule"
-            android:title="Class Schedule" />
+            android:title="Grade" />
         <item
             android:id="@+id/nav_offering"
             android:icon="@drawable/ic_menu_offering"
             android:visibility="gone"
-            android:title="Offering" />
+            android:title="Ofertas" />
         <item
             android:id="@+id/nav_user_data"
             android:icon="@drawable/ic_menu_user_data"
-            android:title="User Data" />
+            android:title="Dados do usuário" />
         <item
             android:id="@+id/nav_create_notification"
             android:icon="@drawable/ic_email_black"
-            android:title="Create Notification"
+            android:title="Criar notificação"
             />
         <item
             android:id="@+id/nav_notifications"
             android:icon="@drawable/ic_menu_notification"
-            android:title="Notifications"
+            android:title="Notificações"
             />
     </group>
 
-    <item android:title="Communicate">
+    <item android:title="Comunicação">
         <menu>
             <item
                 android:id="@+id/nav_send"
                 android:icon="@drawable/ic_menu_send"
-                android:title="Send" />
+                android:title="Enviar" />
         </menu>
     </item>
 
-    <item android:title="Exit">
+    <item android:title="Saida">
         <menu>
             <item
                 android:id="@+id/nav_quit"
                 android:icon="@drawable/ic_menu_exit_to_app"
-                android:title="Logout" />
+                android:title="Sair" />
         </menu>
     </item>
 

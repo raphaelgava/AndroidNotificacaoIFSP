@@ -185,7 +185,7 @@ public class ChangeUserDataFragment extends TemplateFragment{
                         public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
 
                             if (year > (mYear - 10)){
-                                Toast.makeText(view.getContext(), "Set year before " + (mYear - 10), Toast.LENGTH_LONG).show();
+                                Toast.makeText(view.getContext(), "Selecione ano antes " + (mYear - 10), Toast.LENGTH_LONG).show();
                             }else{
                                 Date date = new GregorianCalendar(year, monthOfYear, dayOfMonth).getTime();
                                 txtInDate.setText(formatDate.format(date));
@@ -418,7 +418,7 @@ public class ChangeUserDataFragment extends TemplateFragment{
                                         }, new Response.ErrorListener() {
                                     public void onErrorResponse(VolleyError volleyError) {
                                         stopTransaction();
-                                        Toast.makeText(getContext(), "Error during update user.",
+                                        Toast.makeText(getContext(), "Erro durante atualização do usuário.",
                                                 Toast.LENGTH_SHORT).show();
                                         Log.e("TCC", "Error during update user." + volleyError.toString());
                                     }
@@ -442,7 +442,7 @@ public class ChangeUserDataFragment extends TemplateFragment{
                             } catch (Exception e) {
                                 stopTransaction();
                                 Log.e("TCC", "Erro na leitura de mensagens");
-                                Toast.makeText(getContext(), "Error during update user: " + e.toString(),
+                                Toast.makeText(getContext(), "Erro durante atualização do usuário: " + e.toString(),
                                         Toast.LENGTH_SHORT).show();
                             }
                         } catch (JSONException e) {
@@ -460,7 +460,7 @@ public class ChangeUserDataFragment extends TemplateFragment{
             }
         }else{
             stopTransaction();
-            Toast.makeText(getContext(), "Without connection!",
+            Toast.makeText(getContext(), "Sem conexão!",
                     Toast.LENGTH_SHORT).show();
         }
     }

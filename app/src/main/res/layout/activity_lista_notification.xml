@@ -55,7 +55,7 @@
         <Button
             android:id="@+id/btnEndNotification"
             android:layout_width="match_parent"
-            android:text="Go back"
+            android:text="Voltar"
             android:layout_weight="1"
             android:layout_height="wrap_content" />
 

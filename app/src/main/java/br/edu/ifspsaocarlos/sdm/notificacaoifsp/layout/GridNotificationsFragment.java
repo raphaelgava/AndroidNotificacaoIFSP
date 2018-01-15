@@ -302,7 +302,7 @@ public class GridNotificationsFragment extends TemplateFragment{
                 }
 
                 if (flagMsg & checkMsg) {
-                    Toast.makeText(getContext(), "Any offering was not inserted because some other exists in same time", Toast.LENGTH_LONG).show();
+                    Toast.makeText(getContext(), "Uma ou mais ofertas não foram inseridas pois há outra(s) no mesmo horário", Toast.LENGTH_LONG).show();
                 }
             }
         }catch (Exception e){

@@ -32,7 +32,7 @@
         style="@style/list_item_primary_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Code"
+        android:text="Código"
         android:layout_alignBaseline="@+id/txtBaseNotification"
         android:layout_alignBottom="@+id/txtBaseNotification"
         android:layout_alignParentRight="true"
@@ -45,7 +45,7 @@
         style="@style/list_item_secondary_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Description"
+        android:text="Descrição"
         android:layout_alignLeft="@+id/txtNotificationType"
         android:layout_below="@+id/txtBaseNotification" />
 

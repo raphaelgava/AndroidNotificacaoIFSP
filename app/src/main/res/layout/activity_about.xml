@@ -27,7 +27,7 @@
             android:layout_row="1"
             android:gravity="center"
             android:textColor="@color/wallet_link_text_light"
-            android:text="IFSP Notification\nVersion 1.0.0"
+            android:text="Notificação IFSP\nVersão 1.0.0"
             android:textAppearance="?android:attr/textAppearanceLarge" />
 
         <Space
@@ -64,7 +64,7 @@
             android:layout_row="6"
             android:gravity="center"
             android:textColor="@color/wallet_link_text_light"
-            android:text="by: Raphael Gava \n Professor: Pedro Nobile"
+            android:text="desenvolvido por: Raphael Gava \n Professor: Pedro Nobile"
             android:textAppearance="?android:attr/textAppearanceLarge" />
 
         <TextView

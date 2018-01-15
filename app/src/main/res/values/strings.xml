@@ -1,29 +1,28 @@
 <resources>
-    <string name="app_name">IFSP Notification</string>
+    <string name="app_name">Notificação IFSP</string>
 
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
-    <string name="action_about">About</string>
-    <string name="title_activity_login">IFSP Notification</string>
+    <string name="action_about">Sobre</string>
+    <string name="title_activity_login">Notificação IFSP</string>
 
     <!-- Strings related to login -->
-    <string name="prompt_prontuario">Records</string>
-    <string name="prompt_password">Password</string>
-    <string name="action_sign_in_short">Sign in</string>
-    <string name="error_invalid_email">This record is invalid</string>
-    <string name="error_invalid_text">Text field is empty</string>
-    <string name="error_invalid_password">This password is empty or too short</string>
-    <string name="error_incorrect_password">This password is incorrect</string>
-    <string name="error_field_required">This field is required</string>
-    <string name="permission_rationale">"Contacts permissions are needed for providing email
-        completions."
+    <string name="prompt_prontuario">Prontuário</string>
+    <string name="prompt_password">Senha</string>
+    <string name="action_sign_in_short">Entrar</string>
+    <string name="error_invalid_email">Prontuário inválido</string>
+    <string name="error_invalid_text">Campo de texto vazio</string>
+    <string name="error_invalid_password">Essa senha é pequena</string>
+    <string name="error_incorrect_password">Senha incorreta</string>
+    <string name="error_field_required">Esse campo é obrigatório</string>
+    <string name="permission_rationale">"É necessário conceder a permissão de acesso."
     </string>
 
     <!-- Strings related to service -->
-    <string name="url_base">http://192.168.0.16:8000/</string>
+    <!--<string name="url_base">http://192.168.0.16:8000/</string>-->
     <!--<string name="url_base">http://192.168.43.94:8000/</string>-->
-    <!--<string name="url_base">https://notificacaoifsp.herokuapp.com/</string>&lt;!&ndash;site&ndash;&gt;-->
+    <string name="url_base">https://notificacaoifsp.herokuapp.com/</string><!--site-->
     <string name="url_login">api-token-auth/</string>
     <string name="url_login_username">username</string>
     <string name="url_login_password">password</string>
@@ -50,54 +49,54 @@
     <string name="authorization">Authorization</string>
 
     <!--UserLogin form-->
-    <string name="username">Username</string>
-    <string name="name">Name</string>
-    <string name="lastName">Last Name</string>
+    <string name="username">Usuário</string>
+    <string name="name">Nome</string>
+    <string name="lastName">Sobrenome</string>
     <string name="cpf">CPF</string>
     <string name="email">E-mail</string>
-    <string name="password">Password</string>
-    <string name="confirmPassword">Re-Password</string>
-    <string name="send">Send</string>
-    <string name="birthday">Birthday</string>
-    <string name="sex">Sex</string>
-    <string name="tipoFormacao">Education</string>
-    <string name="formacao">Graduation</string>
-    <string name="turma">Grade</string>
-    <string name="funcao">Job</string>
-    <string name="male">Male</string>
-    <string name="female">Female</string>
-    <string name="msg_changed">Data was changed</string>
-    <string name="msg_not_creating_notification">There is no notify to be send</string>
+    <string name="password">Senha</string>
+    <string name="confirmPassword">Confirmação</string>
+    <string name="send">Enviar</string>
+    <string name="birthday">Data aniversário</string>
+    <string name="sex">Sexo</string>
+    <string name="tipoFormacao">Tipo de formação</string>
+    <string name="formacao">Formação</string>
+    <string name="turma">Turma</string>
+    <string name="funcao">Função</string>
+    <string name="male">Masculino</string>
+    <string name="female">Feminino</string>
+    <string name="msg_changed">Dados atualizados</string>
+    <string name="msg_not_creating_notification">Não há notificação para enviar</string>
 
     <!--Notification form-->
     <string name="time">00:00</string>
     <string name="date">0000-00-00</string>
-    <string name="description">Description</string>
-    <string name="find">Research</string>
-    <string name="title">Title</string>
-    <string name="notificationType">Notification Type</string>
-    <string name="dateTime">Date/time</string>
-    <string name="place">Place</string>
-    <string name="sendNotify">Send Notification</string>
-    <string name="setRemetent">Select Remetent</string>
-    <string name="error_invalid_title">Title is empty</string>
-    <string name="error_invalid_description">Description is empty</string>
-    <string name="error_invalid_remetent">Remetent is empty</string>
-    <string name="msg_send_notification">Sending notification</string>
+    <string name="description">Descrição</string>
+    <string name="find">Buscar</string>
+    <string name="title">Título</string>
+    <string name="notificationType">Tipo de notificação</string>
+    <string name="dateTime">Dia/hora</string>
+    <string name="place">Lugar</string>
+    <string name="sendNotify">Enviar notificação</string>
+    <string name="setRemetent">Selecionar remetente</string>
+    <string name="error_invalid_title">Título vazio</string>
+    <string name="error_invalid_description">Descrição vazia</string>
+    <string name="error_invalid_remetent">Remetente vazio</string>
+    <string name="msg_send_notification">Enviando notificação</string>
 
     <!--Offering form-->
-    <string name="offerDescription">Description</string>
-    <string name="offerGoBack">Go Back</string>
-    <string name="offerYear">Year</string>
-    <string name="offerWeek">Day of Week</string>
-    <string name="offerQtd">Quantity</string>
-    <string name="offerTime">Time</string>
-    <string name="offerInitials">Initials</string>
-    <string name="offerClass">Class</string>
+    <string name="offerDescription">Descrição</string>
+    <string name="offerGoBack">Voltar</string>
+    <string name="offerYear">Ano</string>
+    <string name="offerWeek">Dia da semana</string>
+    <string name="offerQtd">Quantidade</string>
+    <string name="offerTime">Hora</string>
+    <string name="offerInitials">Iniciais</string>
+    <string name="offerClass">Disciplina</string>
     <string name="offerProfessor">Professor</string>
 
     <!--Color Dialog-->
-    <string name="set_color">Set color</string>
+    <string name="set_color">Cor</string>
 
     <!--    Permissions    -->
     <string name="permission_rationale_location">Access to the location service is required to demonstrate the \'my location\' feature, which shows your current location on the map.</string>
@@ -105,20 +104,20 @@
     <string name="permission_required_toast">Location permission is required for this demo.</string>
 
     <!-- Maps -->
-    <string name="title_activity_maps">Notification Dialog</string>
-    <string name="go_mark">Go to mark</string>
-    <string name="go_back">Go back</string>
-    <string name="go_map">Go to map</string>
+    <string name="title_activity_maps">Notificação</string>
+    <string name="go_mark">Ir para marca</string>
+    <string name="go_back">Voltar</string>
+    <string name="go_map">Ir para o mapa</string>
 
     <!-- Masks -->
     <string name="mask_date">yyyy-MM-dd</string>
     <string name="mask_time">kk:mm</string>
 
     <!-- Grid -->
-    <string name="welcome">Welcome to notification application!</string>
+    <string name="welcome">Bem-vindo ao aplicativo de notificação!</string>
 
     <!-- Activities -->
-    <string name="nothingNotification">There is no notifications so far! Wait a moment or contact the Administrator.</string>
-    <string name="nothingOffering">There is no offerings so far! Wait a moment or contact the Administrator.</string>
-    <string name="nothingRemetent">There is no remetents so far! Wait a moment or contact the Administrator.</string>
+    <string name="nothingNotification">Não há notificações até então! Espere por um momento ou contacte o administrador.</string>
+    <string name="nothingOffering">Não há ofertas até então! Espere por um momento ou contacte o administrador.</string>
+    <string name="nothingRemetent">Não há remetentes até então! Espere por um momento ou contacte o administrador.</string>
 </resources>

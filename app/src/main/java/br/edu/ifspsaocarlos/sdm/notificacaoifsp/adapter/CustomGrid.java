@@ -279,91 +279,95 @@ public class CustomGrid extends RecyclerView.Adapter<CustomGrid.ItemViewHolder> 
                 }
             });
 
-            mLayoutPrincipal.setOnLongClickListener(new View.OnLongClickListener() {
+            switch (MainActivity.getPeronType()) {
+                case ENUM_STUDENT:
+                    mLayoutPrincipal.setOnLongClickListener(new View.OnLongClickListener() {
 
-                @Override
-                public boolean onLongClick(View v) {
-                    final Offering offer = mListaOferecimentos.get((Integer) v.getTag());
-                    if (offer.getPk() > 0) {
-                        new AlertDialog.Builder(v.getContext())
-                                .setIcon(android.R.drawable.ic_dialog_alert)
-                                .setTitle("Removing Offering")
-                                .setMessage("Are you sure you want to remove?")
-                                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        try {
-                                            //                                        final Realm realm = Realm.getDefaultInstance();
-                                            //                                        realm.beginTransaction();
-                                            //                                        AddedOffering deleteOffer = realm.where(AddedOffering.class).equalTo("pk", offer.getPk()).findFirst();
-                                            //                                        if (deleteOffer != null) {
-                                            //                                            deleteOffer.deleteFromRealm();
-                                            //                                            frag.configurarAdapter();
-                                            //                                        }
-                                            //                                        realm.commitTransaction();
+                        @Override
+                        public boolean onLongClick(View v) {
+                            final Offering offer = mListaOferecimentos.get((Integer) v.getTag());
+                            if (offer.getPk() > 0) {
+                                new AlertDialog.Builder(v.getContext())
+                                        .setIcon(android.R.drawable.ic_dialog_alert)
+                                        .setTitle("Removendo oferta")
+                                        .setMessage("Deseja realmente remover?")
+                                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int which) {
+                                                try {
+                                                    //                                        final Realm realm = Realm.getDefaultInstance();
+                                                    //                                        realm.beginTransaction();
+                                                    //                                        AddedOffering deleteOffer = realm.where(AddedOffering.class).equalTo("pk", offer.getPk()).findFirst();
+                                                    //                                        if (deleteOffer != null) {
+                                                    //                                            deleteOffer.deleteFromRealm();
+                                                    //                                            frag.configurarAdapter();
+                                                    //                                        }
+                                                    //                                        realm.commitTransaction();
 
-                                            Realm realm = Realm.getDefaultInstance();
-                                            realm.executeTransactionAsync(new Realm.Transaction() {
-                                                @Override
-                                                public void execute(Realm bgRealm) {
-                                                    Offering deleteOffer = bgRealm.where(Offering.class).equalTo("myPk", offer.getMyPk()).findFirst();
-                                                    if (deleteOffer != null) {
-                                                        deleteOffer.removeAluno(MainActivity.getUserId());
-                                                        AddedOffering deletedObj = new AddedOffering(deleteOffer);
-                                                        bgRealm.copyToRealmOrUpdate(deletedObj);
-                                                        //deleteOffer.deleteFromRealm();
+                                                    Realm realm = Realm.getDefaultInstance();
+                                                    realm.executeTransactionAsync(new Realm.Transaction() {
+                                                        @Override
+                                                        public void execute(Realm bgRealm) {
+                                                            Offering deleteOffer = bgRealm.where(Offering.class).equalTo("myPk", offer.getMyPk()).findFirst();
+                                                            if (deleteOffer != null) {
+                                                                deleteOffer.removeAluno(MainActivity.getUserId());
+                                                                AddedOffering deletedObj = new AddedOffering(deleteOffer);
+                                                                bgRealm.copyToRealmOrUpdate(deletedObj);
+                                                                //deleteOffer.deleteFromRealm();
 
-//                                                        final Handler handler = new Handler();
-//                                                        new Thread(){
-//                                                            public void run() {
-//                                                                boolean start = true;
-//                                                                while (start) {
-//                                                                    try {
-//                                                                        Thread.sleep(1000);
-//                                                                        if (FetchJSONService.getUpdateGrid() == true){
-//                                                                            handler.post(new Runnable() {
-//                                                                                public void run() {
-//                                                                                    frag.configurarAdapter();
-//                                                                                }
-//                                                                            });
-//                                                                            start = false;
-//                                                                        }
-//                                                                    } catch (InterruptedException e) {
-//                                                                        e.printStackTrace();
-//                                                                    }
-//                                                                }
-//                                                            }
-//                                                        }.start();
+                                                                //                                                        final Handler handler = new Handler();
+                                                                //                                                        new Thread(){
+                                                                //                                                            public void run() {
+                                                                //                                                                boolean start = true;
+                                                                //                                                                while (start) {
+                                                                //                                                                    try {
+                                                                //                                                                        Thread.sleep(1000);
+                                                                //                                                                        if (FetchJSONService.getUpdateGrid() == true){
+                                                                //                                                                            handler.post(new Runnable() {
+                                                                //                                                                                public void run() {
+                                                                //                                                                                    frag.configurarAdapter();
+                                                                //                                                                                }
+                                                                //                                                                            });
+                                                                //                                                                            start = false;
+                                                                //                                                                        }
+                                                                //                                                                    } catch (InterruptedException e) {
+                                                                //                                                                        e.printStackTrace();
+                                                                //                                                                    }
+                                                                //                                                                }
+                                                                //                                                            }
+                                                                //                                                        }.start();
 
-                                                        FetchJSONService.setOffering(deletedObj, ServiceState.EnumServiceState.ENUM_REMOVE_STUDENT_OFFERING);
-                                                    }
+                                                                FetchJSONService.setOffering(deletedObj, ServiceState.EnumServiceState.ENUM_REMOVE_STUDENT_OFFERING);
+                                                            }
+                                                        }
+                                                    }, new Realm.Transaction.OnSuccess() {
+                                                        @Override
+                                                        public void onSuccess() {
+
+                                                            Log.d("TCC", "Offering removed");
+                                                        }
+                                                    }, new Realm.Transaction.OnError() {
+                                                        @Override
+                                                        public void onError(Throwable error) {
+                                                            Log.d("TCC", "Error to insert removed: " + error.toString());
+                                                        }
+                                                    });
+                                                } catch (Exception e) {
+                                                    Log.d("TCC", "Error to removed Offering: " + e.toString());
                                                 }
-                                            }, new Realm.Transaction.OnSuccess() {
-                                                @Override
-                                                public void onSuccess() {
+                                                //Toast.makeText(v.getContext(), "Long click!", Toast.LENGTH_SHORT).show();
+                                            }
 
-                                                    Log.d("TCC", "Offering removed");
-                                                }
-                                            }, new Realm.Transaction.OnError() {
-                                                @Override
-                                                public void onError(Throwable error) {
-                                                    Log.d("TCC", "Error to insert removed: " + error.toString());
-                                                }
-                                            });
-                                        } catch (Exception e) {
-                                            Log.d("TCC", "Error to removed Offering: " + e.toString());
-                                        }
-                                        //Toast.makeText(v.getContext(), "Long click!", Toast.LENGTH_SHORT).show();
-                                    }
+                                        })
+                                        .setNegativeButton("No", null)
+                                        .show();
+                            }
+                            return true;
+                        }
 
-                                })
-                                .setNegativeButton("No", null)
-                                .show();
-                    }
-                    return true;
-                }
-
-            });
+                    });
+                    break;
+            }
         }
     }
 }

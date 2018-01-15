@@ -56,19 +56,19 @@ public class CreateOffering extends AppCompatActivity {
             }
 
             switch (obj.getTime()){
-                case 1: edtTime.setText("First"); break;
-                case 2: edtTime.setText("Second"); break;
-                case 3: edtTime.setText("Third"); break;
-                case 4: edtTime.setText("Fourth"); break;
-                case 5: edtTime.setText("Fifth"); break;
+                case 1: edtTime.setText("Primeiro"); break;
+                case 2: edtTime.setText("Segundo"); break;
+                case 3: edtTime.setText("Terceiro"); break;
+                case 4: edtTime.setText("Quarto"); break;
+                case 5: edtTime.setText("Quinto"); break;
             }
 
             switch (obj.getWeek()){
-                case 1: edtWeek.setText("Monday"); break;
-                case 2: edtWeek.setText("Tuesday"); break;
-                case 3: edtWeek.setText("Wednesday"); break;
-                case 4: edtWeek.setText("Thursday"); break;
-                case 5: edtWeek.setText("Friday"); break;
+                case 1: edtWeek.setText("Segunda"); break;
+                case 2: edtWeek.setText("Terça"); break;
+                case 3: edtWeek.setText("Quarta"); break;
+                case 4: edtWeek.setText("Quinta"); break;
+                case 5: edtWeek.setText("Sexta"); break;
             }
 
             edtYear.setText(Integer.toString(obj.getAno()));
